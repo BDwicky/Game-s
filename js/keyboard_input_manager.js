@@ -39,6 +39,31 @@ KeyboardInputManager.prototype.listen = function () {
 
   // Respond to direction keys
   document.addEventListener("keydown", function (event) {
+    var target = event.target || event.srcElement;
+    var isInput = target && (
+      target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.tagName === "SELECT" ||
+      target.isContentEditable
+    );
+    var isModalOpen = !!document.querySelector(".modal-backdrop.is-open");
+
+    // Allow Escape key to close modal if permitted
+    if (event.which === 27) {
+      var openModal = document.querySelector(".modal-backdrop.is-open");
+      if (openModal && window.Leaderboard && window.Leaderboard.closeModal) {
+        if (openModal.getAttribute("data-can-close") !== "false") {
+          window.Leaderboard.closeModal(openModal);
+          return;
+        }
+      }
+    }
+
+    // Do not capture game controls if user is typing or modal is open
+    if (isInput || isModalOpen) {
+      return;
+    }
+
     var modifiers = event.altKey || event.ctrlKey || event.metaKey ||
                     event.shiftKey;
     var mapped    = map[event.which];

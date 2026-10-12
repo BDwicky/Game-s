@@ -28,6 +28,7 @@ try {
     $tableSql = (string)$pdo->query("SELECT sql FROM sqlite_master WHERE type='table' AND name='leaderboard'")->fetchColumn();
     if ($tableSql && (stripos($tableSql, "username TEXT UNIQUE") !== false || stripos($tableSql, "UNIQUE (username)") !== false)) {
         $pdo->exec("
+            DROP TABLE IF EXISTS leaderboard_v2;
             CREATE TABLE leaderboard_v2 (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 game TEXT NOT NULL DEFAULT '2048',

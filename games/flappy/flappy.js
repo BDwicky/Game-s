@@ -75,8 +75,8 @@
       y: 220,
       radius: 13,
       vy: 0,
-      gravity: 0.26,
-      jump: -5.4,
+      gravity: 0.20,
+      jump: -4.5,
       rotation: 0,
       wingTimer: 0
     },
@@ -84,8 +84,12 @@
     // Pipes
     pipes: [],
     pipeSpawnTimer: 0,
-    pipeGap: 105,
-    pipeSpeed: 1.9,
+    pipeGap: 116,
+    pipeSpeed: 1.3,
+
+    // Fixed 60Hz Timestep Accumulator (Refresh-Rate Independent)
+    lastTime: 0,
+    accumulator: 0,
 
     // Shared Profile
     username: 'Pemain Baru',
@@ -271,9 +275,9 @@
     update: function () {
       // Idle Hover Animation
       if (this.state === 0) {
-        this.bird.wingTimer += 0.1;
+        this.bird.wingTimer += 0.06;
         this.bird.y = 220 + Math.sin(this.bird.wingTimer) * 5;
-        this.groundOffset = (this.groundOffset + 1.5) % 18;
+        this.groundOffset = (this.groundOffset + 1.2) % 18;
         return;
       }
 
@@ -287,7 +291,7 @@
       if (this.bird.vy < 0) {
         this.bird.rotation = -0.35;
       } else {
-        this.bird.rotation = Math.min(Math.PI / 2, this.bird.rotation + 0.05);
+        this.bird.rotation = Math.min(Math.PI / 2, this.bird.rotation + 0.035);
       }
 
       // Ground collision
@@ -306,9 +310,9 @@
       // Ground scroll
       this.groundOffset = (this.groundOffset + this.pipeSpeed) % 18;
 
-      // Spawn Pipes
+      // Spawn Pipes (spaced ~175px apart)
       this.pipeSpawnTimer++;
-      if (this.pipeSpawnTimer >= 85) {
+      if (this.pipeSpawnTimer >= 135) {
         this.pipeSpawnTimer = 0;
         this.spawnPipe();
       }
@@ -527,11 +531,27 @@
       ctx.restore();
     },
 
-    loop: function () {
+    loop: function (timestamp) {
       var self = this;
-      this.update();
+      if (!timestamp) timestamp = performance.now();
+      if (!this.lastTime) this.lastTime = timestamp;
+      var dt = timestamp - this.lastTime;
+      this.lastTime = timestamp;
+
+      // Clamp dt to avoid spiral of death on background tab
+      if (dt > 100) dt = 100;
+      if (dt < 0) dt = 0;
+
+      this.accumulator += dt;
+      var stepMs = 1000 / 60; // 60Hz physics ticks
+
+      while (this.accumulator >= stepMs) {
+        this.update();
+        this.accumulator -= stepMs;
+      }
+
       this.draw();
-      requestAnimationFrame(function () { self.loop(); });
+      requestAnimationFrame(function (ts) { self.loop(ts); });
     },
 
     syncScoreToBackend: function (score) {

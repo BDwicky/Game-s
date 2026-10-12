@@ -106,10 +106,14 @@
     avatar: '',
 
     // Pacman State
-    pac: { x: 9, y: 16, dir: D.NONE, nextDir: D.NONE, mouth: 0.2, mouthDir: 1, speed: 0.12 },
+    pac: { x: 9, y: 16, dir: D.NONE, nextDir: D.NONE, mouth: 0.2, mouthDir: 1, speed: 0.080 },
 
     // Ghosts
     ghosts: [],
+
+    // Fixed 60Hz Timestep Accumulator (Refresh-Rate Independent)
+    lastTime: 0,
+    accumulator: 0,
 
     init: function () {
       this.loadProfile();
@@ -286,6 +290,12 @@
 
     setDir: function (d) {
       if (this.gameOver) return;
+      var opposites = { 1: 3, 2: 4, 3: 1, 4: 2 };
+      if (opposites[this.pac.dir] === d) {
+        this.pac.dir = d;
+        this.pac.nextDir = d;
+        return;
+      }
       this.pac.nextDir = d;
       if (this.pac.dir === D.NONE) this.pac.dir = d;
     },
@@ -358,15 +368,21 @@
     update: function () {
       if (this.gameOver || this.paused) return;
 
-      // Update Pacman Next Direction at tile alignment
-      var cx = Math.round(this.pac.x);
-      var cy = Math.round(this.pac.y);
-      var isAligned = Math.abs(this.pac.x - cx) < 0.08 && Math.abs(this.pac.y - cy) < 0.08;
-
-      if (isAligned && this.pac.nextDir !== D.NONE && this.canMove(cx, cy, this.pac.nextDir)) {
-        this.pac.dir = this.pac.nextDir;
-        this.pac.x = cx;
-        this.pac.y = cy;
+      // Update Pacman Direction
+      if (this.pac.nextDir !== D.NONE && this.pac.nextDir !== this.pac.dir) {
+        var opposites = { 1: 3, 2: 4, 3: 1, 4: 2 };
+        if (opposites[this.pac.dir] === this.pac.nextDir) {
+          this.pac.dir = this.pac.nextDir;
+        } else {
+          var cx = Math.round(this.pac.x);
+          var cy = Math.round(this.pac.y);
+          var isAligned = Math.abs(this.pac.x - cx) <= this.pac.speed && Math.abs(this.pac.y - cy) <= this.pac.speed;
+          if (isAligned && this.canMove(cx, cy, this.pac.nextDir)) {
+            this.pac.dir = this.pac.nextDir;
+            this.pac.x = cx;
+            this.pac.y = cy;
+          }
+        }
       }
 
       // Move Pacman
@@ -376,9 +392,6 @@
         if (this.pac.dir === D.DOWN) dy = this.pac.speed;
         if (this.pac.dir === D.LEFT) dx = -this.pac.speed;
         if (this.pac.dir === D.RIGHT) dx = this.pac.speed;
-
-        var nextTileX = Math.round(this.pac.x + (dx > 0 ? 0.6 : (dx < 0 ? -0.6 : 0)));
-        var nextTileY = Math.round(this.pac.y + (dy > 0 ? 0.6 : (dy < 0 ? -0.6 : 0)));
 
         if (this.canMove(this.pac.x, this.pac.y, this.pac.dir)) {
           this.pac.x += dx;
@@ -411,7 +424,7 @@
           this.map[currentTileY][currentTileX] = 0;
           this.score += 50;
           this.dotsLeft--;
-          this.frightenedTimer = 350; // ~6 seconds
+          this.frightenedTimer = 360; // 6 seconds at 60Hz
           this.ghosts.forEach(function (g) { g.frightened = true; });
           Sound.eatGhost();
           this.updateDashboard();
@@ -459,15 +472,15 @@
       });
 
       // Animate mouth
-      this.pac.mouth += 0.05 * this.pac.mouthDir;
+      this.pac.mouth += 0.035 * this.pac.mouthDir;
       if (this.pac.mouth > 0.3 || this.pac.mouth < 0.02) this.pac.mouthDir *= -1;
     },
 
     moveGhost: function (g) {
-      var speed = g.frightened ? 0.06 : 0.09;
+      var speed = g.frightened ? 0.045 : 0.065;
       var gx = Math.round(g.x);
       var gy = Math.round(g.y);
-      var isAligned = Math.abs(g.x - gx) < 0.06 && Math.abs(g.y - gy) < 0.06;
+      var isAligned = Math.abs(g.x - gx) <= speed && Math.abs(g.y - gy) <= speed;
 
       if (isAligned) {
         g.x = gx;
@@ -482,9 +495,15 @@
           }
         });
 
+        // Allow reverse if trapped
+        if (validDirs.length === 0) {
+          var rev = opposites[g.dir];
+          if (PacmanApp.canMove(gx, gy, rev)) validDirs.push(rev);
+        }
+
         if (validDirs.length > 0) {
           // If frightened, pick random; otherwise, gravitate toward Pacman
-          if (g.frightened || Math.random() < 0.3) {
+          if (g.frightened || Math.random() < 0.35) {
             g.dir = validDirs[Math.floor(Math.random() * validDirs.length)];
           } else {
             // Smart targeting toward Pacman
@@ -617,11 +636,27 @@
       });
     },
 
-    loop: function () {
+    loop: function (timestamp) {
       var self = this;
-      this.update();
+      if (!timestamp) timestamp = performance.now();
+      if (!this.lastTime) this.lastTime = timestamp;
+      var dt = timestamp - this.lastTime;
+      this.lastTime = timestamp;
+
+      // Clamp dt to avoid spiral of death on background tab
+      if (dt > 100) dt = 100;
+      if (dt < 0) dt = 0;
+
+      this.accumulator += dt;
+      var stepMs = 1000 / 60; // 60Hz physics ticks
+
+      while (this.accumulator >= stepMs) {
+        this.update();
+        this.accumulator -= stepMs;
+      }
+
       this.draw();
-      requestAnimationFrame(function () { self.loop(); });
+      requestAnimationFrame(function (ts) { self.loop(ts); });
     },
 
     syncScoreToBackend: function (sc) {

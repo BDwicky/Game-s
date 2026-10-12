@@ -39,7 +39,7 @@ try {
                 UNIQUE(game, username)
             );
             INSERT OR IGNORE INTO leaderboard_v2 (id, game, username, best_score, avatar, created_at, updated_at)
-            SELECT id, COALESCE(game, '2048'), username, best_score, COALESCE(avatar, ''), created_at, updated_at
+            SELECT id, '2048', username, best_score, COALESCE(avatar, ''), created_at, updated_at
             FROM leaderboard;
             DROP TABLE leaderboard;
             ALTER TABLE leaderboard_v2 RENAME TO leaderboard;

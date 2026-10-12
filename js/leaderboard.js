@@ -447,6 +447,21 @@
           self.handleNativeFullscreenChange();
         });
       });
+
+      // Handle viewport resize and orientation changes for responsive fullscreen scaling
+      window.addEventListener("resize", function () {
+        self.updateFullscreenScale();
+      });
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", function () {
+          self.updateFullscreenScale();
+        });
+      }
+      window.addEventListener("orientationchange", function () {
+        setTimeout(function () {
+          self.updateFullscreenScale();
+        }, 100);
+      });
     },
 
     getAvatarGradient: function (name) {
@@ -1085,6 +1100,41 @@
       if (this.fullscreenIcon) this.fullscreenIcon.textContent = active ? "🗗" : "⛶";
       if (this.btnFullscreen) {
         this.btnFullscreen.setAttribute("title", active ? "Keluar Layar Penuh (Exit Fullscreen)" : "Layar Penuh (Fullscreen)");
+      }
+      this.updateFullscreenScale();
+    },
+
+    updateFullscreenScale: function () {
+      var isFs = document.body.classList.contains("is-fullscreen");
+      if (!isFs) {
+        document.documentElement.style.removeProperty("--mobile-fs-scale");
+        document.documentElement.style.removeProperty("--desktop-fs-scale");
+        return;
+      }
+
+      var w = window.innerWidth;
+      var h = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+
+      if (w <= 520) {
+        // Mobile scaling: available space with safe breathing room
+        var availW = Math.max(240, w - 20);
+        var availH = Math.max(240, h - 24);
+        var baseW = 280;
+        var baseH = 370; // Header (~82px) + gap (8px) + board (280px)
+        var scale = Math.min(availW / baseW, availH / baseH);
+        scale = Math.max(0.65, Math.min(1.45, scale));
+        document.documentElement.style.setProperty("--mobile-fs-scale", scale.toFixed(3));
+        document.documentElement.style.removeProperty("--desktop-fs-scale");
+      } else {
+        // Desktop / Laptop scaling: ensure board + header fit on shorter heights
+        var baseW = 500;
+        var baseH = 612; // Header (~100px) + gap (12px) + board (500px)
+        var availW = w - 32;
+        var availH = h - 24;
+        var scale = Math.min(availW / baseW, availH / baseH, 1.0);
+        scale = Math.max(0.50, scale);
+        document.documentElement.style.setProperty("--desktop-fs-scale", scale.toFixed(3));
+        document.documentElement.style.removeProperty("--mobile-fs-scale");
       }
     },
 

@@ -2,41 +2,76 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>2048</title>
+  <title>2048 - Game & Leaderboard</title>
 
-  <link href="style/main.css" rel="stylesheet" type="text/css">
+  <script>
+    // Immediate Dark Theme initialization to prevent bright white flash on load
+    (function () {
+      try {
+        var saved = localStorage.getItem("2048_theme");
+        var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (saved === "dark" || (!saved && prefersDark)) {
+          document.documentElement.classList.add("dark-theme");
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <link href="style/main.css?v=6" rel="stylesheet" type="text/css">
+  <link href="style/leaderboard.css?v=6" rel="stylesheet" type="text/css">
   <link rel="shortcut icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="meta/apple-touch-icon.png">
   <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x1096.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"> <!-- iPhone 5+ -->
   <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x920.png"  media="(device-width: 320px) and (device-height: 480px) and (-webkit-device-pixel-ratio: 2)"> <!-- iPhone, retina -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <meta name="HandheldFriendly" content="True">
   <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 </head>
 <body>
   <div class="container">
-    <div class="heading">
-      <h1 class="title">2048</h1>
-      <div class="scores-container">
-        <div class="score-container">0</div>
-        <div class="best-container">0</div>
+    <!-- Top Navbar -->
+    <header class="game-navbar">
+      <div class="navbar-brand">
+        <h1 class="logo-title">2048</h1>
+        <div class="user-badge" id="user-badge" title="Klik untuk mengganti username" onclick="if(window.Leaderboard)window.Leaderboard.openUsernameModal(true)">
+          <span>👤</span>
+          <span id="username-display">Pemain Baru</span>
+          <span class="edit-icon">✏️</span>
+        </div>
       </div>
-    </div>
+      <div class="navbar-actions">
+        <button class="btn-action btn-theme" id="btn-theme" type="button" title="Ganti Tema (Gelap/Terang)" aria-label="Ganti Tema" onclick="if(window.Leaderboard)window.Leaderboard.toggleTheme()">
+          <span id="theme-icon">🌙</span>
+        </button>
+        <button class="btn-action" id="btn-leaderboard" type="button" onclick="if(window.Leaderboard)window.Leaderboard.openLeaderboard()">
+          <span>🏆</span> <span class="action-text">Leaderboard</span>
+        </button>
+        <button class="btn-action btn-fullscreen" id="btn-fullscreen" type="button" onclick="if(window.Leaderboard)window.Leaderboard.toggleFullscreen()">
+          <span id="fullscreen-icon">⛶</span> <span id="fullscreen-text" class="action-text">Fullscreen</span>
+        </button>
+      </div>
+    </header>
 
-    <div class="above-game">
-      <p class="game-intro">Join the numbers and get to the <strong>2048 tile!</strong></p>
-      <a class="restart-button">New Game</a>
+    <!-- Controls Bar: Score, Best Score, and Reset Button in one row -->
+    <div class="controls-bar">
+      <div class="score-container" id="score-container">0</div>
+      <div class="best-container" id="best-container">0</div>
+      <button class="restart-button icon-reset-btn" id="btn-restart" type="button" title="Game Baru / Reset" aria-label="Game Baru" onclick="if(window.Leaderboard&&window.Leaderboard.onGameRestart)window.Leaderboard.onGameRestart()">
+        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+        </svg>
+      </button>
     </div>
 
     <div class="game-container">
       <div class="game-message">
         <p></p>
         <div class="lower">
-	        <a class="keep-playing-button">Keep going</a>
-          <a class="retry-button">Try again</a>
+	        <a class="keep-playing-button">Lanjut Main</a>
+          <a class="retry-button">Coba Lagi</a>
         </div>
       </div>
 
@@ -72,28 +107,79 @@
       </div>
     </div>
 
+    <p class="fullscreen-swipe-hint">👆 Geser (swipe) di mana saja pada layar untuk bermain</p>
+
     <p class="game-explanation">
-      <strong class="important">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
+      <strong class="important">Cara bermain:</strong> Gunakan <strong>tombol panah</strong> keyboard atau <strong>swipe jari di mana saja pada layar HP</strong> untuk menggeser kotak angka. Ketika dua kotak berangka sama bersentuhan, keduanya akan <strong>bergabung menjadi satu!</strong>
     </p>
     <hr>
     <p>
-    <strong class="important">Note:</strong> This site is the official version of 2048. You can play it on your phone via <a href="http://git.io/2048">http://git.io/2048.</a> All other apps or sites are derivatives or fakes, and should be used with caution.
-    </p>
-    <hr>
-    <p>
-    Created by <a href="http://gabrielecirulli.com" target="_blank">Gabriele Cirulli.</a> Based on <a href="https://itunes.apple.com/us/app/1024!/id823499224" target="_blank">1024 by Veewo Studio</a> and conceptually similar to <a href="http://asherv.com/threes/" target="_blank">Threes by Asher Vollmer.</a>
+      Best score kamu akan disinkronkan secara otomatis ke <strong>Papan Peringkat (Leaderboard)</strong> global saat permainan selesai.
     </p>
   </div>
+
+  <!-- Modal Masukkan / Ganti Username -->
+  <div class="modal-backdrop" id="modal-username">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🎮 Profil Pemain</h2>
+        <button type="button" class="modal-close" id="close-username-modal" onclick="if(window.Leaderboard)window.Leaderboard.closeModal(document.getElementById('modal-username'))">&times;</button>
+      </div>
+      <form id="form-username">
+        <div class="modal-body">
+          <div class="modal-form-group">
+            <label class="modal-form-label" for="input-username">Username Pemain</label>
+            <input type="text" id="input-username" class="modal-input" placeholder="Masukkan username kamu..." maxlength="20" autocomplete="off" required>
+            <div class="modal-help">Username digunakan untuk mencatat skor terbaik kamu di Leaderboard global (2 - 20 karakter).</div>
+            <div class="modal-error" id="error-username"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn-primary">Simpan & Mulai Main</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Leaderboard -->
+  <div class="modal-backdrop" id="modal-leaderboard">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🏆 Papan Peringkat</h2>
+        <button type="button" class="modal-close" id="close-leaderboard-modal" onclick="if(window.Leaderboard)window.Leaderboard.closeModal(document.getElementById('modal-leaderboard'))">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="player-rank-card" id="player-rank-summary">
+          <div>
+            <span>Pemain: <strong>-</strong></span><br>
+            <span style="font-size:13px; font-weight:normal;">Best Score: <strong>0</strong></span>
+          </div>
+          <div class="player-rank-badge">Memuat...</div>
+        </div>
+        <div id="leaderboard-body-content">
+          <div class="leaderboard-empty">Memuat papan peringkat...</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btn-change-user-from-ldb">Ganti Username</button>
+        <button type="button" class="btn-primary" id="btn-refresh-leaderboard">🔄 Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-msg" id="toast-notification"></div>
 
   <script src="js/bind_polyfill.js"></script>
   <script src="js/classlist_polyfill.js"></script>
   <script src="js/animframe_polyfill.js"></script>
-  <script src="js/keyboard_input_manager.js"></script>
-  <script src="js/html_actuator.js"></script>
-  <script src="js/grid.js"></script>
-  <script src="js/tile.js"></script>
-  <script src="js/local_storage_manager.js"></script>
-  <script src="js/game_manager.js"></script>
-  <script src="js/application.js"></script>
+  <script src="js/keyboard_input_manager.js?v=6"></script>
+  <script src="js/html_actuator.js?v=6"></script>
+  <script src="js/grid.js?v=6"></script>
+  <script src="js/tile.js?v=6"></script>
+  <script src="js/local_storage_manager.js?v=6"></script>
+  <script src="js/game_manager.js?v=6"></script>
+  <script src="js/leaderboard.js?v=6"></script>
+  <script src="js/application.js?v=6"></script>
 </body>
 </html>

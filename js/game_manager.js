@@ -15,6 +15,9 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
 // Restart the game
 GameManager.prototype.restart = function () {
+  if (window.Leaderboard && window.Leaderboard.onGameRestart) {
+    window.Leaderboard.onGameRestart();
+  }
   this.storageManager.clearGameState();
   this.actuator.continueGame(); // Clear the game won/lost message
   this.setup();
@@ -77,13 +80,21 @@ GameManager.prototype.addRandomTile = function () {
 
 // Sends the updated grid to the actuator
 GameManager.prototype.actuate = function () {
-  if (this.storageManager.getBestScore() < this.score) {
+  var prevBest = parseInt(this.storageManager.getBestScore(), 10) || 0;
+  var isNewBest = false;
+  if (this.score > prevBest) {
     this.storageManager.setBestScore(this.score);
+    isNewBest = true;
   }
 
   // Clear the state when the game is over (game over only, not win)
   if (this.over) {
     this.storageManager.clearGameState();
+    if (window.Leaderboard && window.Leaderboard.onGameOver) {
+      window.Leaderboard.onGameOver(this.score, isNewBest || (this.score >= prevBest && this.score > 0));
+    } else if (window.Leaderboard && window.Leaderboard.syncScore) {
+      window.Leaderboard.syncScore(this.score, true);
+    }
   } else {
     this.storageManager.setGameState(this.serialize());
   }

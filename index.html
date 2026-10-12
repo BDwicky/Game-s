@@ -1,292 +1,427 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
   <meta charset="utf-8">
-  <title>2048 - Game & Leaderboard</title>
-
-  <script>
-    // Immediate Theme initialization to prevent bright white flash on load
-    (function () {
-      try {
-        var saved = localStorage.getItem("2048_theme") || "classic";
-        if (saved === "dark") saved = "dark";
-        else if (saved === "light") saved = "classic";
-        document.documentElement.classList.add("theme-" + saved);
-        if (saved === "dark" || saved === "christmas" || saved === "halloween" || saved === "winter") {
-          document.documentElement.classList.add("dark-theme");
-        }
-      } catch (e) {}
-    })();
-  </script>
-
-  <link href="style/main.css?v=25" rel="stylesheet" type="text/css">
-  <link href="style/leaderboard.css?v=25" rel="stylesheet" type="text/css">
+  <title>🎮 Game Hub - Portal Game & Leaderboard dwicky.dev</title>
+  <meta name="description" content="Pilih dan mainkan koleksi 5 game arcade seru: 2048, Memory Game, Pacman, X O X, dan Flappy Bird dengan shared profile dan global leaderboard.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
   <link rel="shortcut icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="meta/apple-touch-icon.png">
-  <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x1096.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"> <!-- iPhone 5+ -->
-  <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x920.png"  media="(device-width: 320px) and (device-height: 480px) and (-webkit-device-pixel-ratio: 2)"> <!-- iPhone, retina -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#090d16">
 
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Master Game Hub Stylesheet -->
+  <link rel="stylesheet" href="style/hub.css?v=1">
 </head>
 <body>
-  <div class="container">
-    <!-- Game Header: Brand & Profile Card (Left) | Actions & Controls (Right) -->
-    <header class="game-header-section">
-      <div class="header-left">
-        <h1 class="sr-only">2048</h1>
 
-        <!-- Profile Photo Container with Bottom Transparent Blur Nickname Overlay -->
-        <div class="profile-card-container" id="user-badge" title="Klik untuk mengedit profil & foto" onclick="if(window.Leaderboard)window.Leaderboard.openUsernameModal(true)">
-          <div class="profile-card-media">
-            <img id="user-avatar-img" class="profile-card-img" src="" alt="Foto Profil" style="display: none;">
-            <div id="user-avatar-placeholder" class="profile-card-placeholder">👤</div>
-            <div class="profile-card-hover-edit">
-              <span class="hover-edit-icon" id="profile-card-hover-icon">✏️</span>
-              <span class="hover-edit-text" id="profile-card-hover-text">Ganti Foto</span>
+  <div class="hub-container">
+
+    <!-- ========================================================
+         1. DI ATAS NAVBAR: LEADERBOARD TOP 3 KESELURUHAN GAME
+         ======================================================== -->
+    <section class="top3-leaderboard-section" aria-label="Top 3 Global Champions">
+      <div class="top3-header-row">
+        <div class="top3-title-badge">
+          <span>🏆 Top 3 Juara Keseluruhan Game</span>
+          <span class="top3-live-indicator">
+            <span class="top3-live-dot"></span>
+            LIVE
+          </span>
+        </div>
+        <button type="button" class="top3-view-all-btn" id="top3-view-all-btn">
+          <span>Lihat Semua Peringkat</span>
+          <span>➔</span>
+        </button>
+      </div>
+
+      <!-- Podium Top 3 (2 - 1 - 3 Order for Prestige Presentation) -->
+      <div class="podium-grid">
+        
+        <!-- Rank #2: Silver (Left) -->
+        <div class="podium-card rank-2" id="podium-card-2" title="Peringkat 2 Global">
+          <div class="podium-avatar-wrap">
+            <div class="podium-avatar-placeholder">🥈</div>
+            <span class="podium-rank-badge">🥈</span>
+          </div>
+          <div class="podium-name">Memuat...</div>
+          <div class="podium-score">0 Poin</div>
+          <div class="podium-games-count">- Game</div>
+        </div>
+
+        <!-- Rank #1: Gold Champion (Center & Elevated) -->
+        <div class="podium-card rank-1" id="podium-card-1" title="Juara 1 Global (Grand Champion)">
+          <div class="podium-crown">👑</div>
+          <div class="podium-avatar-wrap">
+            <div class="podium-avatar-placeholder">🥇</div>
+            <span class="podium-rank-badge">🥇</span>
+          </div>
+          <div class="podium-name">Memuat...</div>
+          <div class="podium-score">0 Poin</div>
+          <div class="podium-games-count">- Game</div>
+        </div>
+
+        <!-- Rank #3: Bronze (Right) -->
+        <div class="podium-card rank-3" id="podium-card-3" title="Peringkat 3 Global">
+          <div class="podium-avatar-wrap">
+            <div class="podium-avatar-placeholder">🥉</div>
+            <span class="podium-rank-badge">🥉</span>
+          </div>
+          <div class="podium-name">Memuat...</div>
+          <div class="podium-score">0 Poin</div>
+          <div class="podium-games-count">- Game</div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ========================================================
+         2. NAVBAR: BRAND + PROFILE (FOTO ATAS, USERNAME BAWAH) + ACTIONS
+         ======================================================== -->
+    <nav class="hub-navbar" aria-label="Navigasi Game Hub">
+      
+      <!-- Brand Logo / Title -->
+      <a href="index.html" class="navbar-brand">
+        <div class="brand-icon-box">🎮</div>
+        <div class="brand-titles">
+          <span class="brand-main-title">DWICKY GAME HUB</span>
+          <span class="brand-sub-title">Portal Arcade & High Scores</span>
+        </div>
+      </a>
+
+      <!-- REQUIRED: Profil Navbar - Foto Profil di Atas, Username di Bawahnya -->
+      <div class="navbar-profile-center" id="navbar-profile-btn" title="Klik untuk mengedit foto & username profil pemain">
+        <div class="profile-avatar-stack">
+          <img id="profile-nav-img" class="profile-nav-img" src="" alt="Foto Profil" style="display: none;">
+          <div id="profile-nav-placeholder" class="profile-nav-placeholder">👤</div>
+          <span class="profile-edit-badge" title="Ganti Profil">✏️</span>
+        </div>
+        <div class="profile-username-label" id="profile-username-display">Pemain Baru</div>
+        <span class="profile-username-hint">Ganti Profil</span>
+      </div>
+
+      <!-- Action Buttons (Fullscreen, Global Leaderboard) -->
+      <div class="navbar-actions">
+        <button type="button" class="nav-btn" id="btn-fullscreen" title="Mode Layar Penuh">
+          <span>⛶</span>
+          <span class="btn-text">Layar Penuh</span>
+        </button>
+        <button type="button" class="nav-btn nav-btn-primary" id="btn-leaderboard" title="Buka Papan Peringkat Global">
+          <span>🏆</span>
+          <span class="btn-text">Peringkat</span>
+        </button>
+      </div>
+
+    </nav>
+
+
+    <!-- ========================================================
+         3. GAMES GRID: PILIH CARD GAME (DENGAN TAMPILAN & NAMA DI BAWAH)
+         ======================================================== -->
+    <main class="games-hub-content">
+      <div class="section-title-row">
+        <h2 class="section-heading">
+          <span>🕹️ Pilih Permainan</span>
+        </h2>
+        <span class="games-count-pill">5 Game Tersedia</span>
+      </div>
+
+      <div class="cards-grid">
+
+        <!-- Card 1: 2048 Classic -->
+        <a href="games/2048/" class="game-card card-2048" id="card-game-2048">
+          <!-- Card Tampilan Gamenya (Visual Preview Showcase) -->
+          <div class="card-visual-showcase showcase-2048">
+            <span class="showcase-badge-top" style="color: #fde047; border-color: rgba(250, 204, 21, 0.4);">🔢 PUZZLE ANGKA</span>
+            <span class="showcase-highscore-pill">
+              <span>Rekor:</span>
+              <strong id="card-score-2048">0</strong>
+            </span>
+            <div class="tiles-mockup-grid">
+              <div class="tile-mock tile-mock-128">128</div>
+              <div class="tile-mock tile-mock-512">512</div>
+              <div class="tile-mock tile-mock-2">2</div>
+              <div class="tile-mock tile-mock-64">64</div>
+              <div class="tile-mock tile-mock-2048">2048</div>
+              <div class="tile-mock tile-mock-1024">1024</div>
             </div>
           </div>
-          <div class="profile-card-overlay-blur">
-            <span class="nickname-text" id="username-display">Pemain Baru</span>
+          <!-- Di Bawah Card Ada Nama Gamenya -->
+          <div class="card-content-bottom">
+            <h3 class="game-name-title">
+              <span>2048 Classic</span>
+              <span style="font-size: 16px;">✨</span>
+            </h3>
+            <p class="game-desc-text">
+              Teka-teki geser ubin angka adiktif. Satukan angka kembar untuk menciptakan ubin legendaris 2048 dan raih skor tertinggi!
+            </p>
+            <div class="card-footer-action">
+              <div class="card-score-info">
+                <span class="card-score-label">Kategori</span>
+                <span style="font-size: 13px; font-weight: 700; color: #f59e0b;">Strategi & Angka</span>
+              </div>
+              <button type="button" class="btn-play-card">
+                <span>Mainkan</span>
+                <span>▶</span>
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
+        </a>
 
-      <div class="header-right">
-        <!-- Row 1: Navbar Actions (Theme, Leaderboard, Fullscreen, Reset) -->
-        <div class="navbar-actions">
-          <button class="btn-action btn-icon-only btn-hub" id="btn-games-hub" type="button" title="Pilih Game Lainnya (Portal Game)" aria-label="Game Hub" onclick="if(window.Leaderboard)window.Leaderboard.openHubModal()">
-            <span>🎮</span>
-          </button>
-          <button class="btn-action btn-icon-only btn-theme" id="btn-theme" type="button" title="Pilih Tema Game" aria-label="Pilih Tema" onclick="if(window.Leaderboard)window.Leaderboard.openThemeModal()">
-            <span id="theme-icon">🎨</span>
-          </button>
-          <button class="btn-action btn-icon-only" id="btn-leaderboard" type="button" title="Papan Peringkat (Leaderboard)" aria-label="Leaderboard" onclick="if(window.Leaderboard)window.Leaderboard.openLeaderboard()">
-            <span>🏆</span>
-          </button>
-          <button class="btn-action btn-icon-only btn-fullscreen" id="btn-fullscreen" type="button" title="Layar Penuh (Fullscreen)" aria-label="Fullscreen" onclick="if(window.Leaderboard)window.Leaderboard.toggleFullscreen()">
-            <span id="fullscreen-icon">⛶</span>
-          </button>
-          <button class="restart-button btn-action btn-icon-only icon-reset-btn" id="btn-restart" type="button" title="Game Baru / Reset" aria-label="Game Baru" onclick="if(window.Leaderboard&&window.Leaderboard.onGameRestart)window.Leaderboard.onGameRestart()">
-            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
-            </svg>
-          </button>
-        </div>
+        <!-- Card 2: Memory Match -->
+        <a href="games/memory/" class="game-card card-memory" id="card-game-memory">
+          <!-- Card Tampilan Gamenya (Visual Preview Showcase) -->
+          <div class="card-visual-showcase showcase-memory">
+            <span class="showcase-badge-top" style="color: #c084fc; border-color: rgba(168, 85, 247, 0.4);">🧠 ASAH OTAK</span>
+            <span class="showcase-highscore-pill">
+              <span>Rekor:</span>
+              <strong id="card-score-memory">0</strong>
+            </span>
+            <div class="cards-mockup-row">
+              <div class="card-mock matched">🧠</div>
+              <div class="card-mock">💎</div>
+              <div class="card-mock matched">🚀</div>
+              <div class="card-mock">⭐</div>
+            </div>
+          </div>
+          <!-- Di Bawah Card Ada Nama Gamenya -->
+          <div class="card-content-bottom">
+            <h3 class="game-name-title">
+              <span>Memory Match</span>
+              <span style="font-size: 16px;">🃏</span>
+            </h3>
+            <p class="game-desc-text">
+              Asah ketajaman ingatan visual dengan mencocokkan kartu 3D berpasangan. Raih multiplier kombo beruntun secepat mungkin!
+            </p>
+            <div class="card-footer-action">
+              <div class="card-score-info">
+                <span class="card-score-label">Kategori</span>
+                <span style="font-size: 13px; font-weight: 700; color: #a855f7;">Konsentrasi Visual</span>
+              </div>
+              <button type="button" class="btn-play-card" style="background: linear-gradient(135deg, #7c3aed, #9333ea);">
+                <span>Mainkan</span>
+                <span>▶</span>
+              </button>
+            </div>
+          </div>
+        </a>
 
-        <!-- Row 2: Controls Bar (Score, Best) -->
-        <div class="controls-bar">
-          <div class="score-container" id="score-container" title="Skor Permainan Saat Ini">0</div>
-          <div class="best-container" id="best-container" title="Rekor Pribadi Terbaik">0</div>
-        </div>
-      </div>
-    </header>
-
-    <div class="game-container">
-      <div class="game-message">
-        <p></p>
-        <div class="lower">
-          <a class="keep-playing-button">Lanjut Main</a>
-          <a class="retry-button">🔄 Coba Lagi</a>
-          <a class="leaderboard-btn-gameover" onclick="if(window.Leaderboard)window.Leaderboard.openLeaderboard()">🏆 Peringkat</a>
-        </div>
-      </div>
-
-      <div class="grid-container">
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-        <div class="grid-row">
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-          <div class="grid-cell"></div>
-        </div>
-      </div>
-
-      <div class="tile-container">
-
-      </div>
-    </div>
-
-    <div class="clean-footer-hint">
-      Gabungkan angka yang sama hingga mencapai <strong>2048</strong>!
-    </div>
-  </div>
-
-  <!-- Modal Masukkan / Ganti Username -->
-  <div class="modal-backdrop" id="modal-username">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2 class="modal-title">🎮 Profil Pemain</h2>
-        <button type="button" class="modal-close" id="close-username-modal" onclick="if(window.Leaderboard)window.Leaderboard.closeModal(document.getElementById('modal-username'))">&times;</button>
-      </div>
-      <form id="form-username">
-        <div class="modal-body">
-          <!-- Avatar Picker -->
-          <div class="avatar-picker-section">
-            <div class="avatar-modal-wrap" id="avatar-modal-wrap" title="Klik untuk mengunggah / ganti foto profil">
-              <img id="avatar-modal-img" class="avatar-modal-img" src="" alt="Avatar" style="display: none;">
-              <div id="avatar-modal-placeholder" class="avatar-modal-placeholder">👤</div>
-              <div class="avatar-modal-hover-overlay" id="avatar-modal-hover-overlay">
-                <span class="avatar-hover-text">✏️ Ganti Foto</span>
+        <!-- Card 3: Pacman Arcade -->
+        <a href="games/pacman/" class="game-card card-pacman" id="card-game-pacman">
+          <!-- Card Tampilan Gamenya (Visual Preview Showcase) -->
+          <div class="card-visual-showcase showcase-pacman">
+            <span class="showcase-badge-top" style="color: #facc15; border-color: rgba(250, 204, 21, 0.4);">🟡 RETRO ARCADE</span>
+            <span class="showcase-highscore-pill">
+              <span>Rekor:</span>
+              <strong id="card-score-pacman">0</strong>
+            </span>
+            <div class="pacman-maze-bg"></div>
+            <div class="pacman-actors-row">
+              <div class="pacman-sprite"></div>
+              <div class="dot-sprite"></div>
+              <div class="dot-sprite"></div>
+              <div class="ghost-sprite ghost-blinky">
+                <div class="ghost-eye"></div>
+                <div class="ghost-eye"></div>
+              </div>
+              <div class="ghost-sprite ghost-pinky">
+                <div class="ghost-eye"></div>
+                <div class="ghost-eye"></div>
               </div>
             </div>
-            <input type="file" id="input-avatar-file" accept="image/png, image/jpeg, image/webp, image/gif" style="display: none;">
-            <div class="avatar-buttons-row">
-              <button type="button" class="btn-avatar-select" id="btn-select-avatar">
-                📷 Import Foto
-              </button>
-              <button type="button" class="btn-avatar-remove" id="btn-remove-avatar" style="display: none;">
-                Hapus Foto
+          </div>
+          <!-- Di Bawah Card Ada Nama Gamenya -->
+          <div class="card-content-bottom">
+            <h3 class="game-name-title">
+              <span>Pacman Arcade</span>
+              <span style="font-size: 16px;">🍒</span>
+            </h3>
+            <p class="game-desc-text">
+              Klasik retro neon! Santap titik pellet, dapatkan Power Energizer untuk memangsa hantu labirin, dan kumpulkan skor tertinggi.
+            </p>
+            <div class="card-footer-action">
+              <div class="card-score-info">
+                <span class="card-score-label">Kategori</span>
+                <span style="font-size: 13px; font-weight: 700; color: #facc15;">Retro Labyrinth</span>
+              </div>
+              <button type="button" class="btn-play-card" style="background: linear-gradient(135deg, #eab308, #ca8a04); color: #000; font-weight: 800;">
+                <span>Mainkan</span>
+                <span>▶</span>
               </button>
             </div>
           </div>
+        </a>
 
-          <div class="modal-form-group">
-            <label class="modal-form-label" for="input-username">Username Pemain</label>
-            <input type="text" id="input-username" class="modal-input" placeholder="Masukkan username kamu..." maxlength="20" autocomplete="off" required>
-            <div class="modal-help">2 - 20 karakter untuk papan peringkat global.</div>
-            <div class="modal-error" id="error-username"></div>
+        <!-- Card 4: X O X Duel -->
+        <a href="games/xox/" class="game-card card-xox" id="card-game-xox">
+          <!-- Card Tampilan Gamenya (Visual Preview Showcase) -->
+          <div class="card-visual-showcase showcase-xox">
+            <span class="showcase-badge-top" style="color: #38bdf8; border-color: rgba(6, 182, 212, 0.4);">❌⭕ TAKTIK AI</span>
+            <span class="showcase-highscore-pill">
+              <span>Rekor:</span>
+              <strong id="card-score-xox">0</strong>
+            </span>
+            <div class="xox-board-mock">
+              <div class="xox-cell-mock mark-x">✕</div>
+              <div class="xox-cell-mock mark-o">○</div>
+              <div class="xox-cell-mock mark-x">✕</div>
+              <div class="xox-cell-mock mark-o">○</div>
+              <div class="xox-cell-mock mark-x">✕</div>
+              <div class="xox-cell-mock"></div>
+              <div class="xox-cell-mock mark-o">○</div>
+              <div class="xox-cell-mock"></div>
+              <div class="xox-cell-mock mark-x">✕</div>
+              <div class="xox-win-stripe"></div>
+            </div>
           </div>
+          <!-- Di Bawah Card Ada Nama Gamenya -->
+          <div class="card-content-bottom">
+            <h3 class="game-name-title">
+              <span>X O X (Tic-Tac-Toe)</span>
+              <span style="font-size: 16px;">⚔️</span>
+            </h3>
+            <p class="game-desc-text">
+              Adu strategi klasik modern! Lawan AI cerdas Minimax tanpa cela atau tantang temanmu dalam mode 2 pemain di satu layar.
+            </p>
+            <div class="card-footer-action">
+              <div class="card-score-info">
+                <span class="card-score-label">Kategori</span>
+                <span style="font-size: 13px; font-weight: 700; color: #06b6d4;">Strategi Duel</span>
+              </div>
+              <button type="button" class="btn-play-card" style="background: linear-gradient(135deg, #06b6d4, #0284c7);">
+                <span>Mainkan</span>
+                <span>▶</span>
+              </button>
+            </div>
+          </div>
+        </a>
+
+        <!-- Card 5: Flappy Bird -->
+        <a href="games/flappy/" class="game-card card-flappy" id="card-game-flappy">
+          <!-- Card Tampilan Gamenya (Visual Preview Showcase) -->
+          <div class="card-visual-showcase showcase-flappy">
+            <span class="showcase-badge-top" style="color: #4ade80; border-color: rgba(16, 185, 129, 0.4);">🐦 FISIKA 60FPS</span>
+            <span class="showcase-highscore-pill">
+              <span>Rekor:</span>
+              <strong id="card-score-flappy">0</strong>
+            </span>
+            <div class="flappy-pipe-top"></div>
+            <div class="flappy-pipe-bottom"></div>
+            <div class="flappy-bird-sprite">
+              <div class="bird-eye"></div>
+              <div class="bird-beak"></div>
+            </div>
+          </div>
+          <!-- Di Bawah Card Ada Nama Gamenya -->
+          <div class="card-content-bottom">
+            <h3 class="game-name-title">
+              <span>Flappy Bird</span>
+              <span style="font-size: 16px;">🪶</span>
+            </h3>
+            <p class="game-desc-text">
+              Uji ketangkasan & ritme ketukanmu! Terbangkan burung melewati rintangan pipa tak terbatas dengan simulasi fisika halus 60fps.
+            </p>
+            <div class="card-footer-action">
+              <div class="card-score-info">
+                <span class="card-score-label">Kategori</span>
+                <span style="font-size: 13px; font-weight: 700; color: #10b981;">Ketangkasan Fisika</span>
+              </div>
+              <button type="button" class="btn-play-card" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <span>Mainkan</span>
+                <span>▶</span>
+              </button>
+            </div>
+          </div>
+        </a>
+
+      </div>
+    </main>
+
+  </div>
+
+
+  <!-- ========================================================
+       MODAL 1: PROFIL PEMAIN & FOTO AVATAR
+       ======================================================== -->
+  <div class="modal-backdrop" id="modal-profile">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">👤 Profil & Foto Pemain</h2>
+        <button type="button" class="modal-close" aria-label="Tutup">&times;</button>
+      </div>
+      <form id="form-profile">
+        <div class="modal-body">
+          
+          <div class="profile-edit-avatar-container">
+            <div class="modal-avatar-preview-wrap">
+              <img id="modal-avatar-preview-img" class="modal-avatar-preview" src="" alt="Avatar" style="display: none;">
+              <div id="modal-avatar-preview-text" class="modal-avatar-placeholder">👤</div>
+            </div>
+            
+            <div class="avatar-upload-btns">
+              <label class="btn-upload-label" for="input-avatar-file">
+                <span>📷 Upload Foto</span>
+              </label>
+              <input type="file" id="input-avatar-file" accept="image/*" style="display: none;">
+              <button type="button" class="btn-remove-avatar" id="btn-remove-avatar" style="display: none;">Hapus</button>
+            </div>
+            <span style="font-size: 11px; color: var(--text-dim); text-align: center;">Format JPG, PNG, WEBP. Tersimpan & sinkron di semua game.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="input-username">Username Pemain</label>
+            <input type="text" id="input-username" class="form-input" minlength="2" maxlength="20" required autocomplete="off" placeholder="Masukkan username kamu">
+          </div>
+
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn-primary">Simpan Profil</button>
+          <button type="submit" class="btn-submit">Simpan Profil</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal Leaderboard -->
+
+  <!-- ========================================================
+       MODAL 2: PAPAN PERINGKAT GLOBAL & PER GAME
+       ======================================================== -->
   <div class="modal-backdrop" id="modal-leaderboard">
-    <div class="modal-card">
+    <div class="modal-card" style="max-width: 520px;">
       <div class="modal-header">
-        <h2 class="modal-title">🏆 Papan Peringkat</h2>
-        <button type="button" class="modal-close" id="close-leaderboard-modal" onclick="if(window.Leaderboard)window.Leaderboard.closeModal(document.getElementById('modal-leaderboard'))">&times;</button>
+        <h2 class="modal-title">🏆 Papan Peringkat Juara</h2>
+        <button type="button" class="modal-close" aria-label="Tutup">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="player-rank-card" id="player-rank-summary">
-          <div>
-            <span>Pemain: <strong>-</strong></span><br>
-            <span style="font-size:13px; font-weight:normal;">Best Score: <strong>0</strong></span>
-          </div>
-          <div class="player-rank-badge">Memuat...</div>
+        
+        <!-- Game Tabs -->
+        <div class="ldb-tabs-row">
+          <button type="button" class="ldb-tab active" data-tab="overall">🌟 Semua Game (Total)</button>
+          <button type="button" class="ldb-tab" data-tab="2048">🔢 2048</button>
+          <button type="button" class="ldb-tab" data-tab="memory">🧠 Memory</button>
+          <button type="button" class="ldb-tab" data-tab="pacman">🟡 Pacman</button>
+          <button type="button" class="ldb-tab" data-tab="xox">❌⭕ X O X</button>
+          <button type="button" class="ldb-tab" data-tab="flappy">🐦 Flappy</button>
         </div>
-        <div id="leaderboard-body-content">
-          <div class="leaderboard-empty">Memuat papan peringkat...</div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary btn-logout" id="btn-logout-from-ldb" title="Keluar dari akun pemain saat ini">🚪 Logout</button>
-        <button type="button" class="btn-primary" id="btn-refresh-leaderboard">🔄 Refresh</button>
+
+        <!-- Leaderboard Table Container -->
+        <div id="leaderboard-body-content" style="min-height: 220px;"></div>
+
       </div>
     </div>
   </div>
 
-  <!-- Modal Pemilih Tema (Theme Picker) -->
-  <div class="modal-backdrop" id="modal-theme">
-    <div class="modal-card modal-theme-card">
-      <div class="modal-header">
-        <h2 class="modal-title">🎨 Pilih Tema Game</h2>
-        <button type="button" class="modal-close" id="close-theme-modal" onclick="if(window.Leaderboard)window.Leaderboard.closeModal(document.getElementById('modal-theme'))">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p class="modal-theme-subtitle">Pilih tema visual & event musiman favorit Anda:</p>
-        <div class="theme-grid" id="theme-options-grid"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-primary" onclick="if(window.Leaderboard)window.Leaderboard.closeModal(document.getElementById('modal-theme'))">Tutup</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Portal Game (Game Hub Switcher) -->
-  <div class="modal-backdrop" id="modal-games-hub">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2 class="modal-title">🎮 Portal Game dwicky.dev</h2>
-        <button type="button" class="modal-close" id="close-games-hub-modal" onclick="if(window.Leaderboard)window.Leaderboard.closeModal(document.getElementById('modal-games-hub'))">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="game-hub-grid">
-          <a href="#" class="game-hub-item active" onclick="return false;">
-            <div class="game-icon-badge game-icon-2048">🔢</div>
-            <div class="game-info">
-              <div class="game-name">2048 Classic <span class="game-badge-current">Sedang Dimainkan</span></div>
-              <div class="game-desc">Gabungkan ubin angka hingga mencapai angka emas 2048</div>
-            </div>
-          </a>
-
-          <a href="games/memory/" class="game-hub-item">
-            <div class="game-icon-badge game-icon-memory">🧠</div>
-            <div class="game-info">
-              <div class="game-name">Memory Match</div>
-              <div class="game-desc">Uji ingatan visual dengan pencocokan kartu beranimasi 3D</div>
-            </div>
-          </a>
-
-          <a href="games/pacman/" class="game-hub-item">
-            <div class="game-icon-badge game-icon-pacman">🟡</div>
-            <div class="game-info">
-              <div class="game-name">Pacman Arcade</div>
-              <div class="game-desc">Makan pellet dan hindari 4 hantu labirin klasik</div>
-            </div>
-          </a>
-
-          <a href="games/xox/" class="game-hub-item">
-            <div class="game-icon-badge game-icon-xox">❌⭕</div>
-            <div class="game-info">
-              <div class="game-name">X O X (Tic-Tac-Toe)</div>
-              <div class="game-desc">Adu taktik vs AI Minimax cerdas atau main berdua</div>
-            </div>
-          </a>
-
-          <a href="games/flappy/" class="game-hub-item">
-            <div class="game-icon-badge game-icon-flappy">🐦</div>
-            <div class="game-info">
-              <div class="game-name">Flappy Bird</div>
-              <div class="game-desc">Terbangkan burung melewati rintangan pipa 60fps</div>
-            </div>
-          </a>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-primary" onclick="if(window.Leaderboard)window.Leaderboard.closeModal(document.getElementById('modal-games-hub'))">Tutup</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast Notification -->
+  <!-- Toast Notification Feedback -->
   <div class="toast-msg" id="toast-notification"></div>
 
-  <script src="js/bind_polyfill.js"></script>
-  <script src="js/classlist_polyfill.js"></script>
-  <script src="js/animframe_polyfill.js"></script>
-  <script src="js/keyboard_input_manager.js?v=25"></script>
-  <script src="js/html_actuator.js?v=25"></script>
-  <script src="js/grid.js?v=25"></script>
-  <script src="js/tile.js?v=25"></script>
-  <script src="js/local_storage_manager.js?v=25"></script>
-  <script src="js/game_manager.js?v=25"></script>
-  <script src="js/leaderboard.js?v=25"></script>
-  <script src="js/application.js?v=25"></script>
+  <!-- Master Game Hub Script -->
+  <script src="js/hub.js?v=1"></script>
 </body>
 </html>

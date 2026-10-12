@@ -346,7 +346,7 @@
             clearTimeout(self.checkUserTimeout);
             if (typedName.length >= 2) {
               self.checkUserTimeout = setTimeout(function () {
-                fetch("api/leaderboard.php?username=" + encodeURIComponent(typedName))
+                fetch("/api/leaderboard.php?username=" + encodeURIComponent(typedName))
                   .then(function (res) { return res.json(); })
                   .then(function (data) {
                     var currentVal = (self.inputUsername.value || "").trim();
@@ -605,7 +605,7 @@
 
     fetchGlobalScore: function () {
       var self = this;
-      var url = "api/leaderboard.php" + (this.username ? "?username=" + encodeURIComponent(this.username) : "");
+      var url = "/api/leaderboard.php" + (this.username ? "?username=" + encodeURIComponent(this.username) : "");
 
       fetch(url)
         .then(function (res) { return res.json(); })
@@ -673,7 +673,7 @@
 
       clearTimeout(this.syncTimeout);
       this.syncTimeout = setTimeout(function () {
-        fetch("api/leaderboard.php", {
+        fetch("/api/leaderboard.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -786,7 +786,7 @@
       var submitBtn = this.formUsername ? this.formUsername.querySelector("button[type='submit']") : null;
       if (submitBtn) submitBtn.disabled = true;
 
-      fetch("api/leaderboard.php", {
+      fetch("/api/leaderboard.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -933,7 +933,7 @@
         this.ldbBody.innerHTML = '<div class="leaderboard-empty">Memuat papan peringkat...</div>';
       }
 
-      var url = "api/leaderboard.php" + (this.username ? "?username=" + encodeURIComponent(this.username) : "");
+      var url = "/api/leaderboard.php" + (this.username ? "?username=" + encodeURIComponent(this.username) : "");
 
       fetch(url)
         .then(function (res) { return res.json(); })

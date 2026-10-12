@@ -139,9 +139,72 @@ function getLeaderboardData($pdo, $currentUsername = null, $game = "2048") {
     ];
 }
 
+function getOverallTopData($pdo) {
+    // 1. Overall Top 3 players across all games (sum of best scores, games played)
+    $stmtOverall = $pdo->prepare("
+        SELECT username, 
+               MAX(avatar) AS avatar, 
+               SUM(best_score) AS total_score, 
+               COUNT(DISTINCT game) AS games_played,
+               MAX(updated_at) AS last_updated
+        FROM leaderboard 
+        GROUP BY username COLLATE NOCASE 
+        ORDER BY total_score DESC, games_played DESC, last_updated ASC 
+        LIMIT 3
+    ");
+    $stmtOverall->execute();
+    $rawOverall = $stmtOverall->fetchAll();
+    $overallTop = [];
+    $rank = 1;
+    foreach ($rawOverall as $row) {
+        $overallTop[] = [
+            "rank" => $rank++,
+            "username" => htmlspecialchars($row["username"], ENT_QUOTES, "UTF-8"),
+            "avatar" => !empty($row["avatar"]) ? (string)$row["avatar"] : "",
+            "total_score" => (int)$row["total_score"],
+            "games_played" => (int)$row["games_played"]
+        ];
+    }
+
+    // 2. Champions for each of the 5 individual games
+    $games = ["2048", "memory", "pacman", "xox", "flappy"];
+    $champions = [];
+    foreach ($games as $g) {
+        $stmtChamp = $pdo->prepare("
+            SELECT username, best_score, avatar 
+            FROM leaderboard 
+            WHERE game = :g 
+            ORDER BY best_score DESC, updated_at ASC 
+            LIMIT 1
+        ");
+        $stmtChamp->execute([":g" => $g]);
+        $cRow = $stmtChamp->fetch();
+        if ($cRow) {
+            $champions[$g] = [
+                "username" => htmlspecialchars($cRow["username"], ENT_QUOTES, "UTF-8"),
+                "best_score" => (int)$cRow["best_score"],
+                "avatar" => !empty($cRow["avatar"]) ? (string)$cRow["avatar"] : ""
+            ];
+        } else {
+            $champions[$g] = null;
+        }
+    }
+
+    return [
+        "overall_top" => $overallTop,
+        "champions" => $champions
+    ];
+}
+
 $method = $_SERVER["REQUEST_METHOD"];
 
 if ($method === "GET") {
+    if ((isset($_GET["action"]) && $_GET["action"] === "overall_top") || isset($_GET["overall"])) {
+        $data = getOverallTopData($pdo);
+        echo json_encode(array_merge(["status" => "success"], $data));
+        exit;
+    }
+
     $game = isset($_GET["game"]) ? sanitizeGame($_GET["game"]) : "2048";
     $username = isset($_GET["username"]) ? sanitizeUsername($_GET["username"]) : null;
     $data = getLeaderboardData($pdo, $username, $game);

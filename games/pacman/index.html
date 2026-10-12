@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Pacman Arcade - Klasik Labirin & Hantu | game.dwicky.dev</title>
+  <meta name="description" content="Mainkan Pacman Arcade retro di game.dwicky.dev. Makan pellet, hindari 4 hantu Blinky, Pinky, Inky, Clyde, dan raih skor tertinggi di papan peringkat global!">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="shortcut icon" href="../../favicon.ico">
+</head>
+<body>
+
+  <div class="pacman-wrapper">
+    <!-- Header -->
+    <header class="pacman-header">
+      <div class="user-badge" id="user-badge" title="Klik untuk edit profil">
+        <div class="avatar-circle">
+          <img id="user-avatar-img" src="" alt="Avatar" style="display:none;">
+          <span id="user-avatar-text">👤</span>
+        </div>
+        <span class="username-display" id="username-display">Pemain Baru</span>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-icon btn-games-hub" id="btn-games-hub" type="button" title="Pilih Game Lainnya">
+          🎮 Hub
+        </button>
+        <button class="btn-icon" id="btn-sound" type="button" title="Suara Arcade">
+          🔊
+        </button>
+        <button class="btn-icon" id="btn-leaderboard" type="button" title="Papan Peringkat">
+          🏆
+        </button>
+        <button class="btn-icon" id="btn-fullscreen" type="button" title="Layar Penuh">
+          ⛶
+        </button>
+        <button class="btn-icon" id="btn-reset" type="button" title="Mulai Ulang">
+          🔄
+        </button>
+      </div>
+    </header>
+
+    <!-- Score & Lives Bar -->
+    <div class="dash-bar">
+      <div class="score-group">
+        <span class="score-label">SKOR</span>
+        <span class="score-val" id="stat-score">0</span>
+      </div>
+      <div class="score-group" style="text-align:center;">
+        <span class="score-label">NYAWA</span>
+        <div class="lives-display" id="lives-display">❤️❤️❤️</div>
+      </div>
+      <div class="score-group" style="text-align:right;">
+        <span class="score-label">TERBAIK</span>
+        <span class="score-val" id="stat-highscore" style="color:#38bdf8;">0</span>
+      </div>
+    </div>
+
+    <!-- Arcade Canvas Frame -->
+    <main class="canvas-container">
+      <canvas id="pacman-canvas"></canvas>
+
+      <!-- Overlay Message on Game Over / Win -->
+      <div class="game-msg-overlay" id="game-msg-overlay">
+        <h2 class="msg-title" id="msg-title">GAME OVER</h2>
+        <div class="msg-score-summary" id="msg-score-summary"></div>
+        <div style="display:flex; gap:10px; margin-top:8px;">
+          <button class="btn-primary" id="btn-overlay-restart" type="button">🔄 Main Lagi</button>
+          <button class="btn-secondary" onclick="if(window.PacmanApp)window.PacmanApp.openLeaderboard()" type="button">🏆 Peringkat</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Virtual D-Pad for Mobile Touch -->
+    <div class="dpad-container" aria-label="Kontrol Layar Sentuh">
+      <button class="dpad-btn dpad-up" id="dpad-up" type="button">⬆️</button>
+      <button class="dpad-btn dpad-left" id="dpad-left" type="button">⬅️</button>
+      <button class="dpad-btn dpad-down" id="dpad-down" type="button">⬇️</button>
+      <button class="dpad-btn dpad-right" id="dpad-right" type="button">➡️</button>
+    </div>
+  </div>
+
+  <!-- Modal Game Hub -->
+  <div class="modal-backdrop" id="modal-games-hub">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🎮 Portal Game dwicky.dev</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="game-hub-grid">
+          <a href="../../index.html" class="game-hub-item">
+            <div class="game-icon-badge game-icon-2048">🔢</div>
+            <div>
+              <strong>2048 Classic</strong>
+              <div style="font-size:11px; color:#94a3b8;">Teka-teki geser angka 2048</div>
+            </div>
+          </a>
+          <a href="../memory/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-memory">🧠</div>
+            <div>
+              <strong>Memory Match</strong>
+              <div style="font-size:11px; color:#94a3b8;">Pencocokan kartu daya ingat visual</div>
+            </div>
+          </a>
+          <a href="#" class="game-hub-item active" onclick="return false;">
+            <div class="game-icon-badge game-icon-pacman">🟡</div>
+            <div>
+              <strong>Pacman Arcade <span style="font-size:9px; background:#facc15; color:#000; padding:2px 6px; border-radius:10px; font-weight:800;">Aktif</span></strong>
+              <div style="font-size:11px; color:#94a3b8;">Arcade labirin klasik & kejaran hantu</div>
+            </div>
+          </a>
+          <a href="../xox/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-xox">❌⭕</div>
+            <div>
+              <strong>X O X (Tic-Tac-Toe)</strong>
+              <div style="font-size:11px; color:#94a3b8;">Adu taktik vs AI cerdas & 2 pemain</div>
+            </div>
+          </a>
+          <a href="../flappy/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-flappy">🐦</div>
+            <div>
+              <strong>Flappy Bird</strong>
+              <div style="font-size:11px; color:#94a3b8;">Terbangkan burung melewati rintangan pipa</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Leaderboard -->
+  <div class="modal-backdrop" id="modal-leaderboard">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🏆 Papan Peringkat Pacman</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="leaderboard-body-content"></div>
+    </div>
+  </div>
+
+  <!-- Modal Profile -->
+  <div class="modal-backdrop" id="modal-username">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">👤 Profil Pemain</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <form id="form-username">
+        <div class="modal-body">
+          <label style="display:block; font-size:12px; color:#94a3b8; margin-bottom:6px;">Username</label>
+          <input type="text" id="input-username" maxlength="20" required autocomplete="off" style="width:100%; padding:10px; border-radius:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:14px; outline:none;">
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+          <button type="submit" class="btn-primary">Simpan Profil</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-msg" id="toast-notification"></div>
+
+  <script src="pacman.js?v=1"></script>
+</body>
+</html>

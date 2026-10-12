@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>X O X (Tic-Tac-Toe) - Adu Taktik vs AI & Teman | game.dwicky.dev</title>
+  <meta name="description" content="Mainkan game X O X modern di game.dwicky.dev. Kalahkan AI Minimax cerdas atau tantang temanmu secara lokal dalam pertempuran neon 3x3 yang seru!">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="shortcut icon" href="../../favicon.ico">
+</head>
+<body>
+
+  <div class="xox-wrapper">
+    <!-- Header -->
+    <header class="xox-header">
+      <div class="user-badge" id="user-badge" title="Klik untuk edit profil">
+        <div class="avatar-circle">
+          <img id="user-avatar-img" src="" alt="Avatar" style="display:none;">
+          <span id="user-avatar-text">👤</span>
+        </div>
+        <span class="username-display" id="username-display">Pemain Baru</span>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-icon btn-games-hub" id="btn-games-hub" type="button" title="Pilih Game Lainnya">
+          🎮 Hub
+        </button>
+        <button class="btn-icon" id="btn-sound" type="button" title="Suara">
+          🔊
+        </button>
+        <button class="btn-icon" id="btn-leaderboard" type="button" title="Papan Peringkat">
+          🏆
+        </button>
+        <button class="btn-icon" id="btn-fullscreen" type="button" title="Layar Penuh">
+          ⛶
+        </button>
+        <button class="btn-icon" id="btn-reset" type="button" title="Mulai Ulang Ronde">
+          🔄
+        </button>
+      </div>
+    </header>
+
+    <!-- Mode Selector & Difficulty Bar -->
+    <div class="mode-bar">
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="btn-mode-ai" type="button">🤖 vs AI</button>
+        <button class="toggle-btn" id="btn-mode-pvp" type="button">👥 2 Pemain</button>
+      </div>
+
+      <select class="difficulty-select" id="select-difficulty" title="Tingkat Kesulitan AI">
+        <option value="easy">Mudah</option>
+        <option value="medium">Sedang</option>
+        <option value="impossible" selected>Mustahil (Minimax)</option>
+      </select>
+    </div>
+
+    <!-- Turn Banner -->
+    <div class="turn-banner">
+      <span class="turn-symbol x" id="turn-symbol">X</span>
+      <span id="turn-text">Giliran Kamu (X)</span>
+    </div>
+
+    <!-- Scoreboard Cards -->
+    <div class="score-board">
+      <div class="score-card">
+        <span>Menang (X)</span>
+        <strong id="stat-wins-x" style="color:var(--cyan);">0</strong>
+      </div>
+      <div class="score-card">
+        <span>Seri</span>
+        <strong id="stat-draws" style="color:#94a3b8;">0</strong>
+      </div>
+      <div class="score-card">
+        <span>Menang (O)</span>
+        <strong id="stat-wins-o" style="color:var(--rose);">0</strong>
+      </div>
+    </div>
+
+    <!-- Board 3x3 Grid -->
+    <main class="board-container" id="board-grid">
+      <div class="grid-cell" data-idx="0"></div>
+      <div class="grid-cell" data-idx="1"></div>
+      <div class="grid-cell" data-idx="2"></div>
+      <div class="grid-cell" data-idx="3"></div>
+      <div class="grid-cell" data-idx="4"></div>
+      <div class="grid-cell" data-idx="5"></div>
+      <div class="grid-cell" data-idx="6"></div>
+      <div class="grid-cell" data-idx="7"></div>
+      <div class="grid-cell" data-idx="8"></div>
+    </main>
+  </div>
+
+  <!-- Modal Game Hub -->
+  <div class="modal-backdrop" id="modal-games-hub">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🎮 Portal Game dwicky.dev</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="game-hub-grid">
+          <a href="../../index.html" class="game-hub-item">
+            <div class="game-icon-badge game-icon-2048">🔢</div>
+            <div>
+              <strong>2048 Classic</strong>
+              <div style="font-size:11px; color:#94a3b8;">Teka-teki geser angka 2048</div>
+            </div>
+          </a>
+          <a href="../memory/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-memory">🧠</div>
+            <div>
+              <strong>Memory Match</strong>
+              <div style="font-size:11px; color:#94a3b8;">Pencocokan kartu daya ingat visual</div>
+            </div>
+          </a>
+          <a href="../pacman/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-pacman">🟡</div>
+            <div>
+              <strong>Pacman Arcade</strong>
+              <div style="font-size:11px; color:#94a3b8;">Arcade labirin klasik & kejaran hantu</div>
+            </div>
+          </a>
+          <a href="#" class="game-hub-item active" onclick="return false;">
+            <div class="game-icon-badge game-icon-xox">❌⭕</div>
+            <div>
+              <strong>X O X (Tic-Tac-Toe) <span style="font-size:9px; background:var(--cyan); color:#000; padding:2px 6px; border-radius:10px; font-weight:800;">Aktif</span></strong>
+              <div style="font-size:11px; color:#94a3b8;">Adu taktik vs AI cerdas & 2 pemain</div>
+            </div>
+          </a>
+          <a href="../flappy/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-flappy">🐦</div>
+            <div>
+              <strong>Flappy Bird</strong>
+              <div style="font-size:11px; color:#94a3b8;">Terbangkan burung melewati rintangan pipa</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Leaderboard -->
+  <div class="modal-backdrop" id="modal-leaderboard">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🏆 Papan Peringkat X O X</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="leaderboard-body-content"></div>
+    </div>
+  </div>
+
+  <!-- Modal Profile -->
+  <div class="modal-backdrop" id="modal-username">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">👤 Profil Pemain</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <form id="form-username">
+        <div class="modal-body">
+          <label style="display:block; font-size:12px; color:#94a3b8; margin-bottom:6px;">Username</label>
+          <input type="text" id="input-username" maxlength="20" required autocomplete="off" style="width:100%; padding:10px; border-radius:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:14px; outline:none;">
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+          <button type="submit" class="btn-primary">Simpan Profil</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-msg" id="toast-notification"></div>
+
+  <script src="xox.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Memory Match - Uji Daya Ingat & Kartu Cocok | game.dwicky.dev</title>
+  <meta name="description" content="Mainkan game Memory Match modern di game.dwicky.dev. Uji daya ingat visualmu dengan beragam tingkat kesulitan, tema kartu menarik, combo multiplier, dan papan peringkat global!">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="shortcut icon" href="../../favicon.ico">
+</head>
+<body>
+
+  <div class="game-wrapper">
+    <!-- Header -->
+    <header class="game-header">
+      <div class="header-left">
+        <!-- Shared User Profile Badge -->
+        <div class="user-badge" id="user-badge" title="Klik untuk mengedit profil & foto">
+          <div class="avatar-circle">
+            <img id="user-avatar-img" src="" alt="Avatar" style="display:none;">
+            <span id="user-avatar-text">👤</span>
+          </div>
+          <span class="username-display" id="username-display">Pemain Baru</span>
+        </div>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <button class="btn-icon btn-games-hub" id="btn-games-hub" type="button" title="Pilih Game Lainnya">
+          🎮 Hub
+        </button>
+        <button class="btn-icon" id="btn-sound" type="button" title="Suara / Audio">
+          🔊
+        </button>
+        <button class="btn-icon" id="btn-leaderboard" type="button" title="Papan Peringkat">
+          🏆
+        </button>
+        <button class="btn-icon" id="btn-fullscreen" type="button" title="Layar Penuh (Fullscreen)">
+          ⛶
+        </button>
+        <button class="btn-icon" id="btn-reset" type="button" title="Mulai Ulang Game">
+          🔄
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-box">
+        <span class="stat-label">Waktu</span>
+        <span class="stat-value" id="stat-timer">00:00</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">Langkah</span>
+        <span class="stat-value" id="stat-moves">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">Combo</span>
+        <span class="stat-value" id="stat-combo">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">Skor</span>
+        <span class="stat-value" id="stat-score" style="color:var(--accent);">0</span>
+      </div>
+    </div>
+
+    <!-- Controls & Difficulty Bar -->
+    <div class="controls-bar">
+      <div class="difficulty-selector">
+        <button class="diff-btn" data-cards="12" type="button">12 (Easy)</button>
+        <button class="diff-btn active" data-cards="16" type="button">16 (Normal)</button>
+        <button class="diff-btn" data-cards="24" type="button">24 (Hard)</button>
+        <button class="diff-btn" data-cards="36" type="button">36 (Expert)</button>
+      </div>
+
+      <select class="theme-dropdown" id="select-theme" title="Pilih Tema Kartu">
+        <option value="gaming">🎮 Gaming</option>
+        <option value="food">🍕 Makanan</option>
+        <option value="animals">🐶 Hewan</option>
+        <option value="tech">💻 Teknologi</option>
+      </select>
+    </div>
+
+    <!-- Cards Grid Container -->
+    <main class="cards-grid-container grid-16" id="cards-grid" aria-label="Papan Kartu Memori">
+      <!-- Generated dynamically by memory.js -->
+    </main>
+
+    <!-- Win Overlay inside board -->
+    <div class="win-overlay" id="win-overlay">
+      <h2 class="win-title">🎉 Menang Sempurna!</h2>
+      <p class="win-subtitle">Semua kartu berhasil dicocokkan dengan gemilang!</p>
+      
+      <div class="win-stats-grid">
+        <div class="win-stat-card">
+          <span>Skor Akhir</span>
+          <strong id="win-final-score" style="color:var(--gold);">0</strong>
+        </div>
+        <div class="win-stat-card">
+          <span>Waktu</span>
+          <strong id="win-final-time">00:00</strong>
+        </div>
+        <div class="win-stat-card">
+          <span>Langkah</span>
+          <strong id="win-final-moves">0</strong>
+        </div>
+      </div>
+
+      <div class="win-actions">
+        <button class="btn-primary" id="btn-win-restart" type="button">🔄 Main Lagi</button>
+        <button class="btn-secondary" onclick="if(window.MemoryGame)window.MemoryGame.openLeaderboard()" type="button">🏆 Peringkat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Game Hub (Platform Game Switcher) -->
+  <div class="modal-backdrop" id="modal-games-hub">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🎮 Portal Game dwicky.dev</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="game-hub-grid">
+          <a href="../../index.html" class="game-hub-item">
+            <div class="game-icon-badge game-icon-2048">🔢</div>
+            <div class="game-info">
+              <div class="game-name">2048 Classic</div>
+              <div class="game-desc">Gabungkan angka hingga mencapai ubin emas 2048</div>
+            </div>
+          </a>
+
+          <a href="#" class="game-hub-item active" onclick="return false;">
+            <div class="game-icon-badge game-icon-memory">🧠</div>
+            <div class="game-info">
+              <div class="game-name">Memory Match <span class="game-badge-current">Sedang Dimainkan</span></div>
+              <div class="game-desc">Uji ingatan visual dan temukan pasangan kartu identik</div>
+            </div>
+          </a>
+
+          <a href="../pacman/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-pacman">🟡</div>
+            <div class="game-info">
+              <div class="game-name">Pacman Arcade</div>
+              <div class="game-desc">Makan pellet dan hindari kejaran 4 hantu labirin</div>
+            </div>
+          </a>
+
+          <a href="../xox/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-xox">❌⭕</div>
+            <div class="game-info">
+              <div class="game-name">X O X (Tic-Tac-Toe)</div>
+              <div class="game-desc">Adu taktik vs AI cerdas atau main berdua bersama teman</div>
+            </div>
+          </a>
+
+          <a href="../flappy/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-flappy">🐦</div>
+            <div class="game-info">
+              <div class="game-name">Flappy Bird</div>
+              <div class="game-desc">Terbangkan burung melewati rintangan pipa beruntun</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Leaderboard -->
+  <div class="modal-backdrop" id="modal-leaderboard">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🏆 Papan Peringkat Memory Match</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="leaderboard-body-content">
+        <!-- Loaded via AJAX -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Profile / Ganti Username & Foto -->
+  <div class="modal-backdrop" id="modal-username">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">👤 Profil Pemain</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <form id="form-username">
+        <div class="modal-body" style="display:flex; flex-direction:column; gap:14px;">
+          <div>
+            <label style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:6px;">Foto Profil</label>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <input type="file" id="input-avatar-file" accept="image/*" style="display:none;">
+              <button type="button" class="btn-secondary" id="btn-select-avatar" style="padding:8px 14px; font-size:12px;">
+                📷 Unggah Foto Baru
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label for="input-username" style="display:block; font-size:12px; color:var(--text-muted); margin-bottom:6px;">Username</label>
+            <input type="text" id="input-username" maxlength="20" required autocomplete="off" style="width:100%; padding:10px; border-radius:8px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15); color:#fff; font-family:inherit; font-size:14px; outline:none;">
+            <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Nama ini akan tampil di papan peringkat global.</div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+          <button type="submit" class="btn-primary">Simpan Profil</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-msg" id="toast-notification"></div>
+
+  <script src="memory.js?v=1"></script>
+</body>
+</html>

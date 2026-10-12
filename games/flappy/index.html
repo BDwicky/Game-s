@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Flappy Bird - Aksi Terbang & Papan Peringkat | game.dwicky.dev</title>
+  <meta name="description" content="Mainkan game Flappy Bird 60fps yang adiktif di game.dwicky.dev. Terbangkan burung melewati rintangan pipa, dapatkan medali emas, dan catat skormu di papan peringkat global!">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="shortcut icon" href="../../favicon.ico">
+</head>
+<body>
+
+  <div class="flappy-wrapper">
+    <!-- Header -->
+    <header class="flappy-header">
+      <div class="user-badge" id="user-badge" title="Klik untuk edit profil">
+        <div class="avatar-circle">
+          <img id="user-avatar-img" src="" alt="Avatar" style="display:none;">
+          <span id="user-avatar-text">👤</span>
+        </div>
+        <span class="username-display" id="username-display">Pemain Baru</span>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-icon btn-games-hub" id="btn-games-hub" type="button" title="Pilih Game Lainnya">
+          🎮 Hub
+        </button>
+        <button class="btn-icon" id="btn-sound" type="button" title="Suara">
+          🔊
+        </button>
+        <button class="btn-icon" id="btn-leaderboard" type="button" title="Papan Peringkat">
+          🏆
+        </button>
+        <button class="btn-icon" id="btn-fullscreen" type="button" title="Layar Penuh">
+          ⛶
+        </button>
+      </div>
+    </header>
+
+    <!-- Canvas Wrap Container -->
+    <main class="flappy-canvas-wrap">
+      <canvas id="flappy-canvas"></canvas>
+
+      <!-- Floating In-game Score -->
+      <div class="hud-score" id="hud-score">0</div>
+
+      <!-- Initial Tap to Play Prompt -->
+      <div class="tap-prompt" id="tap-prompt">
+        👆 Ketuk Layar atau Spasi
+      </div>
+
+      <!-- Game Over Card Overlay -->
+      <div class="gameover-overlay" id="gameover-overlay">
+        <h2 class="gameover-title">GAME OVER</h2>
+        
+        <div class="scorecard">
+          <div class="medal-box" id="medal-icon" title="Medali Penghargaan">🥉</div>
+          <div class="scorecard-scores">
+            <span>SKOR AKHIR</span>
+            <strong id="final-score">0</strong>
+            <span style="margin-top:6px;">TERBAIK</span>
+            <strong id="final-best" style="color:#10b981;">0</strong>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:8px;">
+          <button class="btn-primary" id="btn-play-again" type="button">🔄 Main Lagi</button>
+          <button class="btn-secondary" onclick="if(window.FlappyApp)window.FlappyApp.openLeaderboard()" type="button">🏆 Peringkat</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Game Hub -->
+  <div class="modal-backdrop" id="modal-games-hub">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🎮 Portal Game dwicky.dev</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="game-hub-grid">
+          <a href="../../index.html" class="game-hub-item">
+            <div class="game-icon-badge game-icon-2048">🔢</div>
+            <div>
+              <strong>2048 Classic</strong>
+              <div style="font-size:11px; color:#94a3b8;">Teka-teki geser angka 2048</div>
+            </div>
+          </a>
+          <a href="../memory/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-memory">🧠</div>
+            <div>
+              <strong>Memory Match</strong>
+              <div style="font-size:11px; color:#94a3b8;">Pencocokan kartu daya ingat visual</div>
+            </div>
+          </a>
+          <a href="../pacman/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-pacman">🟡</div>
+            <div>
+              <strong>Pacman Arcade</strong>
+              <div style="font-size:11px; color:#94a3b8;">Arcade labirin klasik & kejaran hantu</div>
+            </div>
+          </a>
+          <a href="../xox/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-xox">❌⭕</div>
+            <div>
+              <strong>X O X (Tic-Tac-Toe)</strong>
+              <div style="font-size:11px; color:#94a3b8;">Adu taktik vs AI cerdas & 2 pemain</div>
+            </div>
+          </a>
+          <a href="#" class="game-hub-item active" onclick="return false;">
+            <div class="game-icon-badge game-icon-flappy">🐦</div>
+            <div>
+              <strong>Flappy Bird <span style="font-size:9px; background:var(--emerald); color:#000; padding:2px 6px; border-radius:10px; font-weight:800;">Aktif</span></strong>
+              <div style="font-size:11px; color:#94a3b8;">Terbangkan burung melewati rintangan pipa</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Leaderboard -->
+  <div class="modal-backdrop" id="modal-leaderboard">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🏆 Papan Peringkat Flappy Bird</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="leaderboard-body-content"></div>
+    </div>
+  </div>
+
+  <!-- Modal Profile -->
+  <div class="modal-backdrop" id="modal-username">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">👤 Profil Pemain</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <form id="form-username">
+        <div class="modal-body">
+          <label style="display:block; font-size:12px; color:#94a3b8; margin-bottom:6px;">Username</label>
+          <input type="text" id="input-username" maxlength="20" required autocomplete="off" style="width:100%; padding:10px; border-radius:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:14px; outline:none;">
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+          <button type="submit" class="btn-primary">Simpan Profil</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-msg" id="toast-notification"></div>
+
+  <script src="flappy.js?v=1"></script>
+</body>
+</html>

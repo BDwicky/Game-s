@@ -19,8 +19,8 @@
     })();
   </script>
 
-  <link href="style/main.css?v=24" rel="stylesheet" type="text/css">
-  <link href="style/leaderboard.css?v=24" rel="stylesheet" type="text/css">
+  <link href="style/main.css?v=25" rel="stylesheet" type="text/css">
+  <link href="style/leaderboard.css?v=25" rel="stylesheet" type="text/css">
   <link rel="shortcut icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="meta/apple-touch-icon.png">
   <link rel="apple-touch-startup-image" href="meta/apple-touch-startup-image-640x1096.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"> <!-- iPhone 5+ -->
@@ -58,6 +58,9 @@
       <div class="header-right">
         <!-- Row 1: Navbar Actions (Theme, Leaderboard, Fullscreen, Reset) -->
         <div class="navbar-actions">
+          <button class="btn-action btn-icon-only btn-hub" id="btn-games-hub" type="button" title="Pilih Game Lainnya (Portal Game)" aria-label="Game Hub" onclick="if(window.Leaderboard)window.Leaderboard.openHubModal()">
+            <span>🎮</span>
+          </button>
           <button class="btn-action btn-icon-only btn-theme" id="btn-theme" type="button" title="Pilih Tema Game" aria-label="Pilih Tema" onclick="if(window.Leaderboard)window.Leaderboard.openThemeModal()">
             <span id="theme-icon">🎨</span>
           </button>
@@ -215,19 +218,75 @@
     </div>
   </div>
 
+  <!-- Modal Portal Game (Game Hub Switcher) -->
+  <div class="modal-backdrop" id="modal-games-hub">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🎮 Portal Game dwicky.dev</h2>
+        <button type="button" class="modal-close" id="close-games-hub-modal" onclick="if(window.Leaderboard)window.Leaderboard.closeModal(document.getElementById('modal-games-hub'))">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="game-hub-grid">
+          <a href="#" class="game-hub-item active" onclick="return false;">
+            <div class="game-icon-badge game-icon-2048">🔢</div>
+            <div class="game-info">
+              <div class="game-name">2048 Classic <span class="game-badge-current">Sedang Dimainkan</span></div>
+              <div class="game-desc">Gabungkan ubin angka hingga mencapai angka emas 2048</div>
+            </div>
+          </a>
+
+          <a href="games/memory/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-memory">🧠</div>
+            <div class="game-info">
+              <div class="game-name">Memory Match</div>
+              <div class="game-desc">Uji ingatan visual dengan pencocokan kartu beranimasi 3D</div>
+            </div>
+          </a>
+
+          <a href="games/pacman/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-pacman">🟡</div>
+            <div class="game-info">
+              <div class="game-name">Pacman Arcade</div>
+              <div class="game-desc">Makan pellet dan hindari 4 hantu labirin klasik</div>
+            </div>
+          </a>
+
+          <a href="games/xox/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-xox">❌⭕</div>
+            <div class="game-info">
+              <div class="game-name">X O X (Tic-Tac-Toe)</div>
+              <div class="game-desc">Adu taktik vs AI Minimax cerdas atau main berdua</div>
+            </div>
+          </a>
+
+          <a href="games/flappy/" class="game-hub-item">
+            <div class="game-icon-badge game-icon-flappy">🐦</div>
+            <div class="game-info">
+              <div class="game-name">Flappy Bird</div>
+              <div class="game-desc">Terbangkan burung melewati rintangan pipa 60fps</div>
+            </div>
+          </a>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-primary" onclick="if(window.Leaderboard)window.Leaderboard.closeModal(document.getElementById('modal-games-hub'))">Tutup</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div class="toast-msg" id="toast-notification"></div>
 
   <script src="js/bind_polyfill.js"></script>
   <script src="js/classlist_polyfill.js"></script>
   <script src="js/animframe_polyfill.js"></script>
-  <script src="js/keyboard_input_manager.js?v=24"></script>
-  <script src="js/html_actuator.js?v=24"></script>
-  <script src="js/grid.js?v=24"></script>
-  <script src="js/tile.js?v=24"></script>
-  <script src="js/local_storage_manager.js?v=24"></script>
-  <script src="js/game_manager.js?v=24"></script>
-  <script src="js/leaderboard.js?v=24"></script>
-  <script src="js/application.js?v=24"></script>
+  <script src="js/keyboard_input_manager.js?v=25"></script>
+  <script src="js/html_actuator.js?v=25"></script>
+  <script src="js/grid.js?v=25"></script>
+  <script src="js/tile.js?v=25"></script>
+  <script src="js/local_storage_manager.js?v=25"></script>
+  <script src="js/game_manager.js?v=25"></script>
+  <script src="js/leaderboard.js?v=25"></script>
+  <script src="js/application.js?v=25"></script>
 </body>
 </html>

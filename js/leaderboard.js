@@ -1138,6 +1138,11 @@
       }
     },
 
+    openHubModal: function () {
+      var modal = document.getElementById("modal-games-hub");
+      if (modal) this.openModal(modal);
+    },
+
     openModal: function (modal) {
       if (modal) {
         modal.classList.add("is-open");

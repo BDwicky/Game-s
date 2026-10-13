@@ -993,6 +993,244 @@ body {
 }
 
 
+/* ========================================================
+   UNIVERSAL ARCADE WIDESCREEN & DESKTOP / TABLET SCREEN MAXIMIZATION
+   Eliminates empty space across all arcade games
+   ======================================================== */
+@media screen and (min-width: 601px), screen and (orientation: landscape) {
+  /* Snake Neon */
+  .snake-wrapper {
+    max-width: min(720px, 94vw) !important;
+  }
+  .snake-wrapper .canvas-container {
+    max-height: min(540px, calc(100dvh - 120px)) !important;
+    max-width: min(540px, calc(100dvh - 120px)) !important;
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    margin: 0 auto !important;
+  }
+
+  /* Pacman Arcade */
+  .pacman-wrapper {
+    max-width: min(640px, 94vw) !important;
+  }
+  .pacman-wrapper .canvas-container {
+    max-height: min(560px, calc(100dvh - 110px)) !important;
+    width: auto !important;
+    margin: 0 auto !important;
+  }
+  .pacman-wrapper #pacman-canvas {
+    max-height: min(560px, calc(100dvh - 110px)) !important;
+    max-width: min(484px, 92vw) !important;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  /* Tetris Classic */
+  .tetris-wrapper {
+    max-width: min(760px, 94vw) !important;
+  }
+  .tetris-wrapper .tetris-main-layout {
+    gap: 16px !important;
+    justify-content: center !important;
+  }
+  .tetris-wrapper .tetris-board-container {
+    max-height: min(560px, calc(100dvh - 110px)) !important;
+    height: min(560px, calc(100dvh - 110px)) !important;
+    width: auto !important;
+    aspect-ratio: 1 / 2 !important;
+  }
+  .tetris-wrapper #canvas-board {
+    height: 100% !important;
+    width: 100% !important;
+    object-fit: contain !important;
+  }
+  .tetris-wrapper .tetris-side-col {
+    width: 90px !important;
+  }
+
+  /* Memory Match */
+  .game-wrapper {
+    max-width: min(720px, 94vw) !important;
+  }
+  .game-wrapper .cards-grid-container {
+    max-height: min(560px, calc(100dvh - 130px)) !important;
+    width: min(560px, calc(100dvh - 130px), 92vw) !important;
+    aspect-ratio: 1 / 1 !important;
+    margin: 0 auto !important;
+  }
+
+  /* X O X (Tic-Tac-Toe) */
+  .xox-wrapper {
+    max-width: min(560px, 94vw) !important;
+  }
+  .xox-wrapper .board-container {
+    width: min(420px, 86vw, calc(100dvh - 170px)) !important;
+    height: min(420px, 86vw, calc(100dvh - 170px)) !important;
+  }
+  .xox-wrapper .grid-cell {
+    font-size: min(56px, 12vw) !important;
+  }
+
+  .arcade-wrapper {
+    max-width: min(640px, 94vw) !important;
+  }
+}
+
+/* ========================================================
+   UNIVERSAL SHORT MOBILE LANDSCAPE (Height <= 520px)
+   Compact headers and height-fitted boards for all games
+   ======================================================== */
+@media screen and (orientation: landscape) and (max-height: 520px) {
+  .game-header,
+  .flappy-header,
+  .pacman-header,
+  .snake-header,
+  .tetris-header,
+  .xox-header,
+  .game-header-section {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    flex: 0 0 36px !important;
+    padding: 0 max(8px, env(safe-area-inset-right, 8px)) 0 max(8px, env(safe-area-inset-left, 8px)) !important;
+  }
+
+  .game-header .btn-icon,
+  .flappy-header .btn-icon,
+  .pacman-header .btn-icon,
+  .snake-header .btn-icon,
+  .tetris-header .btn-icon,
+  .xox-header .btn-icon {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 13px !important;
+  }
+
+  .user-badge,
+  .profile-card-container {
+    height: 30px !important;
+    max-height: 30px !important;
+    padding: 2px 8px 2px 2px !important;
+  }
+
+  .avatar-circle {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 11px !important;
+  }
+
+  .username-display {
+    font-size: 11px !important;
+    max-width: 75px !important;
+  }
+
+  .arcade-wrapper,
+  .pacman-wrapper,
+  .snake-wrapper,
+  .tetris-wrapper,
+  .game-wrapper,
+  .xox-wrapper {
+    gap: 4px !important;
+    padding: 4px env(safe-area-inset-right, 6px) 4px env(safe-area-inset-left, 6px) !important;
+    max-width: min(860px, 96vw) !important;
+  }
+
+  /* Snake in landscape */
+  .snake-wrapper .stats-bar {
+    gap: 4px !important;
+  }
+  .snake-wrapper .stat-box {
+    padding: 2px 6px !important;
+  }
+  .snake-wrapper .stat-label {
+    font-size: 9px !important;
+  }
+  .snake-wrapper .stat-value {
+    font-size: 13px !important;
+  }
+  .snake-wrapper .canvas-container {
+    max-height: calc(100dvh - 90px) !important;
+    max-width: calc(100dvh - 90px) !important;
+    width: auto !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  /* Pacman in landscape */
+  .pacman-wrapper .dash-bar {
+    height: 30px !important;
+    min-height: 30px !important;
+    padding: 2px 8px !important;
+  }
+  .pacman-wrapper .canvas-container {
+    max-height: calc(100dvh - 80px) !important;
+  }
+  .pacman-wrapper #pacman-canvas {
+    max-height: calc(100dvh - 80px) !important;
+    max-width: calc((100dvh - 80px) * 19 / 22) !important;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  /* Tetris in landscape */
+  .tetris-wrapper .tetris-main-layout {
+    gap: 8px !important;
+  }
+  .tetris-wrapper .tetris-board-container {
+    height: calc(100dvh - 50px) !important;
+    max-height: calc(100dvh - 50px) !important;
+  }
+  .tetris-wrapper .tetris-side-col {
+    width: 60px !important;
+  }
+  .tetris-wrapper .panel-box {
+    padding: 4px !important;
+  }
+
+  /* Memory in landscape */
+  .game-wrapper .stats-bar {
+    gap: 4px !important;
+  }
+  .game-wrapper .stat-box {
+    padding: 2px 6px !important;
+  }
+  .game-wrapper .diff-btn-group {
+    display: none !important;
+  }
+  .game-wrapper .cards-grid-container {
+    max-height: calc(100dvh - 80px) !important;
+    width: calc(100dvh - 80px) !important;
+    padding: 6px !important;
+    gap: 4px !important;
+  }
+
+  /* XOX in landscape */
+  .xox-wrapper .mode-bar {
+    height: 28px !important;
+    min-height: 28px !important;
+  }
+  .xox-wrapper .turn-banner {
+    display: none !important;
+  }
+  .xox-wrapper .score-board {
+    height: 28px !important;
+    min-height: 28px !important;
+  }
+  .xox-wrapper .board-container {
+    width: calc(100dvh - 105px) !important;
+    height: calc(100dvh - 105px) !important;
+    min-width: auto !important;
+    min-height: auto !important;
+    padding: 6px !important;
+    gap: 6px !important;
+  }
+  .xox-wrapper .grid-cell {
+    min-height: auto !important;
+    font-size: min(32px, 8vw) !important;
+  }
+}
+
+
 /* Photo Viewer Lightbox Popup */
 .photo-viewer-modal-backdrop {
   z-index: 10000000 !important;

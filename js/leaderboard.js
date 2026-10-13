@@ -1136,7 +1136,7 @@
         var baseH = 630; // Header (48px) + stats (48px) + board (500px) + hint (14px) + gaps
         var availW = w - 32;
         var availH = h - 24;
-        var scale = Math.min(availW / baseW, availH / baseH, 1.0);
+        var scale = Math.min(availW / baseW, availH / baseH, 1.25);
         scale = Math.max(0.50, scale);
         var scaleStr = scale.toFixed(3);
         document.documentElement.style.setProperty("--desktop-scale", scaleStr);

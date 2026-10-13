@@ -21,7 +21,7 @@
 
   <link href="../../style/main.css?v=27" rel="stylesheet" type="text/css">
   <link href="../../style/leaderboard.css?v=27" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="../../style/arcade-unified.css?v=20261013-maximize1">
+  <link rel="stylesheet" href="../../style/arcade-unified.css?v=20261013-home1">
   <link rel="shortcut icon" href="../../favicon.ico">
   <link rel="apple-touch-icon" href="../../meta/apple-touch-icon.png">
   <link rel="apple-touch-startup-image" href="../../meta/apple-touch-startup-image-640x1096.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"> <!-- iPhone 5+ -->
@@ -106,6 +106,7 @@
           <a class="keep-playing-button">Lanjut Main</a>
           <a class="retry-button">🔄 Coba Lagi</a>
           <a class="leaderboard-btn-gameover" onclick="if(window.Leaderboard)window.Leaderboard.openLeaderboard()">🏆 Peringkat</a>
+          <a class="home-btn-gameover btn-home-action" href="../../index.html" onclick="if(window.parent&&window.parent!==window){event.preventDefault();window.parent.postMessage({type:'close_game'},'*');return false;}">🏠 Home</a>
         </div>
       </div>
 
@@ -317,7 +318,7 @@
   <script src="../../js/game_manager.js?v=25"></script>
   <script src="../../js/leaderboard.js?v=25"></script>
   <script src="../../js/audio.js?v=1"></script>
-    <script src="../../js/fullscreen.js?v=2"></script>
+    <script src="../../js/fullscreen.js?v=3"></script>
   <script src="../../js/photo_viewer.js?v=3"></script>
   <script src="../../js/application.js?v=25"></script>
 </body>

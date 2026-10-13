@@ -5,7 +5,7 @@
   <title>Tetris Classic - Susun Balok & Papan Peringkat | game.dwicky.dev</title>
   <meta name="description" content="Mainkan game Tetris klasik modern di game.dwicky.dev. Susun 7 tetromino, bersihkan baris, raih kombo Tetris 4-baris, dan cetak skor tertinggi di papan peringkat global!">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <link rel="stylesheet" href="../../style/arcade-unified.css?v=20261013-maximize1">
+  <link rel="stylesheet" href="../../style/arcade-unified.css?v=20261013-home1">
   <link rel="stylesheet" href="style.css?v=20261013-maximize1">
   <link rel="shortcut icon" href="../../favicon.ico">
   <script>try{if(localStorage.getItem('game_hub_fullscreen')==='true')document.documentElement.classList.add('is-fullscreen');}catch(e){}</script>
@@ -91,9 +91,10 @@
             </div>
           </div>
 
-          <div style="display:flex; gap:10px; margin-top:8px;">
+          <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; justify-content:center;">
             <button class="btn-primary" id="btn-play-again" type="button">🔄 Main Lagi</button>
             <button class="btn-secondary" onclick="if(window.TetrisApp)window.TetrisApp.openLeaderboard()" type="button">🏆 Peringkat</button>
+            <a class="btn-secondary btn-home-action" href="../../index.html" onclick="if(window.parent&&window.parent!==window){event.preventDefault();window.parent.postMessage({type:'close_game'},'*');return false;}">🏠 Home</a>
           </div>
         </div>
       </div>
@@ -240,7 +241,7 @@
 
   <div class="toast-msg" id="toast-notification"></div>
 
-    <script src="../../js/fullscreen.js?v=2"></script>
+    <script src="../../js/fullscreen.js?v=3"></script>
   <script src="../../js/photo_viewer.js?v=3"></script>
   <script src="tetris.js?v=1"></script>
 </body>

@@ -308,18 +308,18 @@
 
     setupIframeNavigation: function () {
       var self = this;
-      // Capture #btn-home click
-      var btnHome = document.getElementById("btn-home");
-      if (btnHome) {
-        btnHome.addEventListener("click", function (e) {
+      // Capture all Home buttons/links inside iframe runner (header & Game Over overlays)
+      document.addEventListener("click", function (e) {
+        var homeTarget = e.target && e.target.closest && e.target.closest("#btn-home, .btn-home-action, .home-btn-gameover, #btn-gameover-home, .btn-gameover-home, [data-action='home']");
+        if (homeTarget) {
           e.preventDefault();
           e.stopImmediatePropagation();
           try {
             window.parent.postMessage({ type: "close_game" }, "*");
           } catch (err) {}
           return false;
-        }, true);
-      }
+        }
+      }, true);
 
       // Capture Hub Modal links inside games (.game-hub-item)
       document.querySelectorAll(".game-hub-item").forEach(function (link) {

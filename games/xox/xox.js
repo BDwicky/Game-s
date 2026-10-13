@@ -131,6 +131,13 @@
       this.modalUser = document.getElementById('modal-username');
       this.toastEl = document.getElementById('toast-notification');
 
+      // Round Over Overlay elements
+      this.gameoverOverlay = document.getElementById('xox-gameover-overlay');
+      this.goTitleEl = document.getElementById('xox-gameover-title');
+      this.goSubtitleEl = document.getElementById('xox-gameover-subtitle');
+      this.goStreakEl = document.getElementById('xox-go-streak');
+      this.goScoreEl = document.getElementById('xox-go-score');
+
       this.updateProfileUI();
     },
 
@@ -192,6 +199,12 @@
       var btnReset = document.getElementById('btn-reset');
       if (btnReset) btnReset.addEventListener('click', function () { self.resetRound(); });
 
+      var btnXoxRestart = document.getElementById('btn-xox-restart');
+      if (btnXoxRestart) btnXoxRestart.addEventListener('click', function () { self.resetRound(); });
+
+      var btnXoxLdb = document.getElementById('btn-xox-leaderboard');
+      if (btnXoxLdb) btnXoxLdb.addEventListener('click', function () { self.openLeaderboard(); });
+
       var btnHome = document.getElementById('btn-home');
       if (btnHome) btnHome.addEventListener('click', function (e) { if (window.parent && window.parent !== window) { e.preventDefault(); window.parent.postMessage({ type: 'close_game' }, '*'); } else { window.location.href = '../../index.html'; } });
 
@@ -241,6 +254,9 @@
     },
 
     resetRound: function () {
+      if (this.gameoverOverlay) {
+        this.gameoverOverlay.style.display = 'none';
+      }
       this.board = Array(9).fill('');
       this.turn = 'X';
       this.gameOver = false;
@@ -417,6 +433,7 @@
 
     handleGameEnd: function (winner, line) {
       this.gameOver = true;
+      var self = this;
 
       if (winner === 'draw') {
         Sound.draw();
@@ -424,38 +441,56 @@
         if (this.statDrawsEl) this.statDrawsEl.textContent = this.draws;
         this.updateTurnUI('Permainan Seri!');
         this.showToast('Pertandingan Berakhir Seri!');
-        return;
-      }
-
-      Sound.win();
-      var self = this;
-      if (line) {
-        line.forEach(function (idx) {
-          self.cells[idx].classList.add('winning-cell');
-        });
-      }
-
-      if (winner === 'X') {
-        this.winsX++;
-        this.streak++;
-        if (this.streak > this.bestStreak) {
-          this.bestStreak = this.streak;
-          this.saveProfile();
-        }
-        if (this.statWinsXEl) this.statWinsXEl.textContent = this.winsX;
-        this.updateTurnUI('Pemain X Menang!');
-        this.showToast('Kemenangan untuk X! Streak: ' + this.streak);
-
-        // Sync Leaderboard score (Streak * 100 + Wins * 50)
-        var totalScore = (this.bestStreak * 100) + (this.winsX * 50);
-        this.syncScoreToBackend(totalScore);
       } else {
-        this.winsO++;
-        this.streak = 0;
-        if (this.statWinsOEl) this.statWinsOEl.textContent = this.winsO;
-        this.updateTurnUI(this.mode === 'ai' ? 'AI Menang!' : 'Pemain O Menang!');
-        this.showToast(this.mode === 'ai' ? 'AI Mengalahkanmu!' : 'Kemenangan untuk O!');
+        Sound.win();
+        if (line) {
+          line.forEach(function (idx) {
+            self.cells[idx].classList.add('winning-cell');
+          });
+        }
+
+        if (winner === 'X') {
+          this.winsX++;
+          this.streak++;
+          if (this.streak > this.bestStreak) {
+            this.bestStreak = this.streak;
+            this.saveProfile();
+          }
+          if (this.statWinsXEl) this.statWinsXEl.textContent = this.winsX;
+          this.updateTurnUI('Pemain X Menang!');
+          this.showToast('Kemenangan untuk X! Streak: ' + this.streak);
+
+          // Sync Leaderboard score (Streak * 100 + Wins * 50)
+          var totalScore = (this.bestStreak * 100) + (this.winsX * 50);
+          this.syncScoreToBackend(totalScore);
+        } else {
+          this.winsO++;
+          this.streak = 0;
+          if (this.statWinsOEl) this.statWinsOEl.textContent = this.winsO;
+          this.updateTurnUI(this.mode === 'ai' ? 'AI Menang!' : 'Pemain O Menang!');
+          this.showToast(this.mode === 'ai' ? 'AI Mengalahkanmu!' : 'Kemenangan untuk O!');
+        }
       }
+
+      // Show Round Over overlay after brief delay for visual satisfaction
+      setTimeout(function () {
+        if (self.gameoverOverlay) {
+          if (winner === 'draw') {
+            if (self.goTitleEl) self.goTitleEl.textContent = '🤝 Pertandingan Seri';
+            if (self.goSubtitleEl) self.goSubtitleEl.textContent = 'Taktik kedua belah pihak seimbang!';
+          } else if (winner === 'X') {
+            if (self.goTitleEl) self.goTitleEl.textContent = '🎉 Kemenangan X!';
+            if (self.goSubtitleEl) self.goSubtitleEl.textContent = 'Luar biasa! Streak menang: ' + self.streak;
+          } else {
+            if (self.goTitleEl) self.goTitleEl.textContent = (self.mode === 'ai') ? '🤖 AI Menang!' : '🎉 Kemenangan O!';
+            if (self.goSubtitleEl) self.goSubtitleEl.textContent = (self.mode === 'ai') ? 'Jangan menyerah, coba taktik baru!' : 'Kemenangan diraih oleh pemain O!';
+          }
+          var totalScore = (self.bestStreak * 100) + (self.winsX * 50);
+          if (self.goStreakEl) self.goStreakEl.textContent = self.streak + ' (Rekor: ' + self.bestStreak + ')';
+          if (self.goScoreEl) self.goScoreEl.textContent = totalScore;
+          self.gameoverOverlay.style.display = 'flex';
+        }
+      }, 500);
     },
 
     syncScoreToBackend: function (score) {

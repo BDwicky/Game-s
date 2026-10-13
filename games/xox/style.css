@@ -52,11 +52,18 @@ body.is-fullscreen {
 
 .xox-wrapper {
   width: 100%;
-  max-width: 440px;
+  max-width: 420px;
+  height: 100% !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 6px 10px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 /* Header */
@@ -144,31 +151,38 @@ body.is-fullscreen {
 
 /* Mode & Turn Indicators */
 .mode-bar {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
+  width: 100% !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
 }
 
 .toggle-group {
   display: flex;
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid var(--glass-border);
-  padding: 3px;
+  padding: 2px !important;
   border-radius: 8px;
+  height: 32px !important;
+  box-sizing: border-box !important;
 }
 .toggle-btn {
   background: transparent;
   border: none;
   color: #94a3b8;
-  padding: 6px 12px;
+  padding: 4px 10px !important;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 11px !important;
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.15s;
+  line-height: 1 !important;
 }
 .toggle-btn.active {
   background: rgba(255, 255, 255, 0.15);
@@ -179,30 +193,35 @@ body.is-fullscreen {
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid var(--glass-border);
   color: #fff;
-  padding: 6px 10px;
+  padding: 4px 8px !important;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 11px !important;
   font-weight: 600;
   font-family: inherit;
   outline: none;
+  height: 32px !important;
 }
 
 /* Turn Indicator Banner */
 .turn-banner {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  width: 100% !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
-  padding: 8px;
-  font-size: 14px;
+  padding: 2px 8px !important;
+  font-size: 12px !important;
   font-weight: 700;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
 }
 .turn-symbol {
-  font-size: 18px;
+  font-size: 15px !important;
   font-weight: 900;
 }
 .turn-symbol.x { color: var(--cyan); text-shadow: 0 0 10px rgba(6, 182, 212, 0.6); }
@@ -210,50 +229,71 @@ body.is-fullscreen {
 
 /* Scoreboard Cards */
 .score-board {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  width: 100% !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
 }
 .score-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
-  padding: 8px 4px;
+  padding: 2px 4px !important;
   text-align: center;
+  height: 36px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
-.score-card span { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
-.score-card strong { font-size: 18px; font-weight: 800; line-height: 1.2; }
+.score-card span { display: block; font-size: 9px !important; color: #94a3b8; text-transform: uppercase; font-weight: 700; line-height: 1 !important; margin-bottom: 2px !important; }
+.score-card strong { font-size: 15px !important; font-weight: 800; line-height: 1 !important; }
 
 /* Grid 3x3 Board */
 .board-container {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1;
-  max-width: 380px;
+  position: relative !important;
+  width: min(310px, 86vw, calc(100dvh - 200px)) !important;
+  height: min(310px, 86vw, calc(100dvh - 200px)) !important;
+  min-width: 240px !important;
+  min-height: 240px !important;
+  aspect-ratio: 1 / 1 !important;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
-  padding: 12px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 10px;
+  padding: 10px !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  grid-template-rows: repeat(3, 1fr) !important;
+  gap: 8px !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  margin: 0 auto !important;
+  flex: none !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
 }
 
 .grid-cell {
+  aspect-ratio: 1 / 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 60px !important;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 56px;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: min(48px, 12vw) !important;
   font-weight: 900;
   cursor: pointer;
   transition: all 0.15s ease;
   user-select: none;
+  box-sizing: border-box !important;
 }
 .grid-cell:hover:not(.taken) {
   background: rgba(255, 255, 255, 0.08);

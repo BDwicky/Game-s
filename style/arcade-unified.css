@@ -63,7 +63,7 @@ html, body {
   box-sizing: border-box !important;
   display: flex !important;
   flex-direction: column !important;
-  justify-content: space-between !important;
+  justify-content: center !important;
   align-items: center !important;
   overflow: hidden !important;
   gap: 8px !important;
@@ -282,20 +282,36 @@ html, body {
   line-height: 1.1 !important;
 }
 
-/* Center Play Area - Auto-scaled to available viewport height */
+/* Center Play Area - Centered cohesive arcade unit without auto margin drift */
 .game-area,
 .canvas-container,
 .tetris-main-layout {
-  flex: 1 1 auto !important;
-  width: 100% !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
   max-width: 100% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   position: relative !important;
   overflow: hidden !important;
-  margin: auto 0 !important;
+  margin: 0 auto !important;
   padding: 0 !important;
+}
+
+#snake-canvas {
+  width: min(360px, 86vw, calc(100dvh - 125px)) !important;
+  height: min(360px, 86vw, calc(100dvh - 125px)) !important;
+  max-width: 100% !important;
+  max-height: calc(100dvh - 125px) !important;
+  aspect-ratio: 1 / 1 !important;
+}
+
+#pacman-canvas {
+  width: min(360px, 86vw, calc((100dvh - 125px) * 0.86)) !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: calc(100dvh - 125px) !important;
+  aspect-ratio: 19 / 22 !important;
 }
 
 /* Canvas Sizing: Never overflow viewport height */
@@ -752,32 +768,131 @@ body {
 }
 
 /* ========================================================
-   X O X (Tic-Tac-Toe) 3x3 CSS GRID RESTORATION
+   X O X (Tic-Tac-Toe) 3x3 CSS GRID RESTORATION & COMPACT CENTERING
    ======================================================== */
+.xox-wrapper {
+  gap: 6px !important;
+  padding: 6px 10px !important;
+  justify-content: center !important;
+}
+
+.xox-wrapper .mode-bar {
+  width: 100% !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.xox-wrapper .toggle-group {
+  padding: 2px !important;
+  height: 32px !important;
+  box-sizing: border-box !important;
+}
+
+.xox-wrapper .toggle-btn {
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+}
+
+.xox-wrapper .difficulty-select {
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+  height: 32px !important;
+}
+
+.xox-wrapper .turn-banner {
+  width: 100% !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 2px 8px !important;
+  font-size: 12px !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.xox-wrapper .turn-symbol {
+  font-size: 15px !important;
+}
+
+.xox-wrapper .score-board {
+  width: 100% !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.xox-wrapper .score-card {
+  padding: 2px 4px !important;
+  height: 36px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.xox-wrapper .score-card span {
+  font-size: 9px !important;
+  line-height: 1 !important;
+  margin-bottom: 2px !important;
+}
+
+.xox-wrapper .score-card strong {
+  font-size: 15px !important;
+  line-height: 1 !important;
+}
+
 .board-container,
 #board-grid {
   display: grid !important;
   grid-template-columns: repeat(3, 1fr) !important;
   grid-template-rows: repeat(3, 1fr) !important;
-  gap: 10px !important;
-  aspect-ratio: 1 !important;
-  width: 100% !important;
-  max-width: 360px !important;
-  margin: auto !important;
-  padding: 12px !important;
+  gap: 8px !important;
+  width: min(310px, 86vw, calc(100dvh - 200px)) !important;
+  height: min(310px, 86vw, calc(100dvh - 200px)) !important;
+  min-width: 240px !important;
+  min-height: 240px !important;
+  aspect-ratio: 1 / 1 !important;
+  margin: 0 auto !important;
+  padding: 10px !important;
   box-sizing: border-box !important;
+  background: rgba(17, 24, 39, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
   flex: none !important;
+  flex-shrink: 0 !important;
   overflow: visible !important;
 }
 
-#board-grid .grid-cell {
-  aspect-ratio: 1 !important;
+#board-grid .grid-cell,
+.board-container .grid-cell {
+  aspect-ratio: 1 / 1 !important;
   width: 100% !important;
   height: 100% !important;
+  min-height: 60px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 10px !important;
   box-sizing: border-box !important;
+  cursor: pointer !important;
+  font-size: min(48px, 12vw) !important;
+  font-weight: 900 !important;
+  transition: all 0.15s ease !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 
 /* ========================================================
@@ -785,18 +900,18 @@ body {
    ======================================================== */
 .flappy-canvas-wrap {
   position: relative !important;
-  flex: 1 1 auto !important;
+  flex: 0 0 auto !important;
   width: auto !important;
   max-width: 100% !important;
   height: auto !important;
-  max-height: calc(100dvh - 76px) !important;
+  max-height: min(480px, calc(100dvh - 76px)) !important;
   aspect-ratio: 288 / 512 !important;
   border-radius: 14px !important;
   overflow: hidden !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
   border: 2px solid rgba(255, 255, 255, 0.15) !important;
   touch-action: none !important;
-  margin: auto 0 !important;
+  margin: 0 auto !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;

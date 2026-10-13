@@ -50,12 +50,17 @@ body.is-fullscreen {
 .tetris-wrapper {
   width: 100%;
   max-width: 480px;
-  min-height: 100vh;
+  height: 100% !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  min-height: auto !important;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center !important;
   align-items: center;
-  padding: 12px 10px 16px;
+  padding: 8px 10px;
+  gap: 8px;
+  overflow: hidden;
 }
 
 body.is-fullscreen .tetris-wrapper {

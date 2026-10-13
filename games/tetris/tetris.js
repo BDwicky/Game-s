@@ -393,6 +393,7 @@
       var btnLdb = document.getElementById('btn-leaderboard');
       if (btnLdb) btnLdb.addEventListener('click', function () { self.openLeaderboard(); });
 
+      var btnHome = document.getElementById('btn-home'); if (btnHome) btnHome.addEventListener('click', function (e) { if (window.parent && window.parent !== window) { e.preventDefault(); window.parent.postMessage({ type: 'close_game' }, '*'); } });
       var btnFs = document.getElementById('btn-fullscreen');
       if (btnFs) btnFs.addEventListener('click', function () { self.toggleFullscreen(); });
 

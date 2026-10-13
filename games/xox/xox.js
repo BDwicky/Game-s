@@ -193,7 +193,7 @@
       if (btnReset) btnReset.addEventListener('click', function () { self.resetRound(); });
 
       var btnHome = document.getElementById('btn-home');
-      if (btnHome) btnHome.addEventListener('click', function () { window.location.href = '../../index.html'; });
+      if (btnHome) btnHome.addEventListener('click', function (e) { if (window.parent && window.parent !== window) { e.preventDefault(); window.parent.postMessage({ type: 'close_game' }, '*'); } else { window.location.href = '../../index.html'; } });
 
       var btnLdb = document.getElementById('btn-leaderboard');
       if (btnLdb) btnLdb.addEventListener('click', function () { self.openLeaderboard(); });

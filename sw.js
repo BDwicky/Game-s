@@ -4,15 +4,15 @@
  * Version: 1.0.0 (PWA & Offline Capability)
  */
 
-const CACHE_NAME = 'dwicky-gamehub-v2';
+const CACHE_NAME = 'dwicky-gamehub-v3';
 
 const STATIC_PRECACHE = [
   '/',
   '/index.html',
-  '/style/hub.css?v=3',
-  '/js/hub.js?v=3',
+  '/style/hub.css?v=5',
+  '/js/hub.js?v=5',
   '/js/audio.js?v=1',
-  '/js/fullscreen.js?v=1',
+  '/js/fullscreen.js?v=2',
   '/favicon.ico',
   '/manifest.webmanifest',
   '/meta/icon-192.png',

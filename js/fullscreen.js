@@ -1,7 +1,7 @@
 /**
  * DWICKY GAME HUB - Universal Fullscreen State Manager
  * File: js/fullscreen.js
- * Persists and synchronizes fullscreen state between Lobby and Games bidirectionally.
+ * Synchronizes and persists fullscreen state seamlessly across Lobby and Games.
  */
 (function (root, factory) {
   if (typeof define === "function" && define.amd) {
@@ -17,6 +17,20 @@
   var STORAGE_KEY = "game_hub_fullscreen";
   var isNavigating = false;
   var gestureArmed = false;
+  var isIframe = (typeof window !== "undefined") && (window.parent && window.parent !== window);
+
+  // If opened directly as a standalone page (e.g. https://game.dwicky.dev/games/snake/)
+  // redirect through the portal runner so full PWA frame and seamless fullscreen are guaranteed!
+  if (typeof window !== "undefined" && !isIframe) {
+    var pathname = window.location.pathname;
+    var match = pathname.match(/\/games\/([a-zA-Z0-9_-]+)\/?$/);
+    if (match && match[1]) {
+      var gameName = match[1];
+      var search = window.location.search ? "&" + window.location.search.slice(1) : "";
+      window.location.replace("/?game=" + encodeURIComponent(gameName) + search);
+      return {};
+    }
+  }
 
   function markNavigating() {
     isNavigating = true;
@@ -27,7 +41,7 @@
     } catch (e) {}
   }
 
-  if (typeof document !== "undefined") {
+  if (typeof document !== "undefined" && !isIframe) {
     document.addEventListener("click", function (e) {
       var target = e.target;
       while (target && target !== document) {
@@ -46,9 +60,13 @@
   var FullscreenSync = {
     _lastToggle: 0,
     _onGesture: null,
+    isIframe: isIframe,
 
     isWanted: function () {
       try {
+        if (isIframe && window.parent && window.parent.FullscreenSync) {
+          return window.parent.FullscreenSync.isWanted();
+        }
         return localStorage.getItem(STORAGE_KEY) === "true";
       } catch (e) {
         return false;
@@ -57,12 +75,19 @@
 
     setWanted: function (wanted) {
       try {
+        if (isIframe && window.parent && window.parent.FullscreenSync) {
+          window.parent.FullscreenSync.setWanted(wanted);
+          return;
+        }
         localStorage.setItem(STORAGE_KEY, wanted ? "true" : "false");
       } catch (e) {}
     },
 
     isNativeFs: function () {
       if (typeof document === "undefined") return false;
+      if (isIframe && window.parent && window.parent.FullscreenSync) {
+        return window.parent.FullscreenSync.isNativeFs();
+      }
       return !!(
         document.fullscreenElement ||
         document.webkitFullscreenElement ||
@@ -72,6 +97,9 @@
     },
 
     isActive: function () {
+      if (isIframe && window.parent && window.parent.FullscreenSync) {
+        return window.parent.FullscreenSync.isActive();
+      }
       if (this.isNativeFs()) return true;
       if (typeof document !== "undefined") {
         return document.documentElement.classList.contains("is-fullscreen") ||
@@ -81,6 +109,10 @@
     },
 
     request: function () {
+      if (isIframe && window.parent && window.parent.FullscreenSync) {
+        return window.parent.FullscreenSync.request();
+      }
+
       var docEl = document.documentElement;
       var req = docEl.requestFullscreen ||
                 docEl.webkitRequestFullscreen ||
@@ -101,6 +133,10 @@
     },
 
     exit: function () {
+      if (isIframe && window.parent && window.parent.FullscreenSync) {
+        return window.parent.FullscreenSync.exit();
+      }
+
       var doc = document;
       var exit = doc.exitFullscreen ||
                  doc.webkitExitFullscreen ||
@@ -125,6 +161,11 @@
       if (this._lastToggle && (now - this._lastToggle < 300)) return;
       this._lastToggle = now;
 
+      if (isIframe && window.parent && window.parent.FullscreenSync) {
+        window.parent.FullscreenSync.toggle();
+        return;
+      }
+
       var willEnable = !this.isActive();
       if (willEnable) {
         this.setWanted(true);
@@ -133,6 +174,7 @@
         var self = this;
         this.request().then(function () {
           self.disarmGestureTrigger();
+          self.broadcastToChild(true);
         }).catch(function () {
           self.armGestureTrigger();
         });
@@ -142,10 +184,24 @@
         this.disarmGestureTrigger();
         this.applyClasses(false);
         this.updateUI(false);
+        this.broadcastToChild(false);
         if (this.isNativeFs()) {
           this.exit().catch(function () {});
         }
         this.showToast("Mode Layar Penuh Dinonaktifkan");
+      }
+    },
+
+    broadcastToChild: function (active) {
+      if (isIframe) return;
+      var frame = document.getElementById("game-runner-frame");
+      if (frame && frame.contentWindow) {
+        try {
+          frame.contentWindow.postMessage({
+            type: "fullscreen_change",
+            isFullscreen: active
+          }, "*");
+        } catch (e) {}
       }
     },
 
@@ -201,7 +257,7 @@
         window.Leaderboard.showToast(msg);
         return;
       }
-      var toast = document.getElementById("toast") || document.querySelector(".toast");
+      var toast = document.getElementById("toast") || document.getElementById("toast-notification") || document.querySelector(".toast");
       if (toast) {
         toast.textContent = msg;
         toast.classList.add("show");
@@ -213,7 +269,7 @@
     },
 
     armGestureTrigger: function () {
-      if (gestureArmed) return;
+      if (gestureArmed || isIframe) return;
       gestureArmed = true;
       var self = this;
 
@@ -224,7 +280,9 @@
         }
         self.disarmGestureTrigger();
         if (!self.isNativeFs()) {
-          self.request().catch(function () {});
+          self.request().then(function () {
+            self.broadcastToChild(true);
+          }).catch(function () {});
         }
       }
 
@@ -248,14 +306,78 @@
       }
     },
 
+    setupIframeNavigation: function () {
+      var self = this;
+      // Capture #btn-home click
+      var btnHome = document.getElementById("btn-home");
+      if (btnHome) {
+        btnHome.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          try {
+            window.parent.postMessage({ type: "close_game" }, "*");
+          } catch (err) {}
+          return false;
+        }, true);
+      }
+
+      // Capture Hub Modal links inside games (.game-hub-item)
+      document.querySelectorAll(".game-hub-item").forEach(function (link) {
+        link.addEventListener("click", function (e) {
+          var href = link.getAttribute("href");
+          if (!href || href === "#") return;
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          if (href.indexOf("index.html") !== -1 || href === "../../" || href === "/") {
+            window.parent.postMessage({ type: "close_game" }, "*");
+          } else {
+            var cleanGame = href.replace(/\.\.\//g, "").replace(/\//g, "");
+            if (cleanGame) {
+              window.parent.postMessage({ type: "switch_game", target: "games/" + cleanGame + "/" }, "*");
+            }
+          }
+          return false;
+        }, true);
+      });
+
+      // Listen to messages from parent
+      window.addEventListener("message", function (e) {
+        if (!e.data) return;
+        if (e.data.type === "fullscreen_change") {
+          self.applyClasses(e.data.isFullscreen);
+          self.updateUI(e.data.isFullscreen);
+        }
+      });
+    },
+
     init: function () {
       var self = this;
-      var wanted = this.isWanted();
 
+      if (isIframe) {
+        // In iframe mode, query parent state and intercept navigation
+        var active = false;
+        try {
+          if (window.parent && window.parent.FullscreenSync) {
+            active = window.parent.FullscreenSync.isActive();
+          } else {
+            active = this.isWanted();
+          }
+        } catch (e) {
+          active = this.isWanted();
+        }
+        this.applyClasses(active);
+        this.updateUI(active);
+        this.setupIframeNavigation();
+        return;
+      }
+
+      // Top level window
+      var wanted = this.isWanted();
       if (wanted) {
         this.applyClasses(true);
         this.request().then(function () {
           self.updateUI(true);
+          self.broadcastToChild(true);
         }).catch(function () {
           self.updateUI(true);
           self.armGestureTrigger();
@@ -274,11 +396,13 @@
           self.applyClasses(true);
           self.updateUI(true);
           self.disarmGestureTrigger();
+          self.broadcastToChild(true);
         } else {
           self.setWanted(false);
           self.applyClasses(false);
           self.updateUI(false);
           self.disarmGestureTrigger();
+          self.broadcastToChild(false);
         }
       }
 

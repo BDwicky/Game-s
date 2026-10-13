@@ -2007,3 +2007,39 @@ body.is-fullscreen {
   to { transform: scale(1.25); opacity: 1; }
 }
 
+
+/* ========================================================
+   SEAMLESS FULLSCREEN GAME RUNNER OVERLAY
+   ======================================================== */
+.game-runner-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 999999;
+  background: #060b13;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.game-runner-container.is-active {
+  display: flex !important;
+}
+
+.game-runner-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  display: block;
+  background: #060b13;
+  flex: 1 1 auto;
+}

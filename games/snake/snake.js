@@ -168,6 +168,7 @@
       }
 
       // Fullscreen toggle
+      var btnHome = document.getElementById('btn-home'); if (btnHome) btnHome.addEventListener('click', function (e) { if (window.parent && window.parent !== window) { e.preventDefault(); window.parent.postMessage({ type: 'close_game' }, '*'); } });
       if (this.btnFullscreen) {
         this.btnFullscreen.addEventListener('click', function () {
           self.toggleFullscreen();

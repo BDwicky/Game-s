@@ -27,6 +27,18 @@
       this.initAuth();
       this.loadPersonalBestScores();
       this.fetchTop3Overall();
+
+      // Auto-launch if game query parameter is set (e.g. /?game=snake)
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var gameParam = params.get("game");
+        if (gameParam) {
+          var validGames = ["2048", "memory", "pacman", "xox", "flappy", "tetris", "snake"];
+          if (validGames.indexOf(gameParam) !== -1) {
+            this.launchGame("games/" + gameParam + "/");
+          }
+        }
+      } catch (e) {}
     },
 
     cacheDom: function () {
@@ -127,7 +139,7 @@
         if (isFs) {
           document.body.classList.add('is-fullscreen');
           if (self.btnFullscreen) {
-            self.btnFullscreen.innerHTML = '<span>⛶</span><span class="btn-text">Keluar Layar Penuh</span>';
+            self.btnFullscreen.innerHTML = '<span>🗗</span><span class="btn-text">Keluar Layar Penuh</span>';
           }
         } else {
           document.body.classList.remove('is-fullscreen');
@@ -135,7 +147,45 @@
             self.btnFullscreen.innerHTML = '<span>⛶</span><span class="btn-text">Layar Penuh</span>';
           }
         }
+        var frame = document.getElementById('game-runner-frame');
+        if (frame && frame.contentWindow) {
+          try {
+            frame.contentWindow.postMessage({
+              type: 'fullscreen_change',
+              isFullscreen: isFs
+            }, '*');
+          } catch (err) {}
+        }
       };
+
+      // 2B. Seamless In-App Game Runner & Persistence
+      document.querySelectorAll('.game-card').forEach(function (card) {
+        card.addEventListener('click', function (e) {
+          var href = card.getAttribute('href');
+          if (href && !href.startsWith('http') && !href.startsWith('#')) {
+            e.preventDefault();
+            self.launchGame(href);
+          }
+        });
+      });
+
+      // PostMessage listener from in-game iframes
+      window.addEventListener('message', function (e) {
+        if (!e.data) return;
+        if (e.data.type === 'close_game' || e.data === 'close_game') {
+          self.closeGame();
+        } else if (e.data.type === 'switch_game' && e.data.target) {
+          self.launchGame(e.data.target);
+        }
+      });
+
+      // Popstate (Back button) handling
+      window.addEventListener('popstate', function (e) {
+        var container = document.getElementById('game-runner-container');
+        if (container && container.classList.contains('is-active')) {
+          self.closeGame(true);
+        }
+      });
 
       document.addEventListener('fullscreenchange', handleFsChange);
       document.addEventListener('webkitfullscreenchange', handleFsChange);
@@ -1181,6 +1231,70 @@
           document.body.classList.add('is-fullscreen');
           this.showToast('⛶ Mode Layar Penuh Aktif');
         }
+      }
+    },
+
+    launchGame: function (gamePath) {
+      var container = document.getElementById('game-runner-container');
+      var frame = document.getElementById('game-runner-frame');
+      if (!container || !frame) {
+        window.location.href = gamePath;
+        return;
+      }
+
+      if (window.RetroAudio) {
+        try { window.RetroAudio.play('click'); } catch (e) {}
+      }
+
+      if (gamePath && !gamePath.endsWith('/') && !gamePath.endsWith('.html')) {
+        gamePath += '/';
+      }
+
+      container.style.display = 'flex';
+      container.classList.add('is-active');
+      container.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+
+      frame.src = gamePath;
+
+      try {
+        history.pushState({ inGame: true, gamePath: gamePath }, '', gamePath);
+      } catch (e) {}
+
+      setTimeout(function () {
+        try {
+          if (frame.contentWindow) {
+            frame.contentWindow.focus();
+          }
+        } catch (e) {}
+      }, 150);
+    },
+
+    closeGame: function (fromPopState) {
+      var container = document.getElementById('game-runner-container');
+      var frame = document.getElementById('game-runner-frame');
+      if (!container || !frame) return;
+
+      if (window.RetroAudio) {
+        try { window.RetroAudio.play('click'); } catch (e) {}
+      }
+
+      container.classList.remove('is-active');
+      container.style.display = 'none';
+      container.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+
+      frame.src = 'about:blank';
+      window.focus();
+
+      if (!fromPopState) {
+        try {
+          history.pushState(null, '', '/');
+        } catch (e) {}
+      }
+
+      if (typeof this.fetchTop3Overall === 'function') {
+        this.fetchTop3Overall();
       }
     },
 

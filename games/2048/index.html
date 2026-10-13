@@ -59,7 +59,7 @@
       <div class="header-right">
         <!-- Row 1: Navbar Actions (Theme, Leaderboard, Fullscreen, Reset) -->
         <div class="navbar-actions">
-          <a class="btn-action btn-icon-only btn-home" id="btn-home" href="../../index.html" title="Kembali ke Home Page" aria-label="Kembali ke Home Page">
+          <a class="btn-action btn-icon-only btn-home" id="btn-home" href="../../index.html" title="Kembali ke Home Page" aria-label="Kembali ke Home Page" onclick="if(window.parent&&window.parent!==window){event.preventDefault();window.parent.postMessage({type:'close_game'},'*');return false;}">
             <span>🏠</span>
           </a>
           <button class="btn-action btn-icon-only btn-theme" id="btn-theme" type="button" title="Pilih Tema Game" aria-label="Pilih Tema" onclick="if(window.Leaderboard)window.Leaderboard.openThemeModal()">
@@ -304,7 +304,7 @@
   <script src="../../js/game_manager.js?v=25"></script>
   <script src="../../js/leaderboard.js?v=25"></script>
   <script src="../../js/audio.js?v=1"></script>
-    <script src="../../js/fullscreen.js?v=1"></script>
+    <script src="../../js/fullscreen.js?v=2"></script>
   <script src="../../js/application.js?v=25"></script>
 </body>
 </html>

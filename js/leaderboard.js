@@ -886,10 +886,21 @@
         if (window.localStorage) {
           window.localStorage.removeItem(USERNAME_KEY);
           window.localStorage.removeItem(AVATAR_KEY);
+          window.localStorage.removeItem("user_profile_name");
+          window.localStorage.removeItem("user_profile_avatar");
+          window.localStorage.removeItem("2048_player_avatar");
+          window.localStorage.removeItem("2048_player_username");
           window.localStorage.removeItem("bestScore");
           window.localStorage.removeItem("gameState");
         }
       } catch (e) {}
+
+      var avImg = document.getElementById("user-avatar-img");
+      if (avImg) {
+        avImg.src = "";
+        avImg.removeAttribute("src");
+        avImg.style.display = "none";
+      }
 
       if (this.storageManager) {
         if (this.storageManager.clearBestScore) this.storageManager.clearBestScore();

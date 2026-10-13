@@ -578,10 +578,12 @@
         }
       } else {
         if (this.navAvatarImg) {
+          this.navAvatarImg.src = '';
+          this.navAvatarImg.removeAttribute('src');
           this.navAvatarImg.style.display = 'none';
         }
         if (this.navAvatarText) {
-          this.navAvatarText.textContent = this.username.charAt(0).toUpperCase() || '👤';
+          this.navAvatarText.textContent = (this.username && this.username !== 'Pemain Baru') ? this.username.charAt(0).toUpperCase() : '👤';
           this.navAvatarText.style.display = 'flex';
         }
       }
@@ -919,13 +921,36 @@
         localStorage.removeItem('2048_username');
         localStorage.removeItem('user_profile_avatar');
         localStorage.removeItem('2048_avatar');
+        localStorage.removeItem('2048_player_avatar');
+        localStorage.removeItem('2048_player_username');
       } catch (e) {}
 
       this.token = '';
       this.username = 'Pemain Baru';
       this.avatar = '';
+      this.tempAvatar = '';
+      this.suggestedAvatar = '';
       this.isAuthenticated = false;
       this.isGuest = false;
+
+      // Clear DOM image sources immediately
+      if (this.navAvatarImg) {
+        this.navAvatarImg.src = '';
+        this.navAvatarImg.removeAttribute('src');
+        this.navAvatarImg.style.display = 'none';
+      }
+      if (this.modalAvatarImg) {
+        this.modalAvatarImg.src = '';
+        this.modalAvatarImg.removeAttribute('src');
+        this.modalAvatarImg.style.display = 'none';
+      }
+      var pvImg = document.getElementById('pv-img');
+      if (pvImg) {
+        pvImg.src = '';
+        pvImg.removeAttribute('src');
+        pvImg.style.display = 'none';
+      }
+
       this.closeModal(this.modalProfile);
       this.updateProfileUI();
       this.showToast('Anda telah logout dari akun.');
@@ -963,9 +988,13 @@
         if (this.modalAvatarText) this.modalAvatarText.style.display = 'none';
         if (this.btnRemoveAvatar) this.btnRemoveAvatar.style.display = 'inline-block';
       } else {
-        if (this.modalAvatarImg) this.modalAvatarImg.style.display = 'none';
+        if (this.modalAvatarImg) {
+          this.modalAvatarImg.src = '';
+          this.modalAvatarImg.removeAttribute('src');
+          this.modalAvatarImg.style.display = 'none';
+        }
         if (this.modalAvatarText) {
-          this.modalAvatarText.textContent = (username || '?').charAt(0).toUpperCase();
+          this.modalAvatarText.textContent = (username && username !== 'Pemain Baru') ? username.charAt(0).toUpperCase() : '👤';
           this.modalAvatarText.style.display = 'flex';
         }
         if (this.btnRemoveAvatar) this.btnRemoveAvatar.style.display = 'none';

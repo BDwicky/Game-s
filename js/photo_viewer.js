@@ -14,10 +14,10 @@
                localStorage.getItem("2048_avatar") ||
                localStorage.getItem("2048_player_avatar") ||
                "";
-      if (av && av.trim() && av !== "null" && av !== "undefined") return av;
+      if (av && av.trim() && av !== "null" && av !== "undefined") return av.trim();
     } catch (e) {}
 
-    // Fallback: check DOM elements for loaded image src
+    // Fallback: ONLY check DOM elements that are currently VISIBLE and actively displayed!
     var domImgs = [
       document.getElementById("profile-nav-img"),
       document.getElementById("user-avatar-img"),
@@ -28,8 +28,13 @@
     ];
     for (var i = 0; i < domImgs.length; i++) {
       var el = domImgs[i];
-      if (el && el.src && el.src.indexOf("data:image") === 0) return el.src;
-      if (el && el.src && el.style.display !== "none" && el.src.indexOf("http") === 0) return el.src;
+      if (!el) continue;
+      // If element is hidden (display:none) or has hidden attribute, ignore it!
+      if (el.style.display === "none" || el.hidden) continue;
+      if (window.getComputedStyle && window.getComputedStyle(el).display === "none") continue;
+      if (el.src && el.src.trim() && el.src !== window.location.href && el.src.indexOf("/null") === -1) {
+        return el.src.trim();
+      }
     }
     return "";
   }
@@ -40,7 +45,7 @@
                  localStorage.getItem("2048_username") ||
                  localStorage.getItem("2048_player_username") ||
                  "";
-      if (name && name.trim()) return name;
+      if (name && name.trim()) return name.trim();
     } catch (e) {}
 
     var domNames = [
@@ -53,7 +58,7 @@
       if (el && el.textContent && el.textContent.trim()) return el.textContent.trim();
       if (el && el.value && el.value.trim()) return el.value.trim();
     }
-    return "Pemain";
+    return "Pemain Baru";
   }
 
   function ensureModal() {
@@ -75,8 +80,8 @@
       '    <img id="pv-img" src="" alt="Foto Profil" style="width:100%; height:100%; object-fit:cover; display:none;">' +
       '    <span id="pv-placeholder" style="font-size:85px; color:#fff; user-select:none; line-height:1;">👤</span>' +
       '  </div>' +
-      '  <div id="pv-username" style="font-size:17px; font-weight:800; color:#f8fafc; margin-bottom:4px; max-width:270px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Pemain</div>' +
-      '  <div style="font-size:12px; color:#94a3b8; margin-bottom:18px;">Foto Profil Akun DWICKY GAME HUB</div>' +
+      '  <div id="pv-username" style="font-size:17px; font-weight:800; color:#f8fafc; margin-bottom:4px; max-width:270px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Pemain Baru</div>' +
+      '  <div id="pv-subtitle" style="font-size:12px; color:#94a3b8; margin-bottom:18px;">Foto Profil Akun DWICKY GAME HUB</div>' +
       '  <div style="display:flex; gap:10px; width:100%;">' +
       '    <button type="button" class="btn-primary" id="pv-btn-edit" style="flex:1; padding:10px 14px; font-size:13px; font-weight:800; border-radius:10px; cursor:pointer; border:none; background:linear-gradient(135deg, #06b6d4, #2563eb); color:#fff;">✏️ Ganti Foto</button>' +
       '    <button type="button" class="btn-secondary" id="pv-btn-dismiss" style="padding:10px 16px; font-size:13px; font-weight:700; border-radius:10px; cursor:pointer; border:1px solid rgba(255,255,255,0.16); background:rgba(255,255,255,0.08); color:#fff;">Tutup</button>' +
@@ -130,18 +135,31 @@
     var img = modal.querySelector("#pv-img");
     var placeholder = modal.querySelector("#pv-placeholder");
     var userEl = modal.querySelector("#pv-username");
+    var subtitleEl = modal.querySelector("#pv-subtitle");
+    var btnEdit = modal.querySelector("#pv-btn-edit");
 
     if (userEl) userEl.textContent = username;
 
-    if (avatarSrc) {
+    if (avatarSrc && avatarSrc.trim() && avatarSrc !== "null" && avatarSrc !== "undefined") {
       if (img) {
         img.src = avatarSrc;
         img.style.display = "block";
       }
       if (placeholder) placeholder.style.display = "none";
+      if (subtitleEl) subtitleEl.textContent = "Foto Profil Akun DWICKY GAME HUB";
+      if (btnEdit) btnEdit.textContent = "✏️ Ganti Foto";
     } else {
-      if (img) img.style.display = "none";
-      if (placeholder) placeholder.style.display = "block";
+      if (img) {
+        img.src = "";
+        img.removeAttribute("src");
+        img.style.display = "none";
+      }
+      if (placeholder) {
+        placeholder.textContent = (username && username !== "Pemain" && username !== "Pemain Baru") ? username.charAt(0).toUpperCase() : "👤";
+        placeholder.style.display = "block";
+      }
+      if (subtitleEl) subtitleEl.textContent = "Belum ada foto profil";
+      if (btnEdit) btnEdit.textContent = "📷 Unggah Foto Profil";
     }
 
     modal.classList.add("is-open");

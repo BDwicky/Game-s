@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Master Game Hub Stylesheet -->
-  <link rel="stylesheet" href="style/hub.css?v=5">
+  <link rel="stylesheet" href="style/hub.css?v=6">
   <script>try{if(localStorage.getItem('game_hub_fullscreen')==='true')document.documentElement.classList.add('is-fullscreen');}catch(e){}</script>
 </head>
 <body>
@@ -91,7 +91,20 @@
          ======================================================== -->
     <nav class="hub-navbar" aria-label="Navigasi Game Hub">
       
-      <!-- Brand Logo / Title -->
+      <!-- Profil Akun Pemain di Kiri (Sleek Horizontal Pill Card) -->
+      <div class="navbar-profile-card" id="navbar-profile-btn" title="Klik untuk mengedit foto & username profil pemain">
+        <div class="profile-avatar-stack">
+          <img id="profile-nav-img" class="profile-nav-img" src="" alt="Foto Profil" style="display: none;">
+          <div id="profile-nav-placeholder" class="profile-nav-placeholder">👤</div>
+          <span class="profile-edit-badge" title="Ganti Profil">✏️</span>
+        </div>
+        <div class="profile-info-col">
+          <div class="profile-username-label" id="profile-username-display">Pemain Baru</div>
+          <span class="profile-username-hint" id="profile-status-hint">Belum Masuk</span>
+        </div>
+      </div>
+
+      <!-- Brand Logo / Title di Tengah -->
       <a href="index.html" class="navbar-brand">
         <div class="brand-icon-box">🎮</div>
         <div class="brand-titles">
@@ -99,17 +112,6 @@
           <span class="brand-sub-title">Portal Arcade & High Scores</span>
         </div>
       </a>
-
-      <!-- REQUIRED: Profil Navbar - Foto Profil di Atas, Username di Bawahnya -->
-      <div class="navbar-profile-center" id="navbar-profile-btn" title="Klik untuk mengedit foto & username profil pemain">
-        <div class="profile-avatar-stack">
-          <img id="profile-nav-img" class="profile-nav-img" src="" alt="Foto Profil" style="display: none;">
-          <div id="profile-nav-placeholder" class="profile-nav-placeholder">👤</div>
-          <span class="profile-edit-badge" title="Ganti Profil">✏️</span>
-        </div>
-        <div class="profile-username-label" id="profile-username-display">Pemain Baru</div>
-        <span class="profile-username-hint" id="profile-status-hint">Belum Masuk</span>
-      </div>
 
       <!-- Action Buttons (Fullscreen, Sound, Global Leaderboard, Auth / Logout, Install) -->
       <div class="navbar-actions">
@@ -687,6 +689,6 @@
   <!-- Scripts: Universal Audio Engine & Master Game Hub -->
   <script src="js/audio.js?v=1"></script>
     <script src="js/fullscreen.js?v=2"></script>
-  <script src="js/hub.js?v=5"></script>
+  <script src="js/hub.js?v=6"></script>
 </body>
 </html>

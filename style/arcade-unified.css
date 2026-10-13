@@ -98,23 +98,26 @@ body.dark-theme .container,
   margin: 0 !important;
 }
 
-/* Unified Profile Badge */
+/* Unified Profile Badge (Left Aligned Horizontal Pill) */
 .user-badge,
 .profile-card-container {
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
+  justify-content: flex-start !important;
   gap: 8px !important;
-  background: rgba(0, 0, 0, 0.45) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   border-radius: 999px !important;
-  padding: 3px 10px 3px 3px !important;
+  padding: 3px 12px 3px 3px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
-  height: 34px !important;
-  max-height: 34px !important;
+  height: 36px !important;
+  max-height: 36px !important;
   box-sizing: border-box !important;
   width: auto !important;
   min-width: 0 !important;
+  margin: 0 !important;
+  float: none !important;
 }
 
 .user-badge:hover,
@@ -151,7 +154,7 @@ body.dark-theme .container,
   font-size: 13px !important;
   font-weight: 700 !important;
   color: #f8fafc !important;
-  max-width: 95px !important;
+  max-width: 120px !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -328,11 +331,16 @@ canvas {
   z-index: 999999 !important;
   background: rgba(0, 0, 0, 0.78) !important;
   backdrop-filter: blur(8px) !important;
-  display: flex !important;
+  display: none !important;
   align-items: center !important;
   justify-content: center !important;
   padding: 16px !important;
   box-sizing: border-box !important;
+}
+
+.modal-backdrop.is-open,
+.modal-backdrop.show {
+  display: flex !important;
 }
 
 .modal-card,

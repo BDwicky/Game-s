@@ -190,7 +190,10 @@
       });
 
       window.addEventListener('keydown', function (e) {
-        if (e.code === 'Space' || e.code === 'ArrowUp') {
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+        var k = (e.key || '').toLowerCase();
+        var c = e.code || '';
+        if (c === 'Space' || c === 'ArrowUp' || c === 'KeyW' || k === ' ' || k === 'arrowup' || k === 'w') {
           e.preventDefault();
           self.flap();
         }

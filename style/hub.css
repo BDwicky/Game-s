@@ -392,48 +392,51 @@ body.is-fullscreen {
   color: var(--text-muted);
 }
 
-/* --- REQUIRED: Foto Profil di Atas, Username di Bawahnya --- */
+/* --- Sleek Horizontal Profile Card on the LEFT --- */
+.navbar-profile-card,
 .navbar-profile-center {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 4px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-md);
+  gap: 10px;
+  padding: 4px 14px 4px 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
   cursor: pointer;
   transition: var(--transition);
   user-select: none;
+  flex-shrink: 0;
 }
 
+.navbar-profile-card:hover,
 .navbar-profile-center:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(250, 204, 21, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(250, 204, 21, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .profile-avatar-stack {
   position: relative;
-  width: 46px;
-  height: 46px;
-  margin-bottom: 4px;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .profile-nav-img {
-  width: 46px;
-  height: 46px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgba(250, 204, 21, 0.8);
-  box-shadow: 0 0 10px rgba(250, 204, 21, 0.25);
+  box-shadow: 0 0 8px rgba(250, 204, 21, 0.25);
   display: block;
 }
 
 .profile-nav-placeholder {
-  width: 46px;
-  height: 46px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   border: 2px solid rgba(255, 255, 255, 0.2);
@@ -441,10 +444,9 @@ body.is-fullscreen {
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 18px;
+  font-size: 16px;
   color: #fff;
   text-transform: uppercase;
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
 }
 
 .profile-edit-badge {
@@ -453,31 +455,37 @@ body.is-fullscreen {
   right: -2px;
   background: #facc15;
   color: #000;
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  font-size: 10px;
+  font-size: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
+.profile-info-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.25;
+  text-align: left;
+}
+
 .profile-username-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-main);
   max-width: 130px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  letter-spacing: -0.2px;
 }
 
 .profile-username-hint {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -1810,25 +1818,27 @@ body.is-fullscreen {
     font-size: 17px;
   }
 
+  .navbar-profile-card,
   .navbar-profile-center {
-    padding: 4px 6px;
+    padding: 3px 8px 3px 3px;
+    gap: 6px;
   }
 
   .profile-avatar-stack {
-    width: 36px;
-    height: 36px;
-    margin-bottom: 2px;
+    width: 30px;
+    height: 30px;
+    margin: 0;
   }
 
   .profile-nav-img, .profile-nav-placeholder {
-    width: 36px;
-    height: 36px;
-    font-size: 14px;
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
   }
 
   .profile-username-label {
     font-size: 11px;
-    max-width: 80px;
+    max-width: 75px;
   }
 
   .profile-username-hint {

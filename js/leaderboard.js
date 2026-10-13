@@ -26,8 +26,12 @@
       this.initialized = true;
 
       this.storageManager = storageManager || (typeof LocalStorageManager !== "undefined" ? new LocalStorageManager() : null);
-      this.username = (window.localStorage ? window.localStorage.getItem(USERNAME_KEY) : "") || "";
-      this.avatar = (window.localStorage ? window.localStorage.getItem(AVATAR_KEY) : "") || "";
+      var storedUser = "";
+      try {
+        storedUser = localStorage.getItem("user_profile_name") || localStorage.getItem(USERNAME_KEY) || "";
+      } catch (e) {}
+      this.username = storedUser || "Pemain Baru";
+      this.avatar = (window.localStorage ? (window.localStorage.getItem("user_profile_avatar") || window.localStorage.getItem(AVATAR_KEY)) : "") || "";
       this.pendingAvatar = this.avatar;
 
       this.initTheme();
@@ -36,14 +40,6 @@
       this.updateUserBadge();
 
       this.fetchGlobalScore();
-
-      var self = this;
-      if (!this.username) {
-        // Show username prompt immediately
-        setTimeout(function () {
-          self.openUsernameModal(false);
-        }, 150);
-      }
     },
 
     THEMES: [

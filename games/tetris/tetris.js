@@ -266,9 +266,11 @@
 
       // Keyboard Controls
       window.addEventListener('keydown', function (e) {
-        if (e.target.tagName === 'INPUT') return;
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+        var k = (e.key || '').toLowerCase();
+        var c = e.code || '';
 
-        if (e.code === 'KeyP') {
+        if (c === 'KeyP' || k === 'p') {
           e.preventDefault();
           self.togglePause();
           return;
@@ -276,25 +278,25 @@
 
         if (self.state !== 1) return;
 
-        if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+        if (c === 'ArrowLeft' || c === 'KeyA' || k === 'arrowleft' || k === 'a') {
           e.preventDefault();
           self.movePiece(-1);
-        } else if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+        } else if (c === 'ArrowRight' || c === 'KeyD' || k === 'arrowright' || k === 'd') {
           e.preventDefault();
           self.movePiece(1);
-        } else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+        } else if (c === 'ArrowDown' || c === 'KeyS' || k === 'arrowdown' || k === 's') {
           e.preventDefault();
           self.softDrop();
-        } else if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'KeyX') {
+        } else if (c === 'ArrowUp' || c === 'KeyW' || c === 'KeyX' || k === 'arrowup' || k === 'w' || k === 'x') {
           e.preventDefault();
           self.rotatePiece(1);
-        } else if (e.code === 'KeyZ' || e.code === 'KeyQ') {
+        } else if (c === 'KeyZ' || c === 'KeyQ' || k === 'z' || k === 'q') {
           e.preventDefault();
           self.rotatePiece(-1);
-        } else if (e.code === 'Space') {
+        } else if (c === 'Space' || k === ' ') {
           e.preventDefault();
           self.hardDrop();
-        } else if (e.code === 'KeyC' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+        } else if (c === 'KeyC' || c === 'ShiftLeft' || c === 'ShiftRight' || k === 'c' || k === 'shift') {
           e.preventDefault();
           self.holdAction();
         }

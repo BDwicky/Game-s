@@ -179,6 +179,48 @@
         }
       });
 
+      // Runner frame click focus transfer
+      var runnerContainer = document.getElementById('game-runner-container');
+      var runnerFrame = document.getElementById('game-runner-frame');
+      if (runnerContainer) {
+        runnerContainer.addEventListener('click', function () {
+          try {
+            if (runnerFrame && runnerFrame.contentWindow) {
+              runnerFrame.focus();
+              runnerFrame.contentWindow.focus();
+            }
+          } catch (err) {}
+        });
+      }
+
+      // Seamless keyboard forwarding from parent window to runner iframe
+      window.addEventListener('keydown', function (e) {
+        var rContainer = document.getElementById('game-runner-container');
+        var rFrame = document.getElementById('game-runner-frame');
+        if (!rContainer || !rContainer.classList.contains('is-active')) return;
+        if (!rFrame || !rFrame.contentWindow) return;
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+
+        var k = (e.key || '').toLowerCase();
+        var c = e.code || '';
+        var gameKeys = ['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd', ' ', 'p', 'r', 'z', 'x', 'c', 'q'];
+        if (gameKeys.indexOf(k) !== -1 || ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD','Space','KeyP','KeyR'].indexOf(c) !== -1) {
+          try {
+            rFrame.focus();
+            rFrame.contentWindow.focus();
+            var forwarded = new rFrame.contentWindow.KeyboardEvent('keydown', {
+              key: e.key,
+              code: e.code,
+              keyCode: e.keyCode,
+              which: e.which,
+              bubbles: true,
+              cancelable: true
+            });
+            rFrame.contentWindow.dispatchEvent(forwarded);
+          } catch (err) {}
+        }
+      });
+
       // Popstate (Back button) handling
       window.addEventListener('popstate', function (e) {
         var container = document.getElementById('game-runner-container');
@@ -1261,13 +1303,22 @@
         history.pushState({ inGame: true, gamePath: gamePath }, '', gamePath);
       } catch (e) {}
 
-      setTimeout(function () {
+      var focusFrame = function () {
         try {
-          if (frame.contentWindow) {
+          if (frame && frame.contentWindow) {
+            frame.focus();
             frame.contentWindow.focus();
           }
         } catch (e) {}
-      }, 150);
+      };
+
+      frame.onload = function () {
+        focusFrame();
+      };
+
+      setTimeout(focusFrame, 100);
+      setTimeout(focusFrame, 300);
+      setTimeout(focusFrame, 600);
     },
 
     closeGame: function (fromPopState) {

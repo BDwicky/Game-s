@@ -122,6 +122,7 @@
       this.bindControls();
       this.resetGame();
       this.loop();
+      try { window.focus(); if (this.canvas) this.canvas.focus(); } catch (err) {}
     },
 
     loadProfile: function () {
@@ -189,12 +190,20 @@
     bindControls: function () {
       var self = this;
 
-      // Keyboard Arrow & WASD
+      // Keyboard Arrow & WASD (Supports e.code, e.key, both cases)
       window.addEventListener('keydown', function (e) {
-        if (['ArrowUp', 'KeyW'].indexOf(e.code) !== -1) { e.preventDefault(); self.setDir(D.UP); }
-        if (['ArrowDown', 'KeyS'].indexOf(e.code) !== -1) { e.preventDefault(); self.setDir(D.DOWN); }
-        if (['ArrowLeft', 'KeyA'].indexOf(e.code) !== -1) { e.preventDefault(); self.setDir(D.LEFT); }
-        if (['ArrowRight', 'KeyD'].indexOf(e.code) !== -1) { e.preventDefault(); self.setDir(D.RIGHT); }
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+        var k = (e.key || '').toLowerCase();
+        var c = e.code || '';
+        if (c === 'ArrowUp' || c === 'KeyW' || k === 'arrowup' || k === 'w') {
+          e.preventDefault(); self.setDir(D.UP);
+        } else if (c === 'ArrowDown' || c === 'KeyS' || k === 'arrowdown' || k === 's') {
+          e.preventDefault(); self.setDir(D.DOWN);
+        } else if (c === 'ArrowLeft' || c === 'KeyA' || k === 'arrowleft' || k === 'a') {
+          e.preventDefault(); self.setDir(D.LEFT);
+        } else if (c === 'ArrowRight' || c === 'KeyD' || k === 'arrowright' || k === 'd') {
+          e.preventDefault(); self.setDir(D.RIGHT);
+        }
       });
 
       // Responsive Full-Screen Touchscreen Direction

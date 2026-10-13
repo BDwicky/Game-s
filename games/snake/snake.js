@@ -49,6 +49,7 @@
 
       this.resetGame();
       this.draw();
+      try { window.focus(); if (this.canvas) this.canvas.focus(); } catch (err) {}
     },
 
     loadProfile: function () {
@@ -180,23 +181,28 @@
         el.addEventListener('click', function (e) {
           if (e.target === el) {
             var mb = el.classList.contains('modal-backdrop') ? el : el.closest('.modal-backdrop');
-            if (mb) mb.style.display = 'none';
+            if (mb) {
+              mb.classList.remove('is-open');
+              mb.style.display = 'none';
+            }
           }
         });
       });
 
-      // Keyboard navigation
+      // Keyboard navigation (Supports e.code & e.key, both cases)
       window.addEventListener('keydown', function (e) {
-        var key = e.key;
-        if (['ArrowUp', 'w', 'W'].indexOf(key) !== -1) {
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+        var k = (e.key || '').toLowerCase();
+        var c = e.code || '';
+        if (c === 'ArrowUp' || c === 'KeyW' || k === 'arrowup' || k === 'w') {
           e.preventDefault(); self.changeDirection(0, -1);
-        } else if (['ArrowDown', 's', 'S'].indexOf(key) !== -1) {
+        } else if (c === 'ArrowDown' || c === 'KeyS' || k === 'arrowdown' || k === 's') {
           e.preventDefault(); self.changeDirection(0, 1);
-        } else if (['ArrowLeft', 'a', 'A'].indexOf(key) !== -1) {
+        } else if (c === 'ArrowLeft' || c === 'KeyA' || k === 'arrowleft' || k === 'a') {
           e.preventDefault(); self.changeDirection(-1, 0);
-        } else if (['ArrowRight', 'd', 'D'].indexOf(key) !== -1) {
+        } else if (c === 'ArrowRight' || c === 'KeyD' || k === 'arrowright' || k === 'd') {
           e.preventDefault(); self.changeDirection(1, 0);
-        } else if (key === ' ' || key === 'p' || key === 'P') {
+        } else if (c === 'Space' || k === ' ' || k === 'p') {
           e.preventDefault(); self.togglePause();
         }
       });
@@ -384,6 +390,8 @@
 
     changeDirection: function (dx, dy) {
       if (!this.isRunning) {
+        this.nextDir = { x: dx, y: dy };
+        this.dir = { x: dx, y: dy };
         this.startGame();
         return;
       }

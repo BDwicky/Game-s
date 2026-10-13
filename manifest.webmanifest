@@ -1,0 +1,32 @@
+{
+  "name": "Game Hub - Portal Arcade & Leaderboard",
+  "short_name": "Game Hub",
+  "description": "Koleksi 7 game arcade klasik modern: 2048, Memory, Pacman, XOX, Flappy Bird, Tetris, dan Snake Neon dengan shared profile dan global leaderboard.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "categories": ["games", "arcade", "entertainment"],
+  "icons": [
+    {
+      "src": "/meta/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/meta/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/meta/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

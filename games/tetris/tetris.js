@@ -11,7 +11,7 @@
     ctx: null,
     enabled: true,
 
-    init: function () {
+    init: function () { try { this.enabled = localStorage.getItem("game_hub_sound_muted") !== "true"; } catch (e) { this.enabled = true; }
       if (!this.ctx) {
         var AC = window.AudioContext || window.webkitAudioContext;
         if (AC) this.ctx = new AC();
@@ -399,7 +399,7 @@
       var btnSound = document.getElementById('btn-sound');
       if (btnSound) {
         btnSound.addEventListener('click', function () {
-          Sound.enabled = !Sound.enabled;
+          Sound.enabled = !Sound.enabled; try { localStorage.setItem("game_hub_sound_muted", Sound.enabled ? "false" : "true"); } catch (e) {}
           btnSound.textContent = Sound.enabled ? '🔊' : '🔇';
           self.showToast(Sound.enabled ? 'Suara Aktif' : 'Suara Mati');
         });

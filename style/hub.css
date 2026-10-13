@@ -548,6 +548,19 @@ body.is-fullscreen {
   box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
 }
 
+.nav-btn-install {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #6ee7b7;
+}
+
+.nav-btn-install:hover {
+  background: rgba(16, 185, 129, 0.28);
+  border-color: #10b981;
+  color: #fff;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
+}
+
 .btn-modal-logout {
   background: rgba(239, 68, 68, 0.12);
   border: 1px solid rgba(239, 68, 68, 0.35);
@@ -1920,3 +1933,76 @@ body.is-fullscreen {
 .block-o { background: #eab308; box-shadow: 0 0 8px #eab308; }
 .block-s { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
 .block-z { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+
+/* 7. Snake Neon Visual Showcase */
+.showcase-snake {
+  background: radial-gradient(circle at 50% 50%, #061a14 0%, #030712 100%);
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.snake-neon-mock {
+  position: relative;
+  width: 140px;
+  height: 90px;
+  transition: transform 0.4s ease;
+}
+
+.game-card:hover .snake-neon-mock {
+  transform: scale(1.1) translateY(-4px);
+}
+
+.snake-mock-seg {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+}
+
+.snake-mock-seg.head {
+  left: 80px;
+  top: 24px;
+  background: #06b6d4;
+  box-shadow: 0 0 14px #06b6d4;
+  border-radius: 6px;
+}
+
+.snake-mock-seg.body1 { left: 60px; top: 24px; }
+.snake-mock-seg.body2 { left: 40px; top: 24px; }
+.snake-mock-seg.body3 { left: 40px; top: 44px; background: #059669; }
+.snake-mock-seg.body4 { left: 20px; top: 44px; background: #047857; }
+
+.snake-mock-food {
+  position: absolute;
+  left: 108px;
+  top: 27px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 12px #10b981;
+  animation: pulseFood 1.2s infinite alternate;
+}
+
+.snake-mock-bonus {
+  position: absolute;
+  left: 72px;
+  top: 56px;
+  font-size: 15px;
+  color: #facc15;
+  text-shadow: 0 0 12px #facc15;
+  animation: pulseFood 1.5s infinite alternate;
+}
+
+@keyframes pulseFood {
+  from { transform: scale(0.9); opacity: 0.8; }
+  to { transform: scale(1.25); opacity: 1; }
+}
+

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Snake Neon - Arcade Ular Klasik & Leaderboard | game.dwicky.dev</title>
+  <meta name="description" content="Mainkan Snake Neon Arcade klasik dengan visual neon 60fps, bonus buah spesial, dan papan peringkat global terhubung di game.dwicky.dev.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="shortcut icon" href="../../favicon.ico">
+</head>
+<body>
+
+  <div class="snake-wrapper">
+    <!-- Header -->
+    <header class="snake-header">
+      <div class="user-badge" id="user-badge" title="Profil Pemain">
+        <div class="avatar-circle">
+          <img id="user-avatar-img" src="" alt="Avatar" style="display:none;">
+          <span id="user-avatar-text">👤</span>
+        </div>
+        <span class="username-display" id="username-display">Pemain Baru</span>
+      </div>
+
+      <div class="header-actions">
+        <a class="btn-icon btn-home" id="btn-home" href="../../index.html" title="Kembali ke Home Page" aria-label="Kembali ke Home Page">
+          <span>🏠</span><span class="btn-text">Home</span>
+        </a>
+        <button class="btn-icon" id="btn-sound" type="button" title="Suara">
+          🔊
+        </button>
+        <button class="btn-icon" id="btn-leaderboard" type="button" title="Papan Peringkat">
+          🏆
+        </button>
+        <button class="btn-icon" id="btn-fullscreen" type="button" title="Layar Penuh">
+          ⛶
+        </button>
+      </div>
+    </header>
+
+    <!-- Score & Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-box">
+        <span class="stat-label">SKOR</span>
+        <span class="stat-value" id="current-score">0</span>
+      </div>
+      <div class="stat-box highlight">
+        <span class="stat-label">REKOR</span>
+        <span class="stat-value" id="high-score">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">PANJANG</span>
+        <span class="stat-value" id="snake-length">3</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">LEVEL</span>
+        <span class="stat-value" id="snake-level">1</span>
+      </div>
+    </div>
+
+    <!-- Canvas Wrap Container -->
+    <main class="canvas-container" id="canvas-container">
+      <canvas id="snake-canvas" width="400" height="400"></canvas>
+
+      <!-- Overlay: Start / Ready -->
+      <div class="game-overlay" id="overlay-start">
+        <div class="overlay-card">
+          <div class="overlay-icon">🐍</div>
+          <h1 class="overlay-title">SNAKE NEON</h1>
+          <p class="overlay-subtitle">Santap makanan neon, hindari dinding & tubuh sendiri!</p>
+          <div class="control-hints">
+            <span>💻 Keyboard: Panah / WASD</span>
+            <span>📱 Layar Sentuh: Geser (Swipe) / D-Pad</span>
+          </div>
+          <button type="button" class="btn-primary" id="btn-start">MULAI MAIN ▶</button>
+        </div>
+      </div>
+
+      <!-- Overlay: Game Over -->
+      <div class="game-overlay" id="overlay-gameover" style="display:none;">
+        <div class="overlay-card">
+          <div class="overlay-icon">💥</div>
+          <h2 class="overlay-title text-danger">GAME OVER</h2>
+          <div class="gameover-stats">
+            <div>Skor Akhir: <strong id="go-final-score" class="text-accent">0</strong></div>
+            <div>Rekor Terbaik: <strong id="go-best-score">0</strong></div>
+          </div>
+          <div class="new-record-badge" id="go-new-record" style="display:none;">🎉 REKOR BARU TERCIPTA!</div>
+          <div class="overlay-btns">
+            <button type="button" class="btn-primary" id="btn-restart">MAIN LAGI 🔄</button>
+            <button type="button" class="btn-secondary" id="btn-view-leaderboard">PERINGKAT 🏆</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Virtual D-Pad -->
+    <div class="virtual-dpad" id="virtual-dpad">
+      <div class="dpad-row">
+        <button type="button" class="dpad-btn" id="dpad-up" aria-label="Atas">▲</button>
+      </div>
+      <div class="dpad-row middle">
+        <button type="button" class="dpad-btn" id="dpad-left" aria-label="Kiri">◀</button>
+        <button type="button" class="dpad-center-btn" id="dpad-pause" aria-label="Pause">⏸</button>
+        <button type="button" class="dpad-btn" id="dpad-right" aria-label="Kanan">▶</button>
+      </div>
+      <div class="dpad-row">
+        <button type="button" class="dpad-btn" id="dpad-down" aria-label="Bawah">▼</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Leaderboard -->
+  <div class="modal-backdrop" id="modal-leaderboard" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🏆 Papan Peringkat Snake Neon</h2>
+        <button type="button" class="modal-close" aria-label="Tutup">&times;</button>
+      </div>
+      <div class="modal-body" id="leaderboard-content">
+        <div style="text-align:center; padding:20px; color:#94a3b8;">Memuat data peringkat...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-msg" id="toast-notification"></div>
+
+  <!-- Scripts -->
+  <script src="../../js/audio.js?v=1"></script>
+  <script src="snake.js?v=1"></script>
+</body>
+</html>

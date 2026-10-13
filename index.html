@@ -3,13 +3,15 @@
 <head>
   <meta charset="utf-8">
   <title>🎮 Game Hub - Portal Game & Leaderboard dwicky.dev</title>
-  <meta name="description" content="Pilih dan mainkan koleksi 6 game arcade seru: 2048, Memory Game, Pacman, X O X, Flappy Bird, dan Tetris dengan akun berproteksi PIN 6 digit dan global leaderboard.">
+  <meta name="description" content="Pilih dan mainkan koleksi 7 game arcade seru: 2048, Memory Game, Pacman, X O X, Flappy Bird, Tetris, dan Snake Neon dengan akun berproteksi PIN 6 digit dan global leaderboard.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   
   <link rel="shortcut icon" href="favicon.ico">
-  <link rel="apple-touch-icon" href="meta/apple-touch-icon.png">
+  <link rel="apple-touch-icon" href="meta/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Game Hub">
   <meta name="theme-color" content="#090d16">
 
   <!-- Google Fonts -->
@@ -18,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Master Game Hub Stylesheet -->
-  <link rel="stylesheet" href="style/hub.css?v=3">
+  <link rel="stylesheet" href="style/hub.css?v=4">
 </head>
 <body>
 
@@ -108,8 +110,12 @@
         <span class="profile-username-hint" id="profile-status-hint">Belum Masuk</span>
       </div>
 
-      <!-- Action Buttons (Fullscreen, Global Leaderboard, Auth / Logout) -->
+      <!-- Action Buttons (Fullscreen, Sound, Global Leaderboard, Auth / Logout, Install) -->
       <div class="navbar-actions">
+        <button type="button" class="nav-btn" id="btn-sound-toggle" title="Suara Game (Mute / Unmute)">
+          <span id="nav-sound-icon">🔊</span>
+          <span class="btn-text">Suara</span>
+        </button>
         <button type="button" class="nav-btn" id="btn-fullscreen" title="Mode Layar Penuh">
           <span>⛶</span>
           <span class="btn-text">Layar Penuh</span>
@@ -117,6 +123,10 @@
         <button type="button" class="nav-btn nav-btn-primary" id="btn-leaderboard" title="Buka Papan Peringkat Global">
           <span>🏆</span>
           <span class="btn-text">Peringkat</span>
+        </button>
+        <button type="button" class="nav-btn nav-btn-install" id="btn-pwa-install" title="Install Game Hub ke Layar Utama" style="display: none;">
+          <span>📲</span>
+          <span class="btn-text">Install</span>
         </button>
         <button type="button" class="nav-btn nav-btn-danger" id="btn-logout" title="Keluar dari Akun (Logout)" style="display: none;">
           <span>🚪</span>
@@ -139,7 +149,7 @@
         <h2 class="section-heading">
           <span>🕹️ Pilih Permainan</span>
         </h2>
-        <span class="games-count-pill">6 Game Tersedia</span>
+        <span class="games-count-pill" id="games-count-pill">7 Game Tersedia</span>
       </div>
 
       <div class="cards-grid">
@@ -395,6 +405,47 @@
           </div>
         </a>
 
+        <!-- Card 7: Snake Neon -->
+        <a href="games/snake/" class="game-card card-snake" id="card-game-snake">
+          <!-- Card Tampilan Gamenya (Visual Preview Showcase) -->
+          <div class="card-visual-showcase showcase-snake">
+            <span class="showcase-badge-top" style="color: #10b981; border-color: rgba(16, 185, 129, 0.4);">🐍 NEON ARCADE</span>
+            <span class="showcase-highscore-pill">
+              <span>Rekor:</span>
+              <strong id="card-score-snake">0</strong>
+            </span>
+            <div class="snake-neon-mock">
+              <div class="snake-mock-seg head"></div>
+              <div class="snake-mock-seg body1"></div>
+              <div class="snake-mock-seg body2"></div>
+              <div class="snake-mock-seg body3"></div>
+              <div class="snake-mock-seg body4"></div>
+              <div class="snake-mock-food"></div>
+              <div class="snake-mock-bonus">★</div>
+            </div>
+          </div>
+          <!-- Di Bawah Card Ada Nama Gamenya -->
+          <div class="card-content-bottom">
+            <h3 class="game-name-title">
+              <span>Snake Neon</span>
+              <span style="font-size: 16px;">⚡</span>
+            </h3>
+            <p class="game-desc-text">
+              Klasik legendaris bertema cyberpunk! Santap titik neon, kumpulkan bintang bonus spesial, dan hindari dinding serta ekor sendiri.
+            </p>
+            <div class="card-footer-action">
+              <div class="card-score-info">
+                <span class="card-score-label">Kategori</span>
+                <span style="font-size: 13px; font-weight: 700; color: #10b981;">Refleks & Taktik</span>
+              </div>
+              <button type="button" class="btn-play-card" style="background: linear-gradient(135deg, #10b981, #06b6d4); font-weight: 800;">
+                <span>Mainkan</span>
+                <span>▶</span>
+              </button>
+            </div>
+          </div>
+        </a>
+
       </div>
     </main>
 
@@ -614,6 +665,7 @@
           <button type="button" class="ldb-tab" data-tab="xox">❌⭕ X O X</button>
           <button type="button" class="ldb-tab" data-tab="flappy">🐦 Flappy</button>
           <button type="button" class="ldb-tab" data-tab="tetris">🧱 Tetris</button>
+          <button type="button" class="ldb-tab" data-tab="snake">🐍 Snake</button>
         </div>
 
         <!-- Leaderboard Table Container -->
@@ -626,7 +678,8 @@
   <!-- Toast Notification Feedback -->
   <div class="toast-msg" id="toast-notification"></div>
 
-  <!-- Master Game Hub Script -->
-  <script src="js/hub.js?v=3"></script>
+  <!-- Scripts: Universal Audio Engine & Master Game Hub -->
+  <script src="js/audio.js?v=1"></script>
+  <script src="js/hub.js?v=4"></script>
 </body>
 </html>

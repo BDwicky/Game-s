@@ -149,6 +149,7 @@ GameManager.prototype.move = function (direction) {
   var vector     = this.getVector(direction);
   var traversals = this.buildTraversals(vector);
   var moved      = false;
+  var startScore = this.score;
 
   // Save the current tile positions and remove merger information
   this.prepareTiles();
@@ -195,6 +196,13 @@ GameManager.prototype.move = function (direction) {
 
     if (!this.movesAvailable()) {
       this.over = true; // Game over!
+    }
+
+    if (window.RetroAudio) {
+      if (this.over) window.RetroAudio.play("gameover");
+      else if (this.won) window.RetroAudio.play("win");
+      else if (this.score > startScore) window.RetroAudio.play("merge");
+      else window.RetroAudio.play("move");
     }
 
     this.actuate();

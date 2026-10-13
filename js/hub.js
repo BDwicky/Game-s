@@ -43,6 +43,9 @@
       this.btnLogout = document.getElementById('btn-logout');
       this.btnLoginOpen = document.getElementById('btn-login-open');
       this.btnTop3ViewAll = document.getElementById('top3-view-all-btn');
+      this.btnSoundToggle = document.getElementById('btn-sound-toggle');
+      this.navSoundIcon = document.getElementById('nav-sound-icon');
+      this.btnPwaInstall = document.getElementById('btn-pwa-install');
 
       // Modals
       this.modalAuth = document.getElementById('modal-auth');
@@ -165,6 +168,46 @@
           self.logout();
         });
       }
+
+      // 4B. Sound Toggle Button
+      if (this.btnSoundToggle) {
+        this.btnSoundToggle.addEventListener('click', function () {
+          if (window.RetroAudio) {
+            var isAudioOn = window.RetroAudio.toggle();
+            if (self.navSoundIcon) self.navSoundIcon.textContent = isAudioOn ? '🔊' : '🔇';
+            self.showToast(isAudioOn ? 'Suara Diaktifkan 🔊' : 'Suara Dimatikan 🔇');
+            if (isAudioOn) window.RetroAudio.play('click');
+          }
+        });
+      }
+
+      // 4C. PWA Install Prompt Handling
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        self.deferredInstallPrompt = e;
+        if (self.btnPwaInstall) self.btnPwaInstall.style.display = 'inline-flex';
+      });
+
+      if (this.btnPwaInstall) {
+        this.btnPwaInstall.addEventListener('click', function () {
+          if (self.deferredInstallPrompt) {
+            self.deferredInstallPrompt.prompt();
+            self.deferredInstallPrompt.userChoice.then(function (choice) {
+              if (choice.outcome === 'accepted') {
+                self.showToast('Terima kasih telah menginstal Game Hub! 📲');
+              }
+              self.deferredInstallPrompt = null;
+              self.btnPwaInstall.style.display = 'none';
+            });
+          }
+        });
+      }
+
+      window.addEventListener('appinstalled', function () {
+        self.deferredInstallPrompt = null;
+        if (self.btnPwaInstall) self.btnPwaInstall.style.display = 'none';
+        self.showToast('Game Hub berhasil dipasang di perangkat! 🎉');
+      });
 
       // 5. Modal Close Handlers
       document.querySelectorAll('.modal-backdrop').forEach(function (mb) {
@@ -457,6 +500,11 @@
       }
       if (this.btnLoginOpen) {
         this.btnLoginOpen.style.display = this.isAuthenticated ? 'none' : 'inline-flex';
+      }
+
+      // 5. Sound Button State
+      if (this.navSoundIcon && window.RetroAudio) {
+        this.navSoundIcon.textContent = window.RetroAudio.isEnabled() ? '🔊' : '🔇';
       }
     },
 
@@ -919,7 +967,7 @@
        ======================================================== */
     loadPersonalBestScores: function () {
       var self = this;
-      var games = ['2048', 'memory', 'pacman', 'xox', 'flappy', 'tetris'];
+      var games = ['2048', 'memory', 'pacman', 'xox', 'flappy', 'tetris', 'snake'];
       games.forEach(function (gKey) {
         // Read local storage first
         var localScore = 0;
@@ -930,6 +978,7 @@
           else if (gKey === 'xox') localScore = parseInt(localStorage.getItem('xox_wins_total') || '0', 10);
           else if (gKey === 'flappy') localScore = parseInt(localStorage.getItem('flappy_best_score') || '0', 10);
           else if (gKey === 'tetris') localScore = parseInt(localStorage.getItem('tetris_best_score') || '0', 10);
+          else if (gKey === 'snake') localScore = parseInt(localStorage.getItem('snake_best_score') || '0', 10);
         } catch (e) {}
 
         var el = document.getElementById('card-score-' + gKey);
@@ -1135,11 +1184,19 @@
     },
 
     openModal: function (m) {
-      if (m) { m.classList.add('is-open'); m.style.display = 'flex'; }
+      if (m) {
+        m.classList.add('is-open');
+        m.style.display = 'flex';
+        if (window.RetroAudio) window.RetroAudio.play('click');
+      }
     },
 
     closeModal: function (m) {
-      if (m) { m.classList.remove('is-open'); m.style.display = 'none'; }
+      if (m) {
+        m.classList.remove('is-open');
+        m.style.display = 'none';
+        if (window.RetroAudio) window.RetroAudio.play('click');
+      }
     },
 
     showToast: function (msg) {
@@ -1153,6 +1210,13 @@
       }, 2400);
     }
   };
+
+  // Service Worker Registration for PWA & Offline Support
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js').catch(function () {});
+    });
+  }
 
   document.addEventListener('DOMContentLoaded', function () {
     GameHub.init();

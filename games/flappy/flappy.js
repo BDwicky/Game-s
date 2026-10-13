@@ -1,24 +1,28 @@
 /**
- * Flappy Bird - 60FPS Canvas Physics & Multi-Game Leaderboard
- * Platform: game.dwicky.dev
+ * Flappy Bird Arcade (60fps Physics & Widescreen/Mobile Responsive)
+ * game.dwicky.dev
  */
 
 (function () {
   'use strict';
 
-  // --- Sound Synthesizer ---
+  // 8-Bit Retro Sound Synthesizer via Web Audio API
   var Sound = {
     ctx: null,
     enabled: true,
-
-    init: function () { try { this.enabled = localStorage.getItem("game_hub_sound_muted") !== "true"; } catch (e) { this.enabled = true; }
-      if (!this.ctx) {
-        var AC = window.AudioContext || window.webkitAudioContext;
-        if (AC) this.ctx = new AC();
-      }
+    init: function () {
+      if (this.ctx) return;
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) this.ctx = new AudioCtx();
+      try {
+        var savedMute = localStorage.getItem("game_hub_sound_muted");
+        if (savedMute === "true") this.enabled = false;
+      } catch (e) {}
     },
     resume: function () {
-      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
     },
     tone: function (freq, type, dur, vol) {
       if (!this.enabled || !this.ctx) return;
@@ -27,7 +31,7 @@
         var gain = this.ctx.createGain();
         osc.type = type || 'sine';
         osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-        gain.gain.setValueAtTime(vol || 0.12, this.ctx.currentTime);
+        gain.gain.setValueAtTime(vol || 0.1, this.ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
@@ -59,6 +63,7 @@
   var FlappyApp = {
     canvas: null,
     ctx: null,
+    canvasWrap: null,
     width: 288,
     height: 512,
 
@@ -101,8 +106,14 @@
       this.loadProfile();
       this.cacheDom();
       this.bindEvents();
+      this.resizeCanvas();
       this.reset();
       this.loop();
+
+      var self = this;
+      requestAnimationFrame(function () {
+        self.resizeCanvas();
+      });
     },
 
     loadProfile: function () {
@@ -125,6 +136,7 @@
     },
 
     cacheDom: function () {
+      this.canvasWrap = document.querySelector('.flappy-canvas-wrap');
       this.canvas = document.getElementById('flappy-canvas');
       this.ctx = this.canvas.getContext('2d');
       this.canvas.width = this.width;
@@ -149,6 +161,49 @@
       this.toastEl = document.getElementById('toast-notification');
 
       this.updateProfileUI();
+    },
+
+    resizeCanvas: function () {
+      if (!this.canvas) return;
+      var wrap = this.canvasWrap || this.canvas.parentElement;
+      if (!wrap) return;
+
+      var rect = wrap.getBoundingClientRect();
+      var wrapW = rect.width;
+      var wrapH = rect.height;
+
+      if (!wrapW || !wrapH) {
+        wrapW = window.innerWidth;
+        wrapH = window.innerHeight;
+      }
+
+      var isMobilePortrait = window.innerWidth <= 600 && window.innerHeight > window.innerWidth;
+      var aspect = wrapW / wrapH;
+
+      var targetWidth;
+      if (isMobilePortrait || aspect <= 0.72) {
+        targetWidth = 288;
+      } else {
+        // Dynamic widescreen: aspect clamped between 1.25 and 2.1
+        var safeAspect = Math.max(1.25, Math.min(2.1, aspect));
+        targetWidth = Math.round(512 * safeAspect);
+      }
+
+      if (this.canvas.width !== targetWidth || this.canvas.height !== 512) {
+        this.canvas.width = targetWidth;
+        this.canvas.height = 512;
+        this.width = targetWidth;
+        this.height = 512;
+      }
+
+      // Update bird horizontal position
+      if (this.state === 0) {
+        this.bird.x = (this.width <= 360) ? 60 : Math.max(60, Math.round(this.width * 0.18));
+      } else if (this.state === 1) {
+        if (this.bird.x > this.width - 60) {
+          this.bird.x = Math.max(60, this.width - 60);
+        }
+      }
     },
 
     updateProfileUI: function () {
@@ -196,6 +251,28 @@
         if (c === 'Space' || c === 'ArrowUp' || c === 'KeyW' || k === ' ' || k === 'arrowup' || k === 'w') {
           e.preventDefault();
           self.flap();
+        }
+      });
+
+      // Window resize, orientation, and fullscreen events
+      window.addEventListener('resize', function () {
+        self.resizeCanvas();
+      });
+
+      window.addEventListener('orientationchange', function () {
+        setTimeout(function () { self.resizeCanvas(); }, 120);
+      });
+
+      document.addEventListener('fullscreenchange', function () {
+        setTimeout(function () { self.resizeCanvas(); }, 60);
+      });
+      document.addEventListener('webkitfullscreenchange', function () {
+        setTimeout(function () { self.resizeCanvas(); }, 60);
+      });
+
+      window.addEventListener('message', function (e) {
+        if (e && e.data && e.data.type === 'fullscreen_change') {
+          setTimeout(function () { self.resizeCanvas(); }, 100);
         }
       });
 
@@ -260,6 +337,17 @@
         if (this.tapPromptEl) this.tapPromptEl.style.display = 'none';
         this.bird.vy = this.bird.jump;
         Sound.flap();
+
+        // Pre-spawn oncoming pipes on widescreen so player isn't waiting empty sky
+        if (this.width > 360) {
+          var nextX = this.bird.x + 230;
+          while (nextX <= this.width + 10) {
+            this.spawnPipeAt(nextX);
+            nextX += 190;
+          }
+          var overshoot = nextX - (this.width + 10);
+          this.pipeSpawnTimer = Math.max(0, Math.round(this.pipeSpawnInterval - (overshoot / this.pipeSpeed)));
+        }
       } else if (this.state === 1) {
         // Flap impulse
         this.bird.vy = this.bird.jump;
@@ -270,6 +358,7 @@
     reset: function () {
       this.state = 0;
       this.score = 0;
+      this.bird.x = (this.width <= 360) ? 60 : Math.max(60, Math.round(this.width * 0.18));
       this.bird.y = 220;
       this.bird.vy = 0;
       this.bird.rotation = 0;
@@ -353,18 +442,22 @@
       }
     },
 
-    spawnPipe: function () {
+    spawnPipeAt: function (x) {
       var minTop = 60;
       var maxTop = this.groundY - this.pipeGap - 60;
       var topHeight = Math.floor(Math.random() * (maxTop - minTop + 1)) + minTop;
 
       this.pipes.push({
-        x: this.width + 10,
+        x: x,
         topHeight: topHeight,
         bottomY: topHeight + this.pipeGap,
         width: 48,
         scored: false
       });
+    },
+
+    spawnPipe: function () {
+      this.spawnPipeAt(this.width + 10);
     },
 
     checkPipeCollision: function (p) {
@@ -421,27 +514,33 @@
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, w, this.groundY);
 
-      // 2. City & Cloud silhouettes
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-      ctx.beginPath();
-      ctx.arc(60, 100, 24, 0, Math.PI * 2);
-      ctx.arc(85, 95, 30, 0, Math.PI * 2);
-      ctx.arc(115, 100, 22, 0, Math.PI * 2);
-      ctx.fill();
+      // 2. City Silhouette along horizon
+      ctx.fillStyle = 'rgba(14, 116, 144, 0.22)';
+      for (var bx = 0; bx < w; bx += 42) {
+        var bHeight = 22 + ((bx * 13) % 32);
+        ctx.fillRect(bx, this.groundY - bHeight, 38, bHeight);
+      }
 
-      ctx.beginPath();
-      ctx.arc(200, 140, 20, 0, Math.PI * 2);
-      ctx.arc(220, 135, 26, 0, Math.PI * 2);
-      ctx.arc(245, 140, 18, 0, Math.PI * 2);
-      ctx.fill();
+      // 3. Clouds repeating across dynamic width
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+      for (var cx = 60; cx < w + 80; cx += 180) {
+        var step = Math.floor(cx / 180);
+        var cy = (step % 2 === 0) ? 95 : 135;
+        var r = (step % 2 === 0) ? 26 : 22;
+        ctx.beginPath();
+        ctx.arc(cx - 20, cy + 5, r * 0.8, 0, Math.PI * 2);
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.arc(cx + 22, cy + 5, r * 0.75, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
-      // 3. Draw Pipes
+      // 4. Draw Pipes
       var self = this;
       this.pipes.forEach(function (p) {
         self.drawPipe(p);
       });
 
-      // 4. Ground
+      // 5. Ground
       ctx.fillStyle = '#ded895';
       ctx.fillRect(0, this.groundY, w, h - this.groundY);
 
@@ -461,7 +560,7 @@
         ctx.stroke();
       }
 
-      // 5. Draw Bird
+      // 6. Draw Bird
       this.drawBird();
     },
 

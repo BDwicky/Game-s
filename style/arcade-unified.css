@@ -46,7 +46,6 @@ html, body {
 
 /* Unified Arcade Wrapper - Exact 100dvh viewport fitting, no double scrollbars */
 .arcade-wrapper,
-.flappy-wrapper,
 .pacman-wrapper,
 .snake-wrapper,
 .tetris-wrapper,
@@ -896,8 +895,27 @@ body {
 }
 
 /* ========================================================
-   FLAPPY BIRD MOBILE PROPORTIONS & OVERFLOW PROTECTION
+   FLAPPY BIRD MOBILE & WIDESCREEN ADAPTATION
+   - Mobile Portrait: Classic compact arcade column (288x512 ratio, max 440px)
+   - Desktop / Tablet / Mobile Landscape: Dynamic panoramic widescreen
    ======================================================== */
+.flappy-wrapper {
+  width: 100% !important;
+  max-width: 440px !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 auto !important;
+  padding: env(safe-area-inset-top, 6px) env(safe-area-inset-right, 6px) env(safe-area-inset-bottom, 6px) env(safe-area-inset-left, 6px) !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  gap: 8px !important;
+}
+
 .flappy-canvas-wrap {
   position: relative !important;
   flex: 0 0 auto !important;
@@ -926,6 +944,51 @@ body {
   object-fit: fill !important;
   box-shadow: none !important;
   border-radius: 0 !important;
+}
+
+@media screen and (min-width: 601px), screen and (orientation: landscape) {
+  .flappy-wrapper {
+    max-width: min(860px, 94vw) !important;
+    width: 100% !important;
+  }
+  .flappy-canvas-wrap {
+    aspect-ratio: 16 / 10 !important;
+    max-height: min(520px, calc(100dvh - 76px)) !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+}
+
+@media screen and (orientation: landscape) and (max-height: 520px) {
+  .flappy-wrapper {
+    max-width: min(860px, 96vw) !important;
+    gap: 4px !important;
+    padding: 4px env(safe-area-inset-right, 6px) 4px env(safe-area-inset-left, 6px) !important;
+  }
+  .flappy-header {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 8px !important;
+  }
+  .flappy-header .btn-icon {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 13px !important;
+  }
+  .flappy-header .avatar-circle {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 12px !important;
+  }
+  .flappy-header .username-display {
+    font-size: 12px !important;
+    max-width: 70px !important;
+  }
+  .flappy-canvas-wrap {
+    aspect-ratio: 16 / 9 !important;
+    max-height: calc(100dvh - 46px) !important;
+  }
 }
 
 /* Photo Viewer Lightbox Popup */

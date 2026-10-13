@@ -1,48 +1,37 @@
-/* ===================================================
-   Flappy Bird - Smooth Canvas Physics & Day/Night Theme
-   Platform: game.dwicky.dev
-   =================================================== */
-
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Press+Start+2P&display=swap');
-
 :root {
-  --bg-dark: #0f172a;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --emerald: #10b981;
-  --gold: #f59e0b;
+  --bg-color: #0b0f19;
   --glass-bg: rgba(15, 23, 42, 0.75);
   --glass-border: rgba(255, 255, 255, 0.1);
+  --emerald: #10b981;
   --radius: 12px;
-  --font-main: 'Outfit', sans-serif;
-  --font-retro: 'Press Start 2P', monospace;
+  --font-retro: 'Courier New', Courier, monospace, monospace;
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  -webkit-tap-highlight-color: transparent;
 }
 
-body {
-  font-family: var(--font-main);
-  background: var(--bg-dark);
-  color: var(--text-main);
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 10px;
+html, body {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  background-color: var(--bg-color);
+  background-image: 
+    radial-gradient(circle at 50% 10%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
+    linear-gradient(180deg, #0f172a 0%, #030712 100%);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #fff;
+  overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
-  overflow-x: hidden;
+  touch-action: manipulation;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Fullscreen Mode */
-html.is-fullscreen,
 body.is-fullscreen {
   height: 100% !important;
   width: 100% !important;
@@ -51,18 +40,29 @@ body.is-fullscreen {
   justify-content: center !important;
 }
 
+/* Wrapper: Default compact portrait for mobile */
 .flappy-wrapper {
   width: 100%;
   max-width: 440px;
+  height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Header */
 .flappy-header {
   width: 100%;
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -71,7 +71,8 @@ body.is-fullscreen {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: var(--radius);
-  padding: 8px 12px;
+  padding: 0 10px;
+  box-sizing: border-box;
 }
 
 .user-badge {
@@ -144,20 +145,21 @@ body.is-fullscreen {
   }
 }
 
-/* Canvas Container */
+/* Canvas Container: Default classic portrait ratio */
 .flappy-canvas-wrap {
   position: relative;
+  flex: 0 0 auto;
   width: auto;
   max-width: 100%;
   height: auto;
-  max-height: calc(100dvh - 76px);
+  max-height: min(480px, calc(100dvh - 76px));
   aspect-ratio: 288 / 512;
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
   border: 2px solid rgba(255, 255, 255, 0.15);
   touch-action: none;
-  margin: auto 0;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -341,3 +343,76 @@ body.is-fullscreen {
 .game-icon-pacman { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
 .game-icon-xox    { background: linear-gradient(135deg, #06b6d4, #3b82f6); }
 .game-icon-flappy { background: linear-gradient(135deg, #10b981, #059669); }
+
+/* ========================================================
+   WIDESCREEN & LANDSCAPE (Desktop, Tablet, Mobile Landscape)
+   Dynamic widescreen adaptation per user specification
+   ======================================================== */
+@media screen and (min-width: 601px), screen and (orientation: landscape) {
+  .flappy-wrapper {
+    max-width: min(860px, 94vw) !important;
+    width: 100% !important;
+  }
+  .flappy-canvas-wrap {
+    aspect-ratio: 16 / 10 !important;
+    max-height: min(520px, calc(100dvh - 76px)) !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ========================================================
+   SHORT MOBILE LANDSCAPE (Height <= 520px)
+   Prevents overflow when phone is rotated sideways
+   ======================================================== */
+@media screen and (orientation: landscape) and (max-height: 520px) {
+  .flappy-wrapper {
+    max-width: min(860px, 96vw) !important;
+    gap: 4px !important;
+    padding: 4px env(safe-area-inset-right, 6px) 4px env(safe-area-inset-left, 6px) !important;
+  }
+  .flappy-header {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 8px !important;
+  }
+  .flappy-header .btn-icon {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 13px !important;
+  }
+  .flappy-header .avatar-circle {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 12px !important;
+  }
+  .flappy-header .username-display {
+    font-size: 12px !important;
+    max-width: 70px !important;
+  }
+  .flappy-canvas-wrap {
+    aspect-ratio: 16 / 9 !important;
+    max-height: calc(100dvh - 46px) !important;
+  }
+  .gameover-overlay {
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+  .gameover-title {
+    font-size: 18px !important;
+  }
+  .scorecard {
+    padding: 8px 12px !important;
+    max-width: 240px !important;
+  }
+  .medal-box {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 24px !important;
+  }
+  .btn-primary, .btn-secondary {
+    padding: 6px 14px !important;
+    font-size: 12px !important;
+  }
+}

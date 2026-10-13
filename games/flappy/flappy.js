@@ -1,5 +1,5 @@
 /**
- * Flappy Bird Arcade (60fps Physics & Widescreen/Mobile Responsive)
+ * Flappy Bird Arcade (60fps Physics & Edge-to-Edge Fullscreen Responsive)
  * game.dwicky.dev
  */
 
@@ -114,6 +114,9 @@
       requestAnimationFrame(function () {
         self.resizeCanvas();
       });
+      setTimeout(function () {
+        self.resizeCanvas();
+      }, 100);
     },
 
     loadProfile: function () {
@@ -168,40 +171,37 @@
       var wrap = this.canvasWrap || this.canvas.parentElement;
       if (!wrap) return;
 
-      var rect = wrap.getBoundingClientRect();
-      var wrapW = rect.width;
-      var wrapH = rect.height;
+      var wrapW = wrap.clientWidth || window.innerWidth;
+      var wrapH = wrap.clientHeight || (window.innerHeight - 48);
 
-      if (!wrapW || !wrapH) {
-        wrapW = window.innerWidth;
-        wrapH = window.innerHeight;
-      }
+      if (!wrapW || wrapW < 10) wrapW = window.innerWidth || 360;
+      if (!wrapH || wrapH < 10) wrapH = (window.innerHeight - 48) || 512;
 
-      var isMobilePortrait = window.innerWidth <= 600 && window.innerHeight > window.innerWidth;
       var aspect = wrapW / wrapH;
+      if (!aspect || isNaN(aspect) || aspect <= 0) aspect = 288 / 512;
 
-      var targetWidth;
-      if (isMobilePortrait || aspect <= 0.72) {
-        targetWidth = 288;
-      } else {
-        // Dynamic widescreen: aspect clamped between 1.25 and 2.1
-        var safeAspect = Math.max(1.25, Math.min(2.1, aspect));
-        targetWidth = Math.round(512 * safeAspect);
-      }
+      // Keep virtual height 512 to preserve 100% identical 60fps arcade physics
+      var targetHeight = 512;
+      // Compute virtual width strictly matching display aspect ratio (zero distortion)
+      var targetWidth = Math.round(targetHeight * aspect);
 
-      if (this.canvas.width !== targetWidth || this.canvas.height !== 512) {
+      // Safety clamps
+      if (targetWidth < 220) targetWidth = 220;
+      if (targetWidth > 2400) targetWidth = 2400;
+
+      if (this.canvas.width !== targetWidth || this.canvas.height !== targetHeight) {
         this.canvas.width = targetWidth;
-        this.canvas.height = 512;
+        this.canvas.height = targetHeight;
         this.width = targetWidth;
-        this.height = 512;
+        this.height = targetHeight;
       }
 
-      // Update bird horizontal position
+      // Dynamic bird horizontal positioning
       if (this.state === 0) {
-        this.bird.x = (this.width <= 360) ? 60 : Math.max(60, Math.round(this.width * 0.18));
+        this.bird.x = Math.max(55, Math.round(this.width * (this.width <= 320 ? 0.21 : 0.18)));
       } else if (this.state === 1) {
         if (this.bird.x > this.width - 60) {
-          this.bird.x = Math.max(60, this.width - 60);
+          this.bird.x = Math.max(55, this.width - 60);
         }
       }
     },
@@ -338,9 +338,9 @@
         this.bird.vy = this.bird.jump;
         Sound.flap();
 
-        // Pre-spawn oncoming pipes on widescreen so player isn't waiting empty sky
-        if (this.width > 360) {
-          var nextX = this.bird.x + 230;
+        // Pre-spawn oncoming pipes on screens wider than portrait (width > 340)
+        if (this.width > 340) {
+          var nextX = this.bird.x + 220;
           while (nextX <= this.width + 10) {
             this.spawnPipeAt(nextX);
             nextX += 190;
@@ -358,7 +358,7 @@
     reset: function () {
       this.state = 0;
       this.score = 0;
-      this.bird.x = (this.width <= 360) ? 60 : Math.max(60, Math.round(this.width * 0.18));
+      this.bird.x = Math.max(55, Math.round(this.width * (this.width <= 320 ? 0.21 : 0.18)));
       this.bird.y = 220;
       this.bird.vy = 0;
       this.bird.rotation = 0;

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>🎮 Game Hub - Portal Game & Leaderboard dwicky.dev</title>
-  <meta name="description" content="Pilih dan mainkan koleksi 5 game arcade seru: 2048, Memory Game, Pacman, X O X, dan Flappy Bird dengan shared profile dan global leaderboard.">
+  <meta name="description" content="Pilih dan mainkan koleksi 6 game arcade seru: 2048, Memory Game, Pacman, X O X, Flappy Bird, dan Tetris dengan akun berproteksi PIN 6 digit dan global leaderboard.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   
   <link rel="shortcut icon" href="favicon.ico">
@@ -18,7 +18,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Master Game Hub Stylesheet -->
-  <link rel="stylesheet" href="style/hub.css?v=2">
+  <link rel="stylesheet" href="style/hub.css?v=3">
 </head>
 <body>
 
@@ -105,10 +105,10 @@
           <span class="profile-edit-badge" title="Ganti Profil">✏️</span>
         </div>
         <div class="profile-username-label" id="profile-username-display">Pemain Baru</div>
-        <span class="profile-username-hint">Ganti Profil</span>
+        <span class="profile-username-hint" id="profile-status-hint">Belum Masuk</span>
       </div>
 
-      <!-- Action Buttons (Fullscreen, Global Leaderboard) -->
+      <!-- Action Buttons (Fullscreen, Global Leaderboard, Auth / Logout) -->
       <div class="navbar-actions">
         <button type="button" class="nav-btn" id="btn-fullscreen" title="Mode Layar Penuh">
           <span>⛶</span>
@@ -117,6 +117,14 @@
         <button type="button" class="nav-btn nav-btn-primary" id="btn-leaderboard" title="Buka Papan Peringkat Global">
           <span>🏆</span>
           <span class="btn-text">Peringkat</span>
+        </button>
+        <button type="button" class="nav-btn nav-btn-danger" id="btn-logout" title="Keluar dari Akun (Logout)" style="display: none;">
+          <span>🚪</span>
+          <span class="btn-text">Logout</span>
+        </button>
+        <button type="button" class="nav-btn nav-btn-login" id="btn-login-open" title="Masuk atau Buat Akun Berproteksi PIN">
+          <span>🔐</span>
+          <span class="btn-text">Masuk</span>
         </button>
       </div>
 
@@ -394,6 +402,138 @@
 
 
   <!-- ========================================================
+       MODAL 0: AUTENTIKASI PENGGUNA & PIN 6 DIGIT (SERVER-VERIFIED)
+       ======================================================== -->
+  <div class="modal-backdrop" id="modal-auth" style="display: none;">
+    <div class="modal-card modal-auth-card">
+      <div class="modal-header">
+        <h2 class="modal-title" id="auth-modal-title">🔐 Autentikasi Pemain</h2>
+        <button type="button" class="modal-close" id="auth-modal-close" aria-label="Tutup" style="display: none;">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- STEP 1: INPUT USERNAME AWAL -->
+        <div id="auth-step-username" class="auth-step-view">
+          <div class="auth-welcome-icon">🎮</div>
+          <h3 class="auth-step-title">Selamat Datang di Game Hub</h3>
+          <p class="auth-step-desc">
+            Masukkan username pemain Anda. Jika sudah terdaftar, sistem akan meminta PIN Anda. Jika baru, buat 6 digit PIN baru.
+          </p>
+
+          <form id="form-auth-username">
+            <div class="form-group" style="margin-bottom: 18px;">
+              <label class="form-label" for="auth-input-username">Username Pemain</label>
+              <div class="input-icon-wrap">
+                <span class="input-inner-icon">👤</span>
+                <input type="text" id="auth-input-username" class="form-input" minlength="2" maxlength="20" required autocomplete="username" placeholder="Masukkan username kamu...">
+              </div>
+              <span class="input-hint">2-20 karakter (huruf, angka, spasi, _ - .)</span>
+            </div>
+
+            <div class="auth-error-msg" id="auth-username-error" style="display: none;"></div>
+
+            <button type="submit" class="btn-submit btn-auth-action" id="btn-auth-check">
+              <span>Lanjutkan</span>
+              <span>➔</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- STEP 2A: LOGIN PIN (Username sudah terdaftar) -->
+        <div id="auth-step-login-pin" class="auth-step-view" style="display: none;">
+          <div class="auth-user-badge">
+            <div class="auth-badge-avatar" id="login-avatar-preview">👤</div>
+            <div class="auth-badge-info">
+              <span class="auth-badge-greeting">Selamat Datang Kembali,</span>
+              <strong class="auth-badge-username" id="login-display-username">Pemain</strong>
+            </div>
+            <button type="button" class="auth-btn-switch" id="btn-switch-user-login" title="Ganti Akun">Ganti</button>
+          </div>
+
+          <p class="auth-pin-instructions">
+            Masukkan <strong>6 Digit PIN Keamanan</strong> Anda:
+          </p>
+
+          <!-- 6 Kotak Visual Indikator PIN -->
+          <div class="pin-display-container" id="login-pin-display">
+            <div class="pin-dot-box" data-idx="0"></div>
+            <div class="pin-dot-box" data-idx="1"></div>
+            <div class="pin-dot-box" data-idx="2"></div>
+            <div class="pin-dot-box" data-idx="3"></div>
+            <div class="pin-dot-box" data-idx="4"></div>
+            <div class="pin-dot-box" data-idx="5"></div>
+          </div>
+          <!-- Hidden real numeric input for physical keyboard typing -->
+          <input type="password" id="login-pin-hidden" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" style="position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px;">
+
+          <div class="auth-error-msg" id="login-pin-error" style="display: none;"></div>
+
+          <!-- Virtual Keypad (Touch / Mobile Friendly) -->
+          <div class="pin-keypad-grid" id="login-keypad">
+            <button type="button" class="pin-key-btn" data-key="1">1</button>
+            <button type="button" class="pin-key-btn" data-key="2">2</button>
+            <button type="button" class="pin-key-btn" data-key="3">3</button>
+            <button type="button" class="pin-key-btn" data-key="4">4</button>
+            <button type="button" class="pin-key-btn" data-key="5">5</button>
+            <button type="button" class="pin-key-btn" data-key="6">6</button>
+            <button type="button" class="pin-key-btn" data-key="7">7</button>
+            <button type="button" class="pin-key-btn" data-key="8">8</button>
+            <button type="button" class="pin-key-btn" data-key="9">9</button>
+            <button type="button" class="pin-key-btn pin-key-fn" data-key="clear">C</button>
+            <button type="button" class="pin-key-btn" data-key="0">0</button>
+            <button type="button" class="pin-key-btn pin-key-fn" data-key="backspace">⌫</button>
+          </div>
+
+          <div class="auth-loading-spinner" id="login-spinner" style="display: none;">
+            <div class="spinner-circle"></div>
+            <span>Memverifikasi PIN...</span>
+          </div>
+        </div>
+
+        <!-- STEP 2B: REGISTER PIN (Username baru) -->
+        <div id="auth-step-register-pin" class="auth-step-view" style="display: none;">
+          <div class="auth-user-badge">
+            <div class="auth-badge-avatar" id="reg-avatar-preview">✨</div>
+            <div class="auth-badge-info">
+              <span class="auth-badge-greeting">Pemain Baru:</span>
+              <strong class="auth-badge-username" id="reg-display-username">Pemain</strong>
+            </div>
+            <button type="button" class="auth-btn-switch" id="btn-switch-user-reg" title="Ganti Nama">Ganti</button>
+          </div>
+
+          <p class="auth-pin-instructions">
+            Buat <strong>6 Digit PIN Keamanan</strong> untuk mengamankan rekor Anda:
+          </p>
+
+          <form id="form-auth-register">
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label" for="reg-input-pin">Buat PIN 6 Digit (Angka Saja)</label>
+              <input type="password" id="reg-input-pin" class="form-input text-center" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required placeholder="● ● ● ● ● ●" style="letter-spacing: 6px; font-size: 20px; font-weight: 700;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 18px;">
+              <label class="form-label" for="reg-input-pin-confirm">Konfirmasi PIN 6 Digit</label>
+              <input type="password" id="reg-input-pin-confirm" class="form-input text-center" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required placeholder="● ● ● ● ● ●" style="letter-spacing: 6px; font-size: 20px; font-weight: 700;">
+            </div>
+
+            <div class="auth-error-msg" id="reg-pin-error" style="display: none;"></div>
+
+            <button type="submit" class="btn-submit btn-auth-action" id="btn-auth-register-submit">
+              <span>Daftar & Mulai Bermain</span>
+              <span>🚀</span>
+            </button>
+          </form>
+        </div>
+
+      </div>
+      <div class="modal-footer auth-footer-row">
+        <button type="button" class="btn-auth-guest" id="btn-auth-guest">Lanjut Mode Tamu (Tanpa PIN)</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================
        MODAL 1: PROFIL PEMAIN & FOTO AVATAR
        ======================================================== -->
   <div class="modal-backdrop" id="modal-profile">
@@ -421,13 +561,32 @@
             <span style="font-size: 11px; color: var(--text-dim); text-align: center;">Format JPG, PNG, WEBP. Tersimpan & sinkron di semua game.</span>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" style="margin-bottom: 16px;">
             <label class="form-label" for="input-username">Username Pemain</label>
             <input type="text" id="input-username" class="form-input" minlength="2" maxlength="20" required autocomplete="off" placeholder="Masukkan username kamu">
           </div>
 
+          <!-- Section Ganti PIN Keamanan (Opsional) -->
+          <div class="profile-security-box" id="profile-pin-change-box" style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="font-size: 13px; font-weight: 700; color: #38bdf8;">🔑 Ganti PIN Keamanan</span>
+              <button type="button" id="btn-toggle-pin-edit" style="background: none; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; text-decoration: underline;">Ubah PIN</button>
+            </div>
+            <div id="pin-change-fields" style="display: none;">
+              <div class="form-group" style="margin-bottom: 10px;">
+                <label class="form-label" for="input-old-pin" style="font-size: 11px;">PIN Lama (6 Digit)</label>
+                <input type="password" id="input-old-pin" class="form-input" maxlength="6" inputmode="numeric" placeholder="PIN saat ini">
+              </div>
+              <div class="form-group" style="margin-bottom: 10px;">
+                <label class="form-label" for="input-new-pin" style="font-size: 11px;">PIN Baru (6 Digit)</label>
+                <input type="password" id="input-new-pin" class="form-input" maxlength="6" inputmode="numeric" placeholder="6 digit angka baru">
+              </div>
+            </div>
+          </div>
+
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+          <button type="button" class="btn-modal-logout" id="btn-modal-logout-action">🚪 Logout</button>
           <button type="submit" class="btn-submit">Simpan Profil</button>
         </div>
       </form>
@@ -468,6 +627,6 @@
   <div class="toast-msg" id="toast-notification"></div>
 
   <!-- Master Game Hub Script -->
-  <script src="js/hub.js?v=2"></script>
+  <script src="js/hub.js?v=3"></script>
 </body>
 </html>

@@ -69,7 +69,7 @@ function sanitizeUsername($raw) {
 function sanitizeGame($raw) {
     if (!is_string($raw)) return "2048";
     $trimmed = strtolower(trim($raw));
-    $allowed = ["2048", "memory", "pacman", "xox", "flappy"];
+    $allowed = ["2048", "memory", "pacman", "xox", "flappy", "tetris"];
     return in_array($trimmed, $allowed, true) ? $trimmed : "2048";
 }
 
@@ -167,7 +167,7 @@ function getOverallTopData($pdo) {
     }
 
     // 2. Champions for each of the 5 individual games
-    $games = ["2048", "memory", "pacman", "xox", "flappy"];
+    $games = ["2048", "memory", "pacman", "xox", "flappy", "tetris"];
     $champions = [];
     foreach ($games as $g) {
         $stmtChamp = $pdo->prepare("

@@ -18,7 +18,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Master Game Hub Stylesheet -->
-  <link rel="stylesheet" href="style/hub.css?v=1">
+  <link rel="stylesheet" href="style/hub.css?v=2">
 </head>
 <body>
 
@@ -131,7 +131,7 @@
         <h2 class="section-heading">
           <span>🕹️ Pilih Permainan</span>
         </h2>
-        <span class="games-count-pill">5 Game Tersedia</span>
+        <span class="games-count-pill">6 Game Tersedia</span>
       </div>
 
       <div class="cards-grid">
@@ -342,6 +342,51 @@
           </div>
         </a>
 
+        <!-- Card 6: Tetris Classic -->
+        <a href="games/tetris/" class="game-card card-tetris" id="card-game-tetris">
+          <!-- Card Tampilan Gamenya (Visual Preview Showcase) -->
+          <div class="card-visual-showcase showcase-tetris">
+            <span class="showcase-badge-top" style="color: #a855f7; border-color: rgba(168, 85, 247, 0.4);">🧱 RETRO PUZZLE</span>
+            <span class="showcase-highscore-pill">
+              <span>Rekor:</span>
+              <strong id="card-score-tetris">0</strong>
+            </span>
+            <div class="tetris-matrix-mock">
+              <div class="tetris-mock-block block-i"></div>
+              <div class="tetris-mock-block block-i"></div>
+              <div class="tetris-mock-block block-i"></div>
+              <div class="tetris-mock-block block-i"></div>
+              <div class="tetris-mock-block block-t"></div>
+              <div class="tetris-mock-block block-t"></div>
+              <div class="tetris-mock-block block-t"></div>
+              <div class="tetris-mock-block block-l"></div>
+              <div class="tetris-mock-block block-l"></div>
+              <div class="tetris-mock-block block-o"></div>
+              <div class="tetris-mock-block block-o"></div>
+            </div>
+          </div>
+          <!-- Di Bawah Card Ada Nama Gamenya -->
+          <div class="card-content-bottom">
+            <h3 class="game-name-title">
+              <span>Tetris Classic</span>
+              <span style="font-size: 16px;">🧩</span>
+            </h3>
+            <p class="game-desc-text">
+              Legenda susun balok adiktif! Susun 7 tetromino, bersihkan baris penuh, picu kombo Tetris 4-baris, dan taklukkan level berkecepatan tinggi.
+            </p>
+            <div class="card-footer-action">
+              <div class="card-score-info">
+                <span class="card-score-label">Kategori</span>
+                <span style="font-size: 13px; font-weight: 700; color: #a855f7;">Balok Susun & Refleks</span>
+              </div>
+              <button type="button" class="btn-play-card" style="background: linear-gradient(135deg, #a855f7, #6366f1); font-weight: 800;">
+                <span>Mainkan</span>
+                <span>▶</span>
+              </button>
+            </div>
+          </div>
+        </a>
+
       </div>
     </main>
 
@@ -409,6 +454,7 @@
           <button type="button" class="ldb-tab" data-tab="pacman">🟡 Pacman</button>
           <button type="button" class="ldb-tab" data-tab="xox">❌⭕ X O X</button>
           <button type="button" class="ldb-tab" data-tab="flappy">🐦 Flappy</button>
+          <button type="button" class="ldb-tab" data-tab="tetris">🧱 Tetris</button>
         </div>
 
         <!-- Leaderboard Table Container -->
@@ -422,6 +468,6 @@
   <div class="toast-msg" id="toast-notification"></div>
 
   <!-- Master Game Hub Script -->
-  <script src="js/hub.js?v=1"></script>
+  <script src="js/hub.js?v=2"></script>
 </body>
 </html>

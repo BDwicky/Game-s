@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Tetris Classic - Susun Balok & Papan Peringkat | game.dwicky.dev</title>
+  <meta name="description" content="Mainkan game Tetris klasik modern di game.dwicky.dev. Susun 7 tetromino, bersihkan baris, raih kombo Tetris 4-baris, dan cetak skor tertinggi di papan peringkat global!">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="shortcut icon" href="../../favicon.ico">
+</head>
+<body>
+
+  <div class="tetris-wrapper">
+    <!-- Header -->
+    <header class="tetris-header">
+      <div class="user-badge" id="user-badge" title="Klik untuk edit profil">
+        <div class="avatar-circle">
+          <img id="user-avatar-img" src="" alt="Avatar" style="display:none;">
+          <span id="user-avatar-text">👤</span>
+        </div>
+        <span class="username-display" id="username-display">Pemain Baru</span>
+      </div>
+
+      <div class="header-actions">
+        <a class="btn-icon btn-home" id="btn-home" href="../../index.html" title="Kembali ke Home Page" aria-label="Kembali ke Home Page">
+          <span>🏠</span><span class="btn-text">Home</span>
+        </a>
+        <button class="btn-icon" id="btn-sound" type="button" title="Suara">
+          🔊
+        </button>
+        <button class="btn-icon" id="btn-leaderboard" type="button" title="Papan Peringkat">
+          🏆
+        </button>
+        <button class="btn-icon" id="btn-fullscreen" type="button" title="Layar Penuh">
+          ⛶
+        </button>
+        <button class="btn-icon" id="btn-reset" type="button" title="Mulai Ulang Game">
+          🔄
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Game Playfield Container -->
+    <main class="tetris-main-layout">
+      
+      <!-- Left Side: Hold Box & Stats -->
+      <aside class="tetris-side-col left-col">
+        <div class="panel-box hold-box">
+          <span class="panel-label">HOLD</span>
+          <canvas id="canvas-hold" width="80" height="80"></canvas>
+          <span class="hold-hint">[C / Shift]</span>
+        </div>
+
+        <div class="panel-box stat-card">
+          <span class="panel-label">SKOR</span>
+          <strong class="stat-value" id="hud-score">0</strong>
+        </div>
+
+        <div class="panel-box stat-card">
+          <span class="panel-label">LEVEL</span>
+          <strong class="stat-value highlight-cyan" id="hud-level">1</strong>
+        </div>
+      </aside>
+
+      <!-- Center: Main Board Canvas -->
+      <div class="tetris-board-container">
+        <canvas id="canvas-board" width="240" height="480"></canvas>
+
+        <!-- Pause Overlay -->
+        <div class="pause-overlay" id="pause-overlay">
+          <div class="pause-title">GAME DIHENTIKAN</div>
+          <button type="button" class="btn-primary" id="btn-resume">Lanjutkan [P]</button>
+        </div>
+
+        <!-- Game Over Overlay Card -->
+        <div class="gameover-overlay" id="gameover-overlay">
+          <h2 class="gameover-title">GAME OVER</h2>
+
+          <div class="scorecard">
+            <div class="medal-box" id="medal-icon" title="Medali Penghargaan">🥉</div>
+            <div class="scorecard-scores">
+              <span>SKOR AKHIR</span>
+              <strong id="final-score">0</strong>
+              <span style="margin-top:6px;">BARIS BERSIH</span>
+              <strong id="final-lines" style="color:#06b6d4;">0</strong>
+              <span style="margin-top:6px;">TERBAIK</span>
+              <strong id="final-best" style="color:#10b981;">0</strong>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:8px;">
+            <button class="btn-primary" id="btn-play-again" type="button">🔄 Main Lagi</button>
+            <button class="btn-secondary" onclick="if(window.TetrisApp)window.TetrisApp.openLeaderboard()" type="button">🏆 Peringkat</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side: Next Box & Lines -->
+      <aside class="tetris-side-col right-col">
+        <div class="panel-box next-box">
+          <span class="panel-label">NEXT</span>
+          <canvas id="canvas-next" width="80" height="80"></canvas>
+        </div>
+
+        <div class="panel-box stat-card">
+          <span class="panel-label">BARIS</span>
+          <strong class="stat-value highlight-purple" id="hud-lines">0</strong>
+        </div>
+
+        <div class="panel-box stat-card">
+          <span class="panel-label">TERBAIK</span>
+          <strong class="stat-value highlight-gold" id="hud-best">0</strong>
+        </div>
+      </aside>
+
+    </main>
+
+    <!-- On-Screen Touch Controls (Mobile Friendly Ergonomics) -->
+    <div class="touch-controls" id="touch-controls" aria-label="Kontrol Sentuh Layar">
+      <div class="touch-row">
+        <button type="button" class="touch-btn btn-touch-hold" id="touch-hold" title="Tahan Balok">
+          <span>📥</span><span class="btn-touch-sub">HOLD</span>
+        </button>
+        <button type="button" class="touch-btn btn-touch-rotate" id="touch-rotate" title="Putar Balok">
+          <span>🔄</span><span class="btn-touch-sub">PUTAR</span>
+        </button>
+        <button type="button" class="touch-btn btn-touch-harddrop" id="touch-harddrop" title="Jatuh Cepat">
+          <span>⚡</span><span class="btn-touch-sub">DROP</span>
+        </button>
+      </div>
+      <div class="touch-row">
+        <button type="button" class="touch-btn btn-touch-left" id="touch-left" title="Geser Kiri">
+          <span>◀</span>
+        </button>
+        <button type="button" class="touch-btn btn-touch-down" id="touch-down" title="Turun Pelan">
+          <span>▼</span>
+        </button>
+        <button type="button" class="touch-btn btn-touch-right" id="touch-right" title="Geser Kanan">
+          <span>▶</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Game Hub -->
+  <div class="modal-backdrop" id="modal-games-hub">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🎮 Portal Game dwicky.dev</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <a href="../../index.html" class="game-hub-item" style="border-color: rgba(250,204,21,0.4); background: rgba(250,204,21,0.08); margin-bottom: 10px; display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; text-decoration:none; color:#fff;">
+          <div class="game-icon-badge" style="background:#facc15; color:#000; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;">🏠</div>
+          <div>
+            <strong>Beranda Game Hub</strong>
+            <div style="font-size:11px; color:#94a3b8;">Halaman utama pilih semua game</div>
+          </div>
+        </a>
+        <div class="game-hub-grid" style="display:flex; flex-direction:column; gap:8px;">
+          <a href="../2048/" class="game-hub-item" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; background:rgba(255,255,255,0.04); text-decoration:none; color:#fff;">
+            <div class="game-icon-badge" style="background:#f59e0b; color:#fff; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;">🔢</div>
+            <div>
+              <strong>2048 Classic</strong>
+              <div style="font-size:11px; color:#94a3b8;">Teka-teki geser angka 2048</div>
+            </div>
+          </a>
+          <a href="../memory/" class="game-hub-item" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; background:rgba(255,255,255,0.04); text-decoration:none; color:#fff;">
+            <div class="game-icon-badge" style="background:#a855f7; color:#fff; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;">🧠</div>
+            <div>
+              <strong>Memory Match</strong>
+              <div style="font-size:11px; color:#94a3b8;">Pencocokan kartu daya ingat visual</div>
+            </div>
+          </a>
+          <a href="../pacman/" class="game-hub-item" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; background:rgba(255,255,255,0.04); text-decoration:none; color:#fff;">
+            <div class="game-icon-badge" style="background:#eab308; color:#000; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;">🟡</div>
+            <div>
+              <strong>Pacman Arcade</strong>
+              <div style="font-size:11px; color:#94a3b8;">Arcade labirin klasik & kejaran hantu</div>
+            </div>
+          </a>
+          <a href="../xox/" class="game-hub-item" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; background:rgba(255,255,255,0.04); text-decoration:none; color:#fff;">
+            <div class="game-icon-badge" style="background:#06b6d4; color:#000; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;">❌⭕</div>
+            <div>
+              <strong>X O X (Tic-Tac-Toe)</strong>
+              <div style="font-size:11px; color:#94a3b8;">Adu taktik vs AI cerdas & 2 pemain</div>
+            </div>
+          </a>
+          <a href="../flappy/" class="game-hub-item" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; background:rgba(255,255,255,0.04); text-decoration:none; color:#fff;">
+            <div class="game-icon-badge" style="background:#10b981; color:#000; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;">🐦</div>
+            <div>
+              <strong>Flappy Bird</strong>
+              <div style="font-size:11px; color:#94a3b8;">Terbangkan burung melewati rintangan pipa</div>
+            </div>
+          </a>
+          <a href="#" class="game-hub-item active" onclick="return false;" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.4); text-decoration:none; color:#fff;">
+            <div class="game-icon-badge" style="background:#a855f7; color:#fff; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;">🧱</div>
+            <div>
+              <strong>Tetris Classic <span style="font-size:9px; background:#a855f7; color:#fff; padding:2px 6px; border-radius:10px; font-weight:800;">Aktif</span></strong>
+              <div style="font-size:11px; color:#94a3b8;">Susun balok & kombo baris Tetris</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Leaderboard -->
+  <div class="modal-backdrop" id="modal-leaderboard">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🏆 Papan Peringkat Tetris</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="leaderboard-body-content"></div>
+    </div>
+  </div>
+
+  <!-- Modal Profile -->
+  <div class="modal-backdrop" id="modal-username">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">👤 Profil Pemain</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <form id="form-username">
+        <div class="modal-body">
+          <label style="display:block; font-size:12px; color:#94a3b8; margin-bottom:6px;">Username</label>
+          <input type="text" id="input-username" maxlength="20" required autocomplete="off" style="width:100%; padding:10px; border-radius:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:14px; outline:none;">
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+          <button type="submit" class="btn-primary">Simpan Profil</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-msg" id="toast-notification"></div>
+
+  <script src="tetris.js?v=1"></script>
+</body>
+</html>

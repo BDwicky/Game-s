@@ -287,7 +287,8 @@
         'memory': localStorage.getItem('memory_high_score') || 0,
         'pacman': localStorage.getItem('pacman_high_score') || 0,
         'xox': localStorage.getItem('xox_high_score') || 0,
-        'flappy': localStorage.getItem('flappy_high_score') || 0
+        'flappy': localStorage.getItem('flappy_high_score') || 0,
+        'tetris': localStorage.getItem('tetris_high_score') || 0
       };
 
       for (var key in scores) {

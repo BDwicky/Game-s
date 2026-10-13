@@ -567,6 +567,7 @@ body.is-fullscreen {
 .game-card.card-pacman:hover { border-color: rgba(250, 204, 21, 0.6); box-shadow: 0 15px 35px -8px rgba(250, 204, 21, 0.25); }
 .game-card.card-xox:hover    { border-color: rgba(6, 182, 212, 0.6);  box-shadow: 0 15px 35px -8px rgba(6, 182, 212, 0.25); }
 .game-card.card-flappy:hover { border-color: rgba(16, 185, 129, 0.6); box-shadow: 0 15px 35px -8px rgba(16, 185, 129, 0.25); }
+.game-card.card-tetris:hover { border-color: rgba(168, 85, 247, 0.6); box-shadow: 0 15px 35px -8px rgba(168, 85, 247, 0.25); }
 
 /* --- REQUIRED: Card Tampilan Gamenya (Visual Showcase) --- */
 .card-visual-showcase {
@@ -1388,3 +1389,42 @@ body.is-fullscreen {
 :-webkit-full-screen .cards-grid {
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
+
+/* 6. Tetris Visual Showcase */
+.showcase-tetris {
+  background: linear-gradient(135deg, #18092e 0%, #030712 100%);
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tetris-matrix-mock {
+  display: grid;
+  grid-template-columns: repeat(6, 20px);
+  grid-template-rows: repeat(4, 20px);
+  gap: 3px;
+  transition: transform 0.4s ease;
+  filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.4));
+}
+
+.game-card:hover .tetris-matrix-mock {
+  transform: scale(1.08) translateY(-4px);
+}
+
+.tetris-mock-block {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.block-i { background: #06b6d4; box-shadow: 0 0 8px #06b6d4; }
+.block-t { background: #a855f7; box-shadow: 0 0 8px #a855f7; }
+.block-l { background: #f97316; box-shadow: 0 0 8px #f97316; }
+.block-o { background: #eab308; box-shadow: 0 0 8px #eab308; }
+.block-s { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+.block-z { background: #ef4444; box-shadow: 0 0 8px #ef4444; }

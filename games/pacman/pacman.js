@@ -59,6 +59,7 @@
 
   // --- Directions ---
   var D = { NONE: 0, UP: 1, LEFT: 2, DOWN: 3, RIGHT: 4 };
+  var OPPOSITES = { 0: 0, 1: 3, 2: 4, 3: 1, 4: 2 };
 
   // --- Classic Maze Grid (19x22 compact arcade optimized for crisp rendering) ---
   // 1: Wall, 2: Dot, 3: Energizer, 0: Path, 4: Ghost Gate
@@ -105,8 +106,8 @@
     username: 'Pemain Baru',
     avatar: '',
 
-    // Pacman State
-    pac: { x: 9, y: 16, dir: D.NONE, nextDir: D.NONE, mouth: 0.2, mouthDir: 1, speed: 0.080 },
+    // Pacman State (Speed calibrated to 0.110 tiles/tick for responsive arcade gameplay)
+    pac: { x: 9, y: 16, dir: D.NONE, nextDir: D.NONE, mouth: 0.2, mouthDir: 1, speed: 0.110 },
 
     // Ghosts
     ghosts: [],
@@ -212,14 +213,16 @@
       if (dpadLeft) dpadLeft.addEventListener('click', function () { self.setDir(D.LEFT); });
       if (dpadRight) dpadRight.addEventListener('click', function () { self.setDir(D.RIGHT); });
 
-      // Swipe Gestures on Canvas
+      // Swipe Gestures anywhere on window (Full screen mobile swipe support)
       var touchStartX = 0, touchStartY = 0;
-      this.canvas.addEventListener('touchstart', function (e) {
+      window.addEventListener('touchstart', function (e) {
+        if (e.target && e.target.closest && e.target.closest('.modal-backdrop, .pacman-header, .game-msg-overlay, .dpad-container, button, a, input')) return;
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
       }, { passive: true });
 
-      this.canvas.addEventListener('touchend', function (e) {
+      window.addEventListener('touchend', function (e) {
+        if (e.target && e.target.closest && e.target.closest('.modal-backdrop, .pacman-header, .game-msg-overlay, .dpad-container, button, a, input')) return;
         var dx = e.changedTouches[0].clientX - touchStartX;
         var dy = e.changedTouches[0].clientY - touchStartY;
         var absDx = Math.abs(dx);
@@ -290,8 +293,7 @@
 
     setDir: function (d) {
       if (this.gameOver) return;
-      var opposites = { 1: 3, 2: 4, 3: 1, 4: 2 };
-      if (opposites[this.pac.dir] === d) {
+      if (OPPOSITES[this.pac.dir] === d) {
         this.pac.dir = d;
         this.pac.nextDir = d;
         return;
@@ -333,11 +335,12 @@
       this.pac.dir = D.NONE;
       this.pac.nextDir = D.NONE;
 
+      // Ghosts with distinct entrance timers & positions
       this.ghosts = [
-        { name: 'Blinky', color: '#ef4444', x: 9, y: 8,  dir: D.UP,   frightened: false },
-        { name: 'Pinky',  color: '#f472b6', x: 8, y: 10, dir: D.UP,   frightened: false },
-        { name: 'Inky',   color: '#06b6d4', x: 9, y: 10, dir: D.UP,   frightened: false },
-        { name: 'Clyde',  color: '#f97316', x: 10, y: 10, dir: D.UP, frightened: false }
+        { name: 'Blinky', color: '#ef4444', x: 9, y: 8,  dir: D.LEFT, state: 'normal',  exitTimer: 0,   frightened: false, lastTileX: 9, lastTileY: 8 },
+        { name: 'Pinky',  color: '#f472b6', x: 9, y: 10, dir: D.UP,   state: 'leaving', exitTimer: 40,  frightened: false, lastTileX: 9, lastTileY: 10 },
+        { name: 'Inky',   color: '#06b6d4', x: 8, y: 10, dir: D.UP,   state: 'house',   exitTimer: 180, frightened: false, lastTileX: 8, lastTileY: 10, bobDir: 1 },
+        { name: 'Clyde',  color: '#f97316', x: 10, y: 10, dir: D.UP,  state: 'house',   exitTimer: 320, frightened: false, lastTileX: 10, lastTileY: 10, bobDir: -1 }
       ];
     },
 
@@ -351,33 +354,64 @@
       }
     },
 
+    // Pacman boundary & wall check
     canMove: function (x, y, dir) {
-      var nx = x, ny = y;
+      var nx = Math.round(x);
+      var ny = Math.round(y);
       if (dir === D.UP) ny -= 1;
-      if (dir === D.DOWN) ny += 1;
-      if (dir === D.LEFT) nx -= 1;
-      if (dir === D.RIGHT) nx += 1;
+      else if (dir === D.DOWN) ny += 1;
+      else if (dir === D.LEFT) nx -= 1;
+      else if (dir === D.RIGHT) nx += 1;
 
       // Screen wrap tunnel
-      if (nx < 0 || nx >= this.cols) return true;
+      if (nx < 0 || nx >= this.cols) {
+        return (ny >= 0 && ny < this.rows);
+      }
+      if (ny < 0 || ny >= this.rows) return false;
 
-      var tile = this.map[Math.round(ny)][Math.round(nx)];
+      var tile = this.map[ny][nx];
+      // Pacman cannot enter walls (1) or ghost house gate (4)
       return tile !== 1 && tile !== 4;
+    },
+
+    // Dedicated ghost boundary & wall check (Deadlock & freeze safe)
+    canGhostMove: function (x, y, dir, isExiting) {
+      var nx = Math.round(x);
+      var ny = Math.round(y);
+      if (dir === D.UP) ny -= 1;
+      else if (dir === D.DOWN) ny += 1;
+      else if (dir === D.LEFT) nx -= 1;
+      else if (dir === D.RIGHT) nx += 1;
+
+      // Screen wrap tunnel
+      if (nx < 0 || nx >= this.cols) {
+        return (ny >= 0 && ny < this.rows);
+      }
+      if (ny < 0 || ny >= this.rows) return false;
+
+      var tile = this.map[ny][nx];
+      if (tile === 1) return false;
+
+      // Gate (tile 4): only accessible when exiting the house
+      if (tile === 4) {
+        return !!isExiting;
+      }
+
+      return true;
     },
 
     update: function () {
       if (this.gameOver || this.paused) return;
 
-      // Update Pacman Direction
+      // Update Pacman Direction with Corner Buffering
       if (this.pac.nextDir !== D.NONE && this.pac.nextDir !== this.pac.dir) {
-        var opposites = { 1: 3, 2: 4, 3: 1, 4: 2 };
-        if (opposites[this.pac.dir] === this.pac.nextDir) {
+        if (OPPOSITES[this.pac.dir] === this.pac.nextDir) {
           this.pac.dir = this.pac.nextDir;
         } else {
           var cx = Math.round(this.pac.x);
           var cy = Math.round(this.pac.y);
-          var isAligned = Math.abs(this.pac.x - cx) <= this.pac.speed && Math.abs(this.pac.y - cy) <= this.pac.speed;
-          if (isAligned && this.canMove(cx, cy, this.pac.nextDir)) {
+          var isNearCenter = Math.abs(this.pac.x - cx) <= 0.25 && Math.abs(this.pac.y - cy) <= 0.25;
+          if (isNearCenter && this.canMove(cx, cy, this.pac.nextDir)) {
             this.pac.dir = this.pac.nextDir;
             this.pac.x = cx;
             this.pac.y = cy;
@@ -389,9 +423,9 @@
       if (this.pac.dir !== D.NONE) {
         var dx = 0, dy = 0;
         if (this.pac.dir === D.UP) dy = -this.pac.speed;
-        if (this.pac.dir === D.DOWN) dy = this.pac.speed;
-        if (this.pac.dir === D.LEFT) dx = -this.pac.speed;
-        if (this.pac.dir === D.RIGHT) dx = this.pac.speed;
+        else if (this.pac.dir === D.DOWN) dy = this.pac.speed;
+        else if (this.pac.dir === D.LEFT) dx = -this.pac.speed;
+        else if (this.pac.dir === D.RIGHT) dx = this.pac.speed;
 
         if (this.canMove(this.pac.x, this.pac.y, this.pac.dir)) {
           this.pac.x += dx;
@@ -425,7 +459,9 @@
           this.score += 50;
           this.dotsLeft--;
           this.frightenedTimer = 360; // 6 seconds at 60Hz
-          this.ghosts.forEach(function (g) { g.frightened = true; });
+          this.ghosts.forEach(function (g) {
+            if (g.state === 'normal') g.frightened = true;
+          });
           Sound.eatGhost();
           this.updateDashboard();
         }
@@ -460,11 +496,16 @@
             // Eat ghost
             self.score += 200;
             g.frightened = false;
-            g.x = 9; g.y = 10; // respawn in house
+            g.x = 9;
+            g.y = 10;
+            g.state = 'house';
+            g.exitTimer = 90; // Respawn delay before re-exiting
+            g.lastTileX = 9;
+            g.lastTileY = 10;
             Sound.eatGhost();
             self.showToast('Hantu Tertangkap! +200');
             self.updateDashboard();
-          } else {
+          } else if (g.state === 'normal') {
             // Pacman death
             self.handlePacmanDeath();
           }
@@ -477,61 +518,158 @@
     },
 
     moveGhost: function (g) {
-      var speed = g.frightened ? 0.045 : 0.065;
+      // State 1: Inside Ghost House (Bouncing)
+      if (g.state === 'house') {
+        if (!g.bobDir) g.bobDir = 1;
+        g.y += 0.025 * g.bobDir;
+        if (g.y >= 10.3) { g.y = 10.3; g.bobDir = -1; }
+        if (g.y <= 9.7)  { g.y = 9.7;  g.bobDir = 1; }
+        if (g.exitTimer > 0) g.exitTimer--;
+        if (g.exitTimer <= 0) {
+          g.state = 'leaving';
+        }
+        return;
+      }
+
+      // State 2: Leaving Ghost House (Moving towards gate and UP out of house)
+      if (g.state === 'leaving') {
+        var leaveSpeed = 0.065;
+        if (Math.abs(g.x - 9) > 0.04) {
+          g.x += (g.x < 9 ? leaveSpeed : -leaveSpeed);
+          g.dir = (g.x < 9 ? D.RIGHT : D.LEFT);
+        } else {
+          g.x = 9;
+          g.y -= leaveSpeed;
+          g.dir = D.UP;
+          if (g.y <= 8.0) {
+            g.y = 8;
+            g.state = 'normal';
+            g.dir = (Math.random() < 0.5) ? D.LEFT : D.RIGHT;
+            g.lastTileX = 9;
+            g.lastTileY = 8;
+          }
+        }
+        return;
+      }
+
+      // State 3: Normal Maze Roaming
+      // Speed calibrated to arcade ratio (Normal: 0.092, Frightened: 0.055)
+      var speed = g.frightened ? 0.055 : 0.092;
+
       var gx = Math.round(g.x);
       var gy = Math.round(g.y);
-      var isAligned = Math.abs(g.x - gx) <= speed && Math.abs(g.y - gy) <= speed;
+      var distToCenter = Math.hypot(g.x - gx, g.y - gy);
 
-      if (isAligned) {
+      // Trigger direction choice once per tile center
+      if (distToCenter <= speed && (gx !== g.lastTileX || gy !== g.lastTileY)) {
         g.x = gx;
         g.y = gy;
+        g.lastTileX = gx;
+        g.lastTileY = gy;
 
-        // Pick available dirs (excluding reverse)
-        var opposites = { 1: 3, 2: 4, 3: 1, 4: 2 };
+        var rev = OPPOSITES[g.dir] || D.NONE;
         var validDirs = [];
-        [D.UP, D.DOWN, D.LEFT, D.RIGHT].forEach(function (d) {
-          if (d !== opposites[g.dir] && PacmanApp.canMove(gx, gy, d)) {
+        var allDirs = [D.UP, D.LEFT, D.DOWN, D.RIGHT];
+
+        // Ghosts cannot reverse 180 degrees unless trapped
+        allDirs.forEach(function (d) {
+          if (d !== rev && PacmanApp.canGhostMove(gx, gy, d, false)) {
             validDirs.push(d);
           }
         });
 
-        // Allow reverse if trapped
+        // Dead end: allow reverse
         if (validDirs.length === 0) {
-          var rev = opposites[g.dir];
-          if (PacmanApp.canMove(gx, gy, rev)) validDirs.push(rev);
+          if (PacmanApp.canGhostMove(gx, gy, rev, false)) {
+            validDirs.push(rev);
+          }
         }
 
-        if (validDirs.length > 0) {
-          // If frightened, pick random; otherwise, gravitate toward Pacman
-          if (g.frightened || Math.random() < 0.35) {
-            g.dir = validDirs[Math.floor(Math.random() * validDirs.length)];
-          } else {
-            // Smart targeting toward Pacman
-            var bestDir = validDirs[0];
-            var bestDist = 9999;
-            validDirs.forEach(function (d) {
-              var testX = gx + (d === D.RIGHT ? 1 : (d === D.LEFT ? -1 : 0));
-              var testY = gy + (d === D.DOWN ? 1 : (d === D.UP ? -1 : 0));
-              var dist = Math.hypot(testX - PacmanApp.pac.x, testY - PacmanApp.pac.y);
-              if (dist < bestDist) {
-                bestDist = dist;
-                bestDir = d;
-              }
-            });
-            g.dir = bestDir;
+        // Emergency fallback: allow ANY non-wall neighbor
+        if (validDirs.length === 0) {
+          allDirs.forEach(function (d) {
+            if (PacmanApp.canGhostMove(gx, gy, d, false)) validDirs.push(d);
+          });
+        }
+
+        // Ultimate safety: prevent null/undefined direction
+        if (validDirs.length === 0) {
+          validDirs.push(rev || D.UP);
+        }
+
+        // AI Direction Selection
+        if (g.frightened) {
+          g.dir = validDirs[Math.floor(Math.random() * validDirs.length)];
+        } else {
+          var targetX = this.pac.x;
+          var targetY = this.pac.y;
+
+          if (g.name === 'Pinky') {
+            // Pinky targets 3 tiles ahead of Pacman
+            var pdx = (this.pac.dir === D.RIGHT ? 3 : (this.pac.dir === D.LEFT ? -3 : 0));
+            var pdy = (this.pac.dir === D.DOWN ? 3 : (this.pac.dir === D.UP ? -3 : 0));
+            targetX += pdx;
+            targetY += pdy;
+          } else if (g.name === 'Inky') {
+            // Inky flanks Pacman
+            var blinky = this.ghosts[0];
+            if (blinky) {
+              targetX = this.pac.x * 2 - blinky.x;
+              targetY = this.pac.y * 2 - blinky.y;
+            }
+          } else if (g.name === 'Clyde') {
+            // Clyde is shy: chases if far, scatters to corner (1, 20) if close
+            var distToPac = Math.hypot(gx - this.pac.x, gy - this.pac.y);
+            if (distToPac <= 6) {
+              targetX = 1;
+              targetY = 20;
+            }
           }
+
+          var bestDir = validDirs[0];
+          var bestDist = Infinity;
+          validDirs.forEach(function (d) {
+            var stepX = gx + (d === D.RIGHT ? 1 : (d === D.LEFT ? -1 : 0));
+            var stepY = gy + (d === D.DOWN ? 1 : (d === D.UP ? -1 : 0));
+            var dDist = Math.hypot(stepX - targetX, stepY - targetY);
+            if (dDist < bestDist) {
+              bestDist = dDist;
+              bestDir = d;
+            }
+          });
+          g.dir = bestDir;
         }
       }
 
-      // Advance ghost position
-      if (g.dir === D.UP) g.y -= speed;
-      if (g.dir === D.DOWN) g.y += speed;
-      if (g.dir === D.LEFT) g.x -= speed;
-      if (g.dir === D.RIGHT) g.x += speed;
+      // Check if current direction is directly blocked by a wall
+      if (!this.canGhostMove(gx, gy, g.dir, false) && distToCenter <= speed * 1.5) {
+        g.x = gx;
+        g.y = gy;
+        var backupDirs = [];
+        [D.UP, D.LEFT, D.DOWN, D.RIGHT].forEach(function (d) {
+          if (PacmanApp.canGhostMove(gx, gy, d, false)) backupDirs.push(d);
+        });
+        if (backupDirs.length > 0) {
+          g.dir = backupDirs[Math.floor(Math.random() * backupDirs.length)];
+          g.lastTileX = gx;
+          g.lastTileY = gy;
+        }
+      }
 
-      // Wrap tunnel
-      if (g.x < -0.5) g.x = this.cols - 0.5;
-      if (g.x > this.cols - 0.5) g.x = -0.5;
+      // Advance ghost along current direction
+      if (g.dir === D.UP) g.y -= speed;
+      else if (g.dir === D.DOWN) g.y += speed;
+      else if (g.dir === D.LEFT) g.x -= speed;
+      else if (g.dir === D.RIGHT) g.x += speed;
+
+      // Screen edge tunnel wrap
+      if (g.x < -0.5) {
+        g.x = this.cols - 0.5;
+        g.lastTileX = -999;
+      } else if (g.x > this.cols - 0.5) {
+        g.x = -0.5;
+        g.lastTileX = -999;
+      }
     },
 
     handlePacmanDeath: function () {
@@ -610,11 +748,22 @@
       this.ctx.fill();
 
       // Draw Ghosts
+      var self = this;
       this.ghosts.forEach(function (g) {
         var gx = g.x * t + t / 2;
         var gy = g.y * t + t / 2;
 
-        PacmanApp.ctx.fillStyle = g.frightened ? '#38bdf8' : g.color;
+        var ghostColor = g.color;
+        if (g.frightened) {
+          // Flashing near expiration
+          if (self.frightenedTimer < 120 && Math.floor(self.frightenedTimer / 15) % 2 === 0) {
+            ghostColor = '#ffffff';
+          } else {
+            ghostColor = '#2563eb';
+          }
+        }
+
+        PacmanApp.ctx.fillStyle = ghostColor;
         PacmanApp.ctx.beginPath();
         PacmanApp.ctx.arc(gx, gy - 2, rad, Math.PI, 0, false);
         PacmanApp.ctx.lineTo(gx + rad, gy + rad);

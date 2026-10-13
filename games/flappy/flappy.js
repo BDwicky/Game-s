@@ -69,23 +69,25 @@
     groundY: 450,
     groundOffset: 0,
 
-    // Bird
+    // Bird physics calibrated to classic arcade standards (60Hz)
     bird: {
       x: 60,
       y: 220,
       radius: 13,
       vy: 0,
-      gravity: 0.20,
-      jump: -4.5,
+      gravity: 0.28,
+      jump: -5.4,
+      maxFall: 8.0,
       rotation: 0,
       wingTimer: 0
     },
 
-    // Pipes
+    // Pipes calibrated: pipeSpeed 2.0 px/frame, spacing ~190px (95 ticks)
     pipes: [],
     pipeSpawnTimer: 0,
-    pipeGap: 116,
-    pipeSpeed: 1.3,
+    pipeGap: 118,
+    pipeSpeed: 2.0,
+    pipeSpawnInterval: 95,
 
     // Fixed 60Hz Timestep Accumulator (Refresh-Rate Independent)
     lastTime: 0,
@@ -169,18 +171,21 @@
     bindEvents: function () {
       var self = this;
 
-      // Tap / Click to Flap
+      // Tap / Click to Flap (Supports clicking canvas and screen background)
       var handleFlapTrigger = function (e) {
-        if (e && e.target && e.target.closest && e.target.closest('.modal-backdrop, .flappy-header')) return;
+        if (e && e.target && e.target.closest && e.target.closest('.modal-backdrop, .flappy-header, .gameover-overlay, button, a, input')) return;
         self.flap();
       };
 
-      this.canvas.addEventListener('touchstart', function (e) {
+      // Screen-wide touch for mobile fullscreen
+      window.addEventListener('touchstart', function (e) {
+        if (e.target && e.target.closest && e.target.closest('.modal-backdrop, .flappy-header, .gameover-overlay, button, a, input')) return;
         e.preventDefault();
         handleFlapTrigger(e);
       }, { passive: false });
 
-      this.canvas.addEventListener('mousedown', function (e) {
+      window.addEventListener('mousedown', function (e) {
+        if (e.target && e.target.closest && e.target.closest('.modal-backdrop, .flappy-header, .gameover-overlay, button, a, input')) return;
         handleFlapTrigger(e);
       });
 
@@ -275,9 +280,9 @@
     update: function () {
       // Idle Hover Animation
       if (this.state === 0) {
-        this.bird.wingTimer += 0.06;
+        this.bird.wingTimer += 0.08;
         this.bird.y = 220 + Math.sin(this.bird.wingTimer) * 5;
-        this.groundOffset = (this.groundOffset + 1.2) % 18;
+        this.groundOffset = (this.groundOffset + 1.8) % 18;
         return;
       }
 
@@ -285,13 +290,14 @@
 
       // PLAYING Physics
       this.bird.vy += this.bird.gravity;
+      if (this.bird.vy > this.bird.maxFall) this.bird.vy = this.bird.maxFall;
       this.bird.y += this.bird.vy;
 
       // Rotation based on velocity
       if (this.bird.vy < 0) {
-        this.bird.rotation = -0.35;
+        this.bird.rotation = -0.42;
       } else {
-        this.bird.rotation = Math.min(Math.PI / 2, this.bird.rotation + 0.035);
+        this.bird.rotation = Math.min(Math.PI / 2, this.bird.rotation + 0.045);
       }
 
       // Ground collision
@@ -310,9 +316,9 @@
       // Ground scroll
       this.groundOffset = (this.groundOffset + this.pipeSpeed) % 18;
 
-      // Spawn Pipes (spaced ~175px apart)
+      // Spawn Pipes (interval 95 frames at 2.0px/frame = 190px pipe spacing)
       this.pipeSpawnTimer++;
-      if (this.pipeSpawnTimer >= 135) {
+      if (this.pipeSpawnTimer >= this.pipeSpawnInterval) {
         this.pipeSpawnTimer = 0;
         this.spawnPipe();
       }
@@ -405,7 +411,7 @@
       var w = this.width;
       var h = this.height;
 
-      // 1. Sky Gradient (Day / Night vibe)
+      // 1. Sky Gradient (Day vibe)
       var skyGrad = ctx.createLinearGradient(0, 0, 0, this.groundY);
       skyGrad.addColorStop(0, '#0284c7');
       skyGrad.addColorStop(1, '#7dd3fc');
@@ -600,7 +606,7 @@
         return;
       }
 
-      html += '<table style="width:100%; border-collapse:collapse;"><thead><tr><th style="text-align:left; padding:6px; color:#94a3b8; font-size:11px;">Rank</th><th style="text-align:left; padding:6px; color:#94a3b8; font-size:11px;">Pemain</th><th style="text-align:right; padding:6px; color:#94a3b8; font-size:11px;">Pipa</th></tr></thead><tbody>';
+      html += '<table style="width:100%; border-collapse:collapse;"><thead><tr><th style="text-align:left; padding:6px; color:#94a3b8; font-size:11px;\">Rank</th><th style="text-align:left; padding:6px; color:#94a3b8; font-size:11px;\">Pemain</th><th style="text-align:right; padding:6px; color:#94a3b8; font-size:11px;\">Pipa</th></tr></thead><tbody>';
 
       list.forEach(function (row) {
         var av = row.avatar ? '<img src="' + row.avatar + '" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">' : (row.username ? row.username.charAt(0).toUpperCase() : '👤');

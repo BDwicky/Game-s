@@ -197,38 +197,48 @@
         if (['ArrowRight', 'KeyD'].indexOf(e.code) !== -1) { e.preventDefault(); self.setDir(D.RIGHT); }
       });
 
-      // Virtual D-Pad
-      var dpadUp = document.getElementById('dpad-up');
-      var dpadDown = document.getElementById('dpad-down');
-      var dpadLeft = document.getElementById('dpad-left');
-      var dpadRight = document.getElementById('dpad-right');
+      // Responsive Full-Screen Touchscreen Direction
+      var touchStartX = 0, touchStartY = 0, touchMoved = false;
 
-      if (dpadUp) dpadUp.addEventListener('touchstart', function (e) { e.preventDefault(); self.setDir(D.UP); });
-      if (dpadDown) dpadDown.addEventListener('touchstart', function (e) { e.preventDefault(); self.setDir(D.DOWN); });
-      if (dpadLeft) dpadLeft.addEventListener('touchstart', function (e) { e.preventDefault(); self.setDir(D.LEFT); });
-      if (dpadRight) dpadRight.addEventListener('touchstart', function (e) { e.preventDefault(); self.setDir(D.RIGHT); });
-
-      if (dpadUp) dpadUp.addEventListener('click', function () { self.setDir(D.UP); });
-      if (dpadDown) dpadDown.addEventListener('click', function () { self.setDir(D.DOWN); });
-      if (dpadLeft) dpadLeft.addEventListener('click', function () { self.setDir(D.LEFT); });
-      if (dpadRight) dpadRight.addEventListener('click', function () { self.setDir(D.RIGHT); });
-
-      // Swipe Gestures anywhere on window (Full screen mobile swipe support)
-      var touchStartX = 0, touchStartY = 0;
       window.addEventListener('touchstart', function (e) {
-        if (e.target && e.target.closest && e.target.closest('.modal-backdrop, .pacman-header, .game-msg-overlay, .dpad-container, button, a, input')) return;
+        if (e.target && e.target.closest && e.target.closest('.modal-backdrop, .pacman-header, .game-msg-overlay, button, a, input')) return;
+        if (!e.touches || e.touches.length === 0) return;
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
+        touchMoved = false;
+      }, { passive: true });
+
+      window.addEventListener('touchmove', function (e) {
+        if (touchMoved) return;
+        if (e.target && e.target.closest && e.target.closest('.modal-backdrop, .pacman-header, .game-msg-overlay, button, a, input')) return;
+        if (!e.touches || e.touches.length === 0) return;
+
+        var dx = e.touches[0].clientX - touchStartX;
+        var dy = e.touches[0].clientY - touchStartY;
+        var absDx = Math.abs(dx);
+        var absDy = Math.abs(dy);
+
+        if (Math.max(absDx, absDy) >= 16) {
+          touchMoved = true;
+          if (absDx > absDy) {
+            self.setDir(dx > 0 ? D.RIGHT : D.LEFT);
+          } else {
+            self.setDir(dy > 0 ? D.DOWN : D.UP);
+          }
+        }
       }, { passive: true });
 
       window.addEventListener('touchend', function (e) {
-        if (e.target && e.target.closest && e.target.closest('.modal-backdrop, .pacman-header, .game-msg-overlay, .dpad-container, button, a, input')) return;
+        if (touchMoved) return;
+        if (e.target && e.target.closest && e.target.closest('.modal-backdrop, .pacman-header, .game-msg-overlay, button, a, input')) return;
+        if (!e.changedTouches || e.changedTouches.length === 0) return;
+
         var dx = e.changedTouches[0].clientX - touchStartX;
         var dy = e.changedTouches[0].clientY - touchStartY;
         var absDx = Math.abs(dx);
         var absDy = Math.abs(dy);
 
-        if (Math.max(absDx, absDy) > 20) {
+        if (Math.max(absDx, absDy) >= 16) {
           if (absDx > absDy) {
             self.setDir(dx > 0 ? D.RIGHT : D.LEFT);
           } else {

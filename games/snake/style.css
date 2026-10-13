@@ -339,63 +339,6 @@ body {
   background: rgba(255, 255, 255, 0.15);
 }
 
-/* Virtual D-Pad for Mobile */
-.virtual-dpad {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-}
-
-.dpad-row {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.dpad-row.middle {
-  gap: 14px;
-}
-
-.dpad-btn {
-  width: 54px;
-  height: 48px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-  touch-action: manipulation;
-}
-
-.dpad-btn:active {
-  background: rgba(16, 185, 129, 0.3);
-  border-color: var(--neon-emerald);
-  transform: scale(0.92);
-}
-
-.dpad-center-btn {
-  width: 44px;
-  height: 48px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-muted);
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  touch-action: manipulation;
-}
-
 /* Modals */
 .modal-backdrop {
   position: fixed;

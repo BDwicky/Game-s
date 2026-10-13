@@ -1,0 +1,376 @@
+/* ========================================================
+   DWICKY GAME HUB - ARCADE UNIFIED STYLESHEET
+   Platform: game.dwicky.dev
+   Unifies Layout, Typography, Header, Stats & Viewport across all 7 games.
+   ======================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap');
+
+:root {
+  --font-arcade: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --bg-deep: #060b13;
+  --bg-surface: rgba(13, 21, 39, 0.82);
+  --bg-card: rgba(15, 23, 42, 0.7);
+  --border-arcade: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.22);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent-cyan: #06b6d4;
+  --accent-emerald: #10b981;
+  --accent-gold: #facc15;
+  --accent-purple: #a855f7;
+  --accent-rose: #f43f5e;
+}
+
+/* Global Reset for Arcade Shell */
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+  font-family: var(--font-arcade) !important;
+  background-color: var(--bg-deep) !important;
+  background-image: 
+    radial-gradient(circle at 20% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 80% 85%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+    linear-gradient(180deg, #060b13 0%, #09101f 100%) !important;
+  color: var(--text-main) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+/* Unified Arcade Wrapper - Exact 100dvh viewport fitting, no double scrollbars */
+.arcade-wrapper,
+.flappy-wrapper,
+.pacman-wrapper,
+.snake-wrapper,
+.tetris-wrapper,
+.game-wrapper,
+.xox-wrapper,
+body.dark-theme .container,
+.container {
+  width: 100% !important;
+  max-width: 440px !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  min-height: auto !important;
+  margin: 0 auto !important;
+  padding: 8px 10px 10px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  gap: 8px !important;
+}
+
+/* Unified Arcade Header */
+.game-header,
+.flappy-header,
+.pacman-header,
+.snake-header,
+.tetris-header,
+.xox-header,
+.game-header-section {
+  width: 100% !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-arcade) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-radius: 14px !important;
+  padding: 0 8px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+}
+
+/* Unified Profile Badge */
+.user-badge,
+.profile-card-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 999px !important;
+  padding: 3px 10px 3px 3px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  height: 34px !important;
+  max-height: 34px !important;
+  box-sizing: border-box !important;
+  width: auto !important;
+  min-width: 0 !important;
+}
+
+.user-badge:hover,
+.profile-card-container:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: var(--border-hover) !important;
+}
+
+.avatar-circle,
+#user-avatar-wrap {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #10b981, #06b6d4) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  font-size: 13px !important;
+  color: #fff !important;
+}
+
+.avatar-circle img,
+#user-avatar-wrap img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.username-display,
+#profile-username-display,
+#user-username {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #f8fafc !important;
+  max-width: 95px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Unified Action Buttons Group */
+.header-actions,
+.header-right,
+.header-right .navbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.btn-icon,
+.btn-action {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 15px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  text-decoration: none !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  line-height: 1 !important;
+}
+
+.btn-icon:hover,
+.btn-action:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: var(--border-hover) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-icon:active,
+.btn-action:active {
+  transform: scale(0.94) !important;
+}
+
+/* Hide button text across all games for pure uniform icon squares */
+.btn-text,
+.btn-home .btn-text,
+.btn-games-hub .btn-text {
+  display: none !important;
+}
+
+/* Home button subtle gold accent */
+.btn-home {
+  background: rgba(250, 204, 21, 0.12) !important;
+  border-color: rgba(250, 204, 21, 0.3) !important;
+}
+
+.btn-home:hover {
+  background: rgba(250, 204, 21, 0.22) !important;
+  border-color: rgba(250, 204, 21, 0.5) !important;
+}
+
+/* Unified Stats Bar */
+.stats-bar,
+.score-card,
+.dash-bar,
+.controls-bar,
+.tetris-score-bar,
+.memory-stats-bar {
+  width: 100% !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-arcade) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border-radius: 12px !important;
+  padding: 2px 8px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+}
+
+.stat-pill,
+.stat-item,
+.score-group,
+.score-container,
+.best-container,
+.score-item {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 4px !important;
+  min-width: 48px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.stat-label,
+.score-label {
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--text-muted) !important;
+  margin: 0 !important;
+  line-height: 1.1 !important;
+}
+
+.stat-val,
+.stat-value,
+.score-value,
+.score-val {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #fff !important;
+  margin: 0 !important;
+  line-height: 1.1 !important;
+}
+
+/* Center Play Area - Auto-scaled to available viewport height */
+.game-area,
+.canvas-container,
+.board-container,
+.tetris-main-layout,
+.game-container {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  overflow: hidden !important;
+  margin: auto 0 !important;
+  padding: 0 !important;
+}
+
+/* Canvas Sizing: Never overflow viewport height */
+canvas {
+  max-width: 100% !important;
+  max-height: calc(100dvh - 120px) !important;
+  object-fit: contain !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6) !important;
+  touch-action: none !important;
+}
+
+/* HIDE ON-SCREEN ARROW BUTTONS ON MOBILE (Touchscreen Swipe Direction Used) */
+.virtual-dpad,
+.dpad-container,
+#virtual-dpad {
+  display: none !important;
+}
+
+/* Clean Modals */
+.modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 999999 !important;
+  background: rgba(0, 0, 0, 0.78) !important;
+  backdrop-filter: blur(8px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+}
+
+.modal-card,
+.modal-dialog {
+  background: #0d1527 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 18px !important;
+  width: 100% !important;
+  max-width: 440px !important;
+  max-height: 85vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8) !important;
+  overflow: hidden !important;
+}
+
+/* Unified Toast */
+.toast-msg {
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) translateY(30px) !important;
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #fff !important;
+  padding: 10px 22px !important;
+  border-radius: 999px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: all 0.25s ease !important;
+  z-index: 9999999 !important;
+}
+
+.toast-msg.show {
+  transform: translateX(-50%) translateY(0) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}

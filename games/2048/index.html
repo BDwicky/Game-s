@@ -8,7 +8,7 @@
     // Immediate Theme initialization to prevent bright white flash on load
     (function () {
       try {
-        var saved = localStorage.getItem("2048_theme") || "classic";
+        var saved = localStorage.getItem("2048_theme") || "dark"; document.documentElement.classList.add("dark-theme");
         if (saved === "dark") saved = "dark";
         else if (saved === "light") saved = "classic";
         document.documentElement.classList.add("theme-" + saved);
@@ -20,6 +20,7 @@
   </script>
 
   <link href="../../style/main.css?v=26" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../style/arcade-unified.css?v=1">
   <link href="../../style/leaderboard.css?v=26" rel="stylesheet" type="text/css">
   <link rel="shortcut icon" href="../../favicon.ico">
   <link rel="apple-touch-icon" href="../../meta/apple-touch-icon.png">
@@ -36,55 +37,47 @@
 <body>
   <div class="container">
     <!-- Game Header: Brand & Profile Card (Left) | Actions & Controls (Right) -->
-    <header class="game-header-section">
+    <header class="game-header-section game-header">
       <div class="header-left">
         <h1 class="sr-only">2048</h1>
-
-        <!-- Profile Photo Container with Bottom Transparent Blur Nickname Overlay -->
-        <div class="profile-card-container" id="user-badge" title="Klik untuk mengedit profil & foto" onclick="if(window.Leaderboard)window.Leaderboard.openUsernameModal(true)">
-          <div class="profile-card-media">
-            <img id="user-avatar-img" class="profile-card-img" src="" alt="Foto Profil" style="display: none;">
-            <div id="user-avatar-placeholder" class="profile-card-placeholder">👤</div>
-            <div class="profile-card-hover-edit">
-              <span class="hover-edit-icon" id="profile-card-hover-icon">✏️</span>
-              <span class="hover-edit-text" id="profile-card-hover-text">Ganti Foto</span>
-            </div>
+        <div class="user-badge" id="user-badge" title="Klik untuk mengedit profil & foto" onclick="if(window.Leaderboard)window.Leaderboard.openUsernameModal(true)">
+          <div class="avatar-circle" id="user-avatar-wrap">
+            <img id="user-avatar-img" class="user-avatar-img" src="" alt="Foto Profil" style="display: none;">
+            <span id="user-avatar-placeholder" class="user-avatar-placeholder">👤</span>
           </div>
-          <div class="profile-card-overlay-blur">
-            <span class="nickname-text" id="username-display">Pemain Baru</span>
-          </div>
+          <span class="username-display" id="username-display">Pemain Baru</span>
         </div>
       </div>
 
       <div class="header-right">
-        <!-- Row 1: Navbar Actions (Theme, Leaderboard, Fullscreen, Reset) -->
-        <div class="navbar-actions">
-          <a class="btn-action btn-icon-only btn-home" id="btn-home" href="../../index.html" title="Kembali ke Home Page" aria-label="Kembali ke Home Page" onclick="if(window.parent&&window.parent!==window){event.preventDefault();window.parent.postMessage({type:'close_game'},'*');return false;}">
+        <div class="header-actions navbar-actions">
+          <a class="btn-action btn-icon btn-icon-only btn-home" id="btn-home" href="../../index.html" title="Kembali ke Home Page" aria-label="Kembali ke Home Page" onclick="if(window.parent&&window.parent!==window){event.preventDefault();window.parent.postMessage({type:'close_game'},'*');return false;}">
             <span>🏠</span>
           </a>
-          <button class="btn-action btn-icon-only btn-theme" id="btn-theme" type="button" title="Pilih Tema Game" aria-label="Pilih Tema" onclick="if(window.Leaderboard)window.Leaderboard.openThemeModal()">
+          <button class="btn-action btn-icon btn-icon-only" id="btn-sound" type="button" title="Suara Permainan" onclick="if(window.RetroAudio){var s=window.RetroAudio.toggle();this.textContent=s?'🔊':'🔇';}">
+            <span>🔊</span>
+          </button>
+          <button class="btn-action btn-icon btn-icon-only btn-theme" id="btn-theme" type="button" title="Pilih Tema Game" aria-label="Pilih Tema" onclick="if(window.Leaderboard)window.Leaderboard.openThemeModal()">
             <span id="theme-icon">🎨</span>
           </button>
-          <button class="btn-action btn-icon-only" id="btn-leaderboard" type="button" title="Papan Peringkat (Leaderboard)" aria-label="Leaderboard" onclick="if(window.Leaderboard)window.Leaderboard.openLeaderboard()">
+          <button class="btn-action btn-icon btn-icon-only" id="btn-leaderboard" type="button" title="Papan Peringkat (Leaderboard)" aria-label="Leaderboard" onclick="if(window.Leaderboard)window.Leaderboard.openLeaderboard()">
             <span>🏆</span>
           </button>
-          <button class="btn-action btn-icon-only btn-fullscreen" id="btn-fullscreen" type="button" title="Layar Penuh (Fullscreen)" aria-label="Fullscreen" onclick="if(window.Leaderboard)window.Leaderboard.toggleFullscreen()">
+          <button class="btn-action btn-icon btn-icon-only btn-fullscreen" id="btn-fullscreen" type="button" title="Layar Penuh (Fullscreen)" aria-label="Fullscreen" onclick="if(window.Leaderboard)window.Leaderboard.toggleFullscreen()">
             <span id="fullscreen-icon">⛶</span>
           </button>
-          <button class="restart-button btn-action btn-icon-only icon-reset-btn" id="btn-restart" type="button" title="Game Baru / Reset" aria-label="Game Baru" onclick="if(window.Leaderboard&&window.Leaderboard.onGameRestart)window.Leaderboard.onGameRestart()">
-            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
-            </svg>
+          <button class="restart-button btn-action btn-icon btn-icon-only icon-reset-btn" id="btn-restart" type="button" title="Game Baru / Reset" aria-label="Game Baru" onclick="if(window.Leaderboard&&window.Leaderboard.onGameRestart)window.Leaderboard.onGameRestart()">
+            <span>🔄</span>
           </button>
-        </div>
-
-        <!-- Row 2: Controls Bar (Score, Best) -->
-        <div class="controls-bar">
-          <div class="score-container" id="score-container" title="Skor Permainan Saat Ini">0</div>
-          <div class="best-container" id="best-container" title="Rekor Pribadi Terbaik">0</div>
         </div>
       </div>
     </header>
+
+    <!-- Stats Bar (Score, Best) -->
+    <div class="controls-bar stats-bar">
+      <div class="score-container stat-pill" id="score-container" title="Skor Permainan Saat Ini">0</div>
+      <div class="best-container stat-pill" id="best-container" title="Rekor Pribadi Terbaik">0</div>
+    </div>
 
     <div class="game-container">
       <div class="game-message">

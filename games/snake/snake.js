@@ -201,51 +201,64 @@
         }
       });
 
-      // Virtual D-pad
-      var btnUp = document.getElementById('dpad-up');
-      var btnDown = document.getElementById('dpad-down');
-      var btnLeft = document.getElementById('dpad-left');
-      var btnRight = document.getElementById('dpad-right');
-      var btnPause = document.getElementById('dpad-pause');
+      // Header Pause button
+      var btnPause = document.getElementById('btn-pause');
+      if (btnPause) {
+        btnPause.addEventListener('click', function () {
+          self.togglePause();
+          btnPause.textContent = self.isPaused ? '▶' : '⏸';
+        });
+      }
 
-      if (btnUp) btnUp.addEventListener('click', function () { self.changeDirection(0, -1); });
-      if (btnDown) btnDown.addEventListener('click', function () { self.changeDirection(0, 1); });
-      if (btnLeft) btnLeft.addEventListener('click', function () { self.changeDirection(-1, 0); });
-      if (btnRight) btnRight.addEventListener('click', function () { self.changeDirection(1, 0); });
-      if (btnPause) btnPause.addEventListener('click', function () { self.togglePause(); });
-
-      // Touch Swipe Gestures on Canvas & Wrapper
+      // Responsive Full-Screen Touchscreen Direction
       var touchStartX = 0;
       var touchStartY = 0;
-      var container = document.getElementById('canvas-container') || this.canvas;
+      var touchMoved = false;
 
-      container.addEventListener('touchstart', function (e) {
+      window.addEventListener('touchstart', function (e) {
+        if (e.target && e.target.closest && e.target.closest('.modal-backdrop, .snake-header, .game-overlay, button, a, input')) return;
         if (!e.touches || e.touches.length === 0) return;
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
+        touchMoved = false;
       }, { passive: true });
 
-      container.addEventListener('touchend', function (e) {
-        if (!e.changedTouches || e.changedTouches.length === 0) return;
-        var touchEndX = e.changedTouches[0].clientX;
-        var touchEndY = e.changedTouches[0].clientY;
+      window.addEventListener('touchmove', function (e) {
+        if (touchMoved) return;
+        if (e.target && e.target.closest && e.target.closest('.modal-backdrop, .snake-header, .game-overlay, button, a, input')) return;
+        if (!e.touches || e.touches.length === 0) return;
 
-        var dx = touchEndX - touchStartX;
-        var dy = touchEndY - touchStartY;
+        var dx = e.touches[0].clientX - touchStartX;
+        var dy = e.touches[0].clientY - touchStartY;
         var absDx = Math.abs(dx);
         var absDy = Math.abs(dy);
 
-        // Min swipe distance 20px
-        if (Math.max(absDx, absDy) < 20) return;
+        if (Math.max(absDx, absDy) >= 16) {
+          touchMoved = true;
+          if (absDx > absDy) {
+            self.changeDirection(dx > 0 ? 1 : -1, 0);
+          } else {
+            self.changeDirection(0, dy > 0 ? 1 : -1);
+          }
+        }
+      }, { passive: true });
 
-        if (absDx > absDy) {
-          // Horizontal swipe
-          if (dx > 0) self.changeDirection(1, 0);
-          else self.changeDirection(-1, 0);
-        } else {
-          // Vertical swipe
-          if (dy > 0) self.changeDirection(0, 1);
-          else self.changeDirection(0, -1);
+      window.addEventListener('touchend', function (e) {
+        if (touchMoved) return;
+        if (e.target && e.target.closest && e.target.closest('.modal-backdrop, .snake-header, .game-overlay, button, a, input')) return;
+        if (!e.changedTouches || e.changedTouches.length === 0) return;
+
+        var dx = e.changedTouches[0].clientX - touchStartX;
+        var dy = e.changedTouches[0].clientY - touchStartY;
+        var absDx = Math.abs(dx);
+        var absDy = Math.abs(dy);
+
+        if (Math.max(absDx, absDy) >= 16) {
+          if (absDx > absDy) {
+            self.changeDirection(dx > 0 ? 1 : -1, 0);
+          } else {
+            self.changeDirection(0, dy > 0 ? 1 : -1);
+          }
         }
       }, { passive: true });
     },

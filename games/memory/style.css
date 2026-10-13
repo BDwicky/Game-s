@@ -60,7 +60,7 @@ body.is-fullscreen {
 /* App Wrapper */
 .game-wrapper {
   width: 100%;
-  max-width: 520px;
+  max-width: 500px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -298,9 +298,11 @@ body.is-fullscreen {
 
 /* Cards Grid Board */
 .cards-grid-container {
-  width: 100%;
+  width: min(500px, calc(100vw - 20px), calc(100dvh - 170px));
+  height: min(500px, calc(100vw - 20px), calc(100dvh - 170px));
   aspect-ratio: 1 / 1;
-  max-height: 480px;
+  max-width: 100%;
+  max-height: calc(100dvh - 170px);
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(12px);

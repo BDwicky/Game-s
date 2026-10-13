@@ -52,7 +52,7 @@ body.is-fullscreen {
 
 .xox-wrapper {
   width: 100%;
-  max-width: 420px;
+  max-width: 500px;
   height: 100% !important;
   height: 100dvh !important;
   max-height: 100dvh !important;
@@ -257,8 +257,8 @@ body.is-fullscreen {
 /* Grid 3x3 Board */
 .board-container {
   position: relative !important;
-  width: min(310px, 86vw, calc(100dvh - 200px)) !important;
-  height: min(310px, 86vw, calc(100dvh - 200px)) !important;
+  width: min(500px, calc(100vw - 20px), calc(100dvh - 190px)) !important;
+  height: min(500px, calc(100vw - 20px), calc(100dvh - 190px)) !important;
   min-width: 240px !important;
   min-height: 240px !important;
   aspect-ratio: 1 / 1 !important;

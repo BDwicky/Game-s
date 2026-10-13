@@ -46,13 +46,17 @@ html, body {
 
 /* Unified Arcade Wrapper - Exact 100dvh viewport fitting, no double scrollbars */
 .arcade-wrapper,
-.pacman-wrapper,
 .snake-wrapper,
-.tetris-wrapper,
+.tetris-wrapper {
+  width: 100% !important;
+  max-width: 440px !important;
+}
+
+.pacman-wrapper,
 .game-wrapper,
 .xox-wrapper {
   width: 100% !important;
-  max-width: 440px !important;
+  max-width: 500px !important;
   height: 100% !important;
   height: 100dvh !important;
   max-height: 100dvh !important;
@@ -855,9 +859,9 @@ body {
   display: grid !important;
   grid-template-columns: repeat(3, 1fr) !important;
   grid-template-rows: repeat(3, 1fr) !important;
-  gap: 8px !important;
-  width: min(310px, 86vw, calc(100dvh - 200px)) !important;
-  height: min(310px, 86vw, calc(100dvh - 200px)) !important;
+  gap: 10px !important;
+  width: min(500px, calc(100vw - 20px), calc(100dvh - 190px)) !important;
+  height: min(500px, calc(100vw - 20px), calc(100dvh - 190px)) !important;
   min-width: 240px !important;
   min-height: 240px !important;
   aspect-ratio: 1 / 1 !important;
@@ -1010,18 +1014,18 @@ body {
     margin: 0 auto !important;
   }
 
-  /* Pacman Arcade */
+  /* Pacman Arcade - Matched with 2048 (500px width footprint) */
   .pacman-wrapper {
-    max-width: min(640px, 94vw) !important;
+    max-width: 500px !important;
   }
   .pacman-wrapper .canvas-container {
-    max-height: min(560px, calc(100dvh - 110px)) !important;
+    max-height: min(500px, calc(100dvh - 120px)) !important;
     width: auto !important;
     margin: 0 auto !important;
   }
   .pacman-wrapper #pacman-canvas {
-    max-height: min(560px, calc(100dvh - 110px)) !important;
-    max-width: min(484px, 92vw) !important;
+    max-height: min(500px, calc(100dvh - 120px)) !important;
+    max-width: min(440px, 92vw) !important;
     width: auto !important;
     height: auto !important;
   }
@@ -1049,27 +1053,28 @@ body {
     width: 90px !important;
   }
 
-  /* Memory Match */
+  /* Memory Match - Exactly 500px x 500px matching 2048 */
   .game-wrapper {
-    max-width: min(720px, 94vw) !important;
+    max-width: 500px !important;
   }
   .game-wrapper .cards-grid-container {
-    max-height: min(560px, calc(100dvh - 130px)) !important;
-    width: min(560px, calc(100dvh - 130px), 92vw) !important;
+    max-height: min(500px, calc(100dvh - 170px)) !important;
+    width: min(500px, calc(100dvh - 170px), 92vw) !important;
+    height: min(500px, calc(100dvh - 170px), 92vw) !important;
     aspect-ratio: 1 / 1 !important;
     margin: 0 auto !important;
   }
 
-  /* X O X (Tic-Tac-Toe) */
+  /* X O X (Tic-Tac-Toe) - Exactly 500px x 500px matching 2048 */
   .xox-wrapper {
-    max-width: min(560px, 94vw) !important;
+    max-width: 500px !important;
   }
   .xox-wrapper .board-container {
-    width: min(420px, 86vw, calc(100dvh - 170px)) !important;
-    height: min(420px, 86vw, calc(100dvh - 170px)) !important;
+    width: min(500px, 92vw, calc(100dvh - 190px)) !important;
+    height: min(500px, 92vw, calc(100dvh - 190px)) !important;
   }
   .xox-wrapper .grid-cell {
-    font-size: min(56px, 12vw) !important;
+    font-size: min(72px, 14vw) !important;
   }
 
   .arcade-wrapper {
@@ -1420,4 +1425,73 @@ body {
     padding: 6px 10px !important;
     font-size: 11px !important;
   }
+}
+
+
+/* ==========================================================================
+   2048-Matching Geometry for Memory Match, Pacman Arcade, and XOX
+   Matches standard 500px desktop footprint & full mobile screen width
+   ========================================================================== */
+.game-wrapper,
+.pacman-wrapper,
+.xox-wrapper {
+  width: 100% !important;
+  max-width: 500px !important;
+  margin: 0 auto !important;
+}
+
+/* Memory Match Board */
+.game-wrapper .cards-grid-container {
+  width: min(500px, calc(100vw - 20px), calc(100dvh - 170px)) !important;
+  height: min(500px, calc(100vw - 20px), calc(100dvh - 170px)) !important;
+  max-width: 100% !important;
+  max-height: calc(100dvh - 170px) !important;
+  aspect-ratio: 1 / 1 !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+}
+
+.game-wrapper .cards-grid-container.grid-12 .card-front,
+.game-wrapper .cards-grid-container.grid-16 .card-front {
+  font-size: clamp(28px, 6vw, 42px) !important;
+}
+.game-wrapper .cards-grid-container.grid-24 .card-front {
+  font-size: clamp(22px, 4.5vw, 32px) !important;
+}
+.game-wrapper .cards-grid-container.grid-36 .card-front {
+  font-size: clamp(18px, 3.5vw, 24px) !important;
+}
+.game-wrapper .card-back::after {
+  font-size: clamp(22px, 5vw, 34px) !important;
+}
+
+/* Pacman Arcade Board */
+.pacman-wrapper .canvas-container {
+  max-width: 500px !important;
+  margin: 0 auto !important;
+  border-radius: 10px !important;
+}
+
+.pacman-wrapper #pacman-canvas {
+  max-width: min(440px, calc(100vw - 20px), calc((100dvh - 130px) * 19 / 22)) !important;
+  max-height: min(500px, calc(100dvh - 130px)) !important;
+  width: auto !important;
+  height: auto !important;
+  aspect-ratio: 19 / 22 !important;
+}
+
+/* XOX Board */
+.xox-wrapper .board-container,
+.xox-wrapper #board-grid {
+  width: min(500px, calc(100vw - 20px), calc(100dvh - 190px)) !important;
+  height: min(500px, calc(100vw - 20px), calc(100dvh - 190px)) !important;
+  max-width: 100% !important;
+  max-height: calc(100dvh - 190px) !important;
+  aspect-ratio: 1 / 1 !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+}
+
+.xox-wrapper .grid-cell {
+  font-size: clamp(48px, 12vw, 72px) !important;
 }

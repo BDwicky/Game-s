@@ -475,3 +475,20 @@ body {
   transform: translateX(-50%) translateY(0);
   opacity: 1;
 }
+
+/* Fullscreen Mode Optimization */
+html.is-fullscreen,
+body.is-fullscreen {
+  height: 100% !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  padding: env(safe-area-inset-top, 6px) env(safe-area-inset-right, 6px) env(safe-area-inset-bottom, 6px) env(safe-area-inset-left, 6px) !important;
+  justify-content: center !important;
+}
+
+body.is-fullscreen .snake-wrapper {
+  padding: 8px 12px;
+  gap: 8px;
+  min-height: auto;
+  justify-content: center;
+}

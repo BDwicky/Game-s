@@ -1032,6 +1032,7 @@
     },
 
     toggleFullscreen: function () {
+      if (window.FullscreenSync) { window.FullscreenSync.toggle(); return; }
       var isNativeFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
 
       if (isNativeFs || this.isFallbackFs) {

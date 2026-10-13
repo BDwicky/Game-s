@@ -1168,6 +1168,7 @@
        UTILITIES & MODAL CONTROLS
        ======================================================== */
     toggleFullscreen: function () {
+      if (window.FullscreenSync) { window.FullscreenSync.toggle(); return; }
       var isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
       if (isFs) {
         var ex = document.exitFullscreen || document.webkitExitFullscreen;

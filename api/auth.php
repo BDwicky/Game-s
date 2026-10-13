@@ -79,6 +79,7 @@ if (!is_array($body)) {
 
 $action = $_GET['action'] ?? $body['action'] ?? '';
 
+try {
 switch ($action) {
     case 'check_user':
         $rawUser = $body['username'] ?? $_GET['username'] ?? '';
@@ -372,4 +373,9 @@ switch ($action) {
         http_response_code(400);
         echo json_encode(["status" => "error", "message" => "Aksi tidak dikenali."]);
         break;
+}
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode(["status" => "error", "message" => "Terjadi kesalahan server: " . $e->getMessage()]);
+    exit;
 }

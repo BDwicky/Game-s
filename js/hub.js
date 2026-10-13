@@ -776,9 +776,16 @@
           pin: this.loginPin
         })
       })
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (data && data.status === 'success') {
+      .then(function (res) {
+        return res.json().then(function (data) {
+          return { ok: res.ok, data: data };
+        }).catch(function () {
+          return { ok: false, data: null, status: res.status };
+        });
+      })
+      .then(function (result) {
+        var data = result.data;
+        if (result.ok && data && data.status === 'success') {
           self.token = data.token;
           self.username = data.user.username;
           self.avatar = data.user.avatar || '';
@@ -791,10 +798,11 @@
           self.loadPersonalBestScores();
           self.fetchTop3Overall();
         } else {
-          self.onPinFailed((data && data.message) || 'PIN keamanan salah. Silakan coba lagi.');
+          var msg = (data && data.message) ? data.message : 'PIN keamanan salah. Silakan coba lagi.';
+          self.onPinFailed(msg);
         }
       })
-      .catch(function () {
+      .catch(function (err) {
         self.onPinFailed('Koneksi gagal saat memverifikasi PIN.');
       });
     },
@@ -842,14 +850,21 @@
           avatar: this.suggestedAvatar || ''
         })
       })
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
+      .then(function (res) {
+        return res.json().then(function (data) {
+          return { ok: res.ok, data: data };
+        }).catch(function () {
+          return { ok: false, data: null, status: res.status };
+        });
+      })
+      .then(function (result) {
         if (btnSubmit) {
           btnSubmit.disabled = false;
           btnSubmit.innerHTML = '<span>Daftar & Mulai Bermain</span><span>🚀</span>';
         }
 
-        if (data && data.status === 'success') {
+        var data = result.data;
+        if (result.ok && data && data.status === 'success') {
           self.token = data.token;
           self.username = data.user.username;
           self.avatar = data.user.avatar || '';
@@ -862,7 +877,8 @@
           self.loadPersonalBestScores();
           self.fetchTop3Overall();
         } else {
-          self.showAuthError(self.regPinError, (data && data.message) || 'Gagal mendaftarkan akun.');
+          var msg = (data && data.message) ? data.message : 'Gagal mendaftarkan akun.';
+          self.showAuthError(self.regPinError, msg);
         }
       })
       .catch(function () {

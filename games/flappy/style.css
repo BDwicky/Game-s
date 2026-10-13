@@ -147,14 +147,20 @@ body.is-fullscreen {
 /* Canvas Container */
 .flappy-canvas-wrap {
   position: relative;
-  width: 100%;
-  max-width: 380px;
-  aspect-ratio: 9 / 14;
-  border-radius: 12px;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: calc(100dvh - 76px);
+  aspect-ratio: 288 / 512;
+  border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
   border: 2px solid rgba(255, 255, 255, 0.15);
   touch-action: none;
+  margin: auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #flappy-canvas {

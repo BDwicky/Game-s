@@ -1800,57 +1800,80 @@ body.is-fullscreen {
 
   /* Navbar on Mobile */
   .hub-navbar {
-    padding: 10px 12px;
-    gap: 8px;
+    padding: 8px 12px !important;
+    height: 52px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
   }
 
-  .brand-sub-title {
-    display: none;
-  }
-
-  .brand-main-title {
-    font-size: 14px;
-  }
-
-  .brand-icon-box {
-    width: 36px;
-    height: 36px;
-    font-size: 17px;
+  .navbar-brand,
+  .brand-titles {
+    display: none !important;
   }
 
   .navbar-profile-card,
   .navbar-profile-center {
-    padding: 3px 8px 3px 3px;
-    gap: 6px;
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 3px 10px 3px 3px !important;
+    gap: 6px !important;
+    height: 36px !important;
+    max-width: 125px !important;
+    flex-shrink: 0 !important;
+    border-radius: 999px !important;
   }
 
   .profile-avatar-stack {
-    width: 30px;
-    height: 30px;
-    margin: 0;
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    margin: 0 !important;
   }
 
   .profile-nav-img, .profile-nav-placeholder {
-    width: 30px;
-    height: 30px;
-    font-size: 13px;
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 13px !important;
   }
 
   .profile-username-label {
-    font-size: 11px;
-    max-width: 75px;
+    font-size: 11px !important;
+    max-width: 70px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
   .profile-username-hint {
-    display: none;
+    display: none !important;
+  }
+
+  .navbar-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
   }
 
   .nav-btn span.btn-text {
-    display: none;
+    display: none !important;
   }
 
   .nav-btn {
-    padding: 8px 10px;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+    padding: 0 !important;
+    border-radius: 9px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 15px !important;
+    box-sizing: border-box !important;
   }
 
   /* Cards Grid on Mobile */

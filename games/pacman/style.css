@@ -144,10 +144,32 @@ body.is-fullscreen {
 .btn-icon:active {
   transform: scale(0.94);
 }
+.btn-home,
 .btn-games-hub {
   background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
   font-weight: 800;
   font-size: 13px;
+  text-decoration: none;
+  width: auto;
+  min-width: 36px;
+  padding: 0 8px;
+  gap: 4px;
+}
+.btn-home:hover,
+.btn-games-hub:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+}
+@media (max-width: 440px) {
+  .btn-home,
+  .btn-games-hub {
+    width: 36px;
+    padding: 0;
+  }
+  .btn-home .btn-text,
+  .btn-games-hub .btn-text {
+    display: none;
+  }
 }
 
 /* Dashboard Score Bar */

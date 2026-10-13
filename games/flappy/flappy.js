@@ -205,8 +205,8 @@
         });
       }
 
-      var btnHub = document.getElementById('btn-games-hub');
-      if (btnHub) btnHub.addEventListener('click', function () { self.openModal(self.modalHub); });
+      var btnHome = document.getElementById('btn-home');
+      if (btnHome) btnHome.addEventListener('click', function () { window.location.href = '../../index.html'; });
 
       var btnLdb = document.getElementById('btn-leaderboard');
       if (btnLdb) btnLdb.addEventListener('click', function () { self.openLeaderboard(); });

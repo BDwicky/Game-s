@@ -221,12 +221,17 @@
 .btn-action.btn-fullscreen:hover {
   background: #475866;
 }
+.btn-action.btn-home,
 .btn-action.btn-hub {
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   font-size: 16px;
+  color: #fff !important;
+  text-decoration: none;
 }
+.btn-action.btn-home:hover,
 .btn-action.btn-hub:hover {
   background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff !important;
 }
 
 /* Game Hub Grid Modal Styles */
@@ -1311,6 +1316,13 @@ body.dark-theme .btn-action.btn-fullscreen {
 }
 body.dark-theme .btn-action.btn-fullscreen:hover {
   background: #2e3a46 !important;
+}
+
+body.dark-theme .btn-action.btn-home,
+body.dark-theme .btn-action.btn-hub {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+  border-color: #6366f1 !important;
+  color: #fff !important;
 }
 
 /* Score Cards in Dark Theme */

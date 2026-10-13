@@ -5,7 +5,7 @@
   <title>Pacman Arcade - Klasik Labirin & Hantu | game.dwicky.dev</title>
   <meta name="description" content="Mainkan Pacman Arcade retro di game.dwicky.dev. Makan pellet, hindari 4 hantu Blinky, Pinky, Inky, Clyde, dan raih skor tertinggi di papan peringkat global!">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="stylesheet" href="style.css?v=2">
   <link rel="shortcut icon" href="../../favicon.ico">
 </head>
 <body>
@@ -22,9 +22,9 @@
       </div>
 
       <div class="header-actions">
-        <button class="btn-icon btn-games-hub" id="btn-games-hub" type="button" title="Pilih Game Lainnya">
-          🎮 Hub
-        </button>
+        <a class="btn-icon btn-home" id="btn-home" href="../../index.html" title="Kembali ke Home Page" aria-label="Kembali ke Home Page">
+          <span>🏠</span><span class="btn-text">Home</span>
+        </a>
         <button class="btn-icon" id="btn-sound" type="button" title="Suara Arcade">
           🔊
         </button>
@@ -168,6 +168,6 @@
 
   <div class="toast-msg" id="toast-notification"></div>
 
-  <script src="pacman.js?v=3"></script>
+  <script src="pacman.js?v=4"></script>
 </body>
 </html>

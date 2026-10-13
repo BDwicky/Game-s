@@ -114,7 +114,33 @@ body.is-fullscreen {
   transition: transform 0.1s, background 0.15s;
 }
 .btn-icon:hover { background: rgba(255, 255, 255, 0.18); transform: translateY(-1px); }
-.btn-games-hub { background: linear-gradient(135deg, var(--cyan), #3b82f6); font-weight: 800; font-size: 13px; }
+.btn-home,
+.btn-games-hub {
+  background: linear-gradient(135deg, var(--cyan), #3b82f6);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  text-decoration: none;
+  width: auto;
+  min-width: 36px;
+  padding: 0 8px;
+  gap: 4px;
+}
+.btn-home:hover,
+.btn-games-hub:hover {
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+}
+@media (max-width: 440px) {
+  .btn-home,
+  .btn-games-hub {
+    width: 36px;
+    padding: 0;
+  }
+  .btn-home .btn-text,
+  .btn-games-hub .btn-text {
+    display: none;
+  }
+}
 
 /* Mode & Turn Indicators */
 .mode-bar {

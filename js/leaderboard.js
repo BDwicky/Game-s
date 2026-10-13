@@ -38,6 +38,7 @@
       this.cacheDom();
       this.bindEvents();
       this.updateUserBadge();
+      this.updateFullscreenScale();
 
       this.fetchGlobalScore();
     },
@@ -1102,35 +1103,34 @@
     },
 
     updateFullscreenScale: function () {
-      var isFs = document.body.classList.contains("is-fullscreen");
-      if (!isFs) {
-        document.documentElement.style.removeProperty("--mobile-fs-scale");
-        document.documentElement.style.removeProperty("--desktop-fs-scale");
-        return;
-      }
-
       var w = window.innerWidth;
       var h = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
 
       if (w <= 520) {
         // Mobile scaling: available space with safe breathing room
-        var availW = Math.max(240, w - 20);
-        var availH = Math.max(240, h - 24);
+        var availW = Math.max(240, w - 16);
+        var availH = Math.max(240, h - 20);
         var baseW = 280;
-        var baseH = 370; // Header (~82px) + gap (8px) + board (280px)
+        var baseH = 390; // Header (44px) + stats (44px) + board (280px) + hint (14px) + gaps
         var scale = Math.min(availW / baseW, availH / baseH);
-        scale = Math.max(0.65, Math.min(1.45, scale));
-        document.documentElement.style.setProperty("--mobile-fs-scale", scale.toFixed(3));
+        scale = Math.max(0.70, Math.min(1.45, scale));
+        var scaleStr = scale.toFixed(3);
+        document.documentElement.style.setProperty("--mobile-scale", scaleStr);
+        document.documentElement.style.setProperty("--mobile-fs-scale", scaleStr);
+        document.documentElement.style.removeProperty("--desktop-scale");
         document.documentElement.style.removeProperty("--desktop-fs-scale");
       } else {
         // Desktop / Laptop scaling: ensure board + header fit on shorter heights
         var baseW = 500;
-        var baseH = 612; // Header (~100px) + gap (12px) + board (500px)
+        var baseH = 630; // Header (48px) + stats (48px) + board (500px) + hint (14px) + gaps
         var availW = w - 32;
         var availH = h - 24;
         var scale = Math.min(availW / baseW, availH / baseH, 1.0);
         scale = Math.max(0.50, scale);
-        document.documentElement.style.setProperty("--desktop-fs-scale", scale.toFixed(3));
+        var scaleStr = scale.toFixed(3);
+        document.documentElement.style.setProperty("--desktop-scale", scaleStr);
+        document.documentElement.style.setProperty("--desktop-fs-scale", scaleStr);
+        document.documentElement.style.removeProperty("--mobile-scale");
         document.documentElement.style.removeProperty("--mobile-fs-scale");
       }
     },

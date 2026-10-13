@@ -1355,7 +1355,8 @@ body.dark-theme .icon-reset-btn:hover {
 /* Game Board in Dark Theme */
 body.dark-theme .game-container {
   background: #202024 !important;
-  border: 2px solid #2e2e34 !important;
+  border: none !important;
+  box-shadow: 0 0 0 1px #2e2e34, 0 10px 30px rgba(0, 0, 0, 0.6) !important;
 }
 
 body.dark-theme .grid-cell {
@@ -1694,7 +1695,8 @@ body.theme-christmas {
 }
 body.theme-christmas .game-container {
   background: #143526 !important;
-  border: 2px solid #1c4b36 !important;
+  border: none !important;
+  box-shadow: 0 0 0 1px #1c4b36, 0 10px 30px rgba(0, 0, 0, 0.6) !important;
 }
 body.theme-christmas .grid-cell {
   background: #1c4332 !important;
@@ -1797,7 +1799,8 @@ body.theme-halloween {
 }
 body.theme-halloween .game-container {
   background: #1a122e !important;
-  border: 2px solid #281d45 !important;
+  border: none !important;
+  box-shadow: 0 0 0 1px #281d45, 0 10px 30px rgba(0, 0, 0, 0.6) !important;
 }
 body.theme-halloween .grid-cell {
   background: #261942 !important;
@@ -1900,7 +1903,8 @@ body.theme-easter {
 }
 body.theme-easter .game-container {
   background: #f3ebdb !important;
-  border: 2px solid #e7d8c0 !important;
+  border: none !important;
+  box-shadow: 0 0 0 1px #e7d8c0, 0 10px 30px rgba(0, 0, 0, 0.15) !important;
 }
 body.theme-easter .grid-cell {
   background: #e9dec9 !important;
@@ -2002,7 +2006,8 @@ body.theme-winter {
 }
 body.theme-winter .game-container {
   background: #112038 !important;
-  border: 2px solid #1a2f52 !important;
+  border: none !important;
+  box-shadow: 0 0 0 1px #1a2f52, 0 10px 30px rgba(0, 0, 0, 0.6) !important;
 }
 body.theme-winter .grid-cell {
   background: #192a47 !important;

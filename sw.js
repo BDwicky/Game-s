@@ -1,34 +1,13 @@
 /**
  * DWICKY GAME HUB - Service Worker
  * Platform: game.dwicky.dev
- * Version: 1.0.0 (PWA & Offline Capability)
+ * Version: 2.0.0 (Network-First for fresh assets)
  */
 
-const CACHE_NAME = 'dwicky-gamehub-v5';
-
-const STATIC_PRECACHE = [
-  '/',
-  '/index.html',
-  '/style/hub.css?v=6',
-  '/style/arcade-unified.css?v=2',
-  '/js/hub.js?v=6',
-  '/js/audio.js?v=1',
-  '/js/fullscreen.js?v=2',
-  '/favicon.ico',
-  '/manifest.webmanifest',
-  '/meta/icon-192.png',
-  '/meta/icon-512.png',
-  '/games/snake/index.html',
-  '/games/snake/style.css?v=1',
-  '/games/snake/snake.js?v=1'
-];
+const CACHE_NAME = 'dwicky-gamehub-v6';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_PRECACHE);
-    }).then(() => self.skipWaiting())
-  );
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -48,7 +27,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // API calls: Network-only or Network-first
+  // 1. API requests: network-only with offline fallback
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(event.request).catch(() => {
@@ -60,20 +39,38 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets: Stale-While-Revalidate
+  // 2. Navigation, HTML, CSS, and JS: NETWORK-FIRST (Always get latest version)
+  if (
+    event.request.mode === 'navigate' ||
+    url.pathname.endsWith('.html') ||
+    url.pathname.endsWith('.css') ||
+    url.pathname.endsWith('.js')
+  ) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // 3. Media, Fonts, Icons: Cache-First
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
+      if (cachedResponse) return cachedResponse;
+      return fetch(event.request).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+          const clone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
         return networkResponse;
-      }).catch(() => cachedResponse);
-
-      return cachedResponse || fetchPromise;
+      });
     })
   );
 });

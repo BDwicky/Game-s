@@ -5,10 +5,11 @@
   <title>Memory Match - Uji Daya Ingat & Kartu Cocok | game.dwicky.dev</title>
   <meta name="description" content="Mainkan game Memory Match modern di game.dwicky.dev. Uji daya ingat visualmu dengan beragam tingkat kesulitan, tema kartu menarik, combo multiplier, dan papan peringkat global!">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <link rel="stylesheet" href="../../style/arcade-unified.css?v=2">
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="../../style/arcade-unified.css?v=20261013-fix3">
+  <link rel="stylesheet" href="style.css?v=20261013-fix3">
   <link rel="shortcut icon" href="../../favicon.ico">
   <script>try{if(localStorage.getItem('game_hub_fullscreen')==='true')document.documentElement.classList.add('is-fullscreen');}catch(e){}</script>
+  <style>.modal-backdrop:not(.is-open){display:none !important;}</style>
 </head>
 <body>
 
@@ -116,7 +117,7 @@
   </div>
 
   <!-- Modal Game Hub (Platform Game Switcher) -->
-  <div class="modal-backdrop" id="modal-games-hub">
+  <div class="modal-backdrop" id="modal-games-hub" style="display: none !important;">
     <div class="modal-card">
       <div class="modal-header">
         <h2 class="modal-title">🎮 Portal Game dwicky.dev</h2>
@@ -183,7 +184,7 @@
   </div>
 
   <!-- Modal Leaderboard -->
-  <div class="modal-backdrop" id="modal-leaderboard">
+  <div class="modal-backdrop" id="modal-leaderboard" style="display: none !important;">
     <div class="modal-card">
       <div class="modal-header">
         <h2 class="modal-title">🏆 Papan Peringkat Memory Match</h2>
@@ -196,7 +197,7 @@
   </div>
 
   <!-- Modal Profile / Ganti Username & Foto -->
-  <div class="modal-backdrop" id="modal-username">
+  <div class="modal-backdrop" id="modal-username" style="display: none !important;">
     <div class="modal-card">
       <div class="modal-header">
         <h2 class="modal-title">👤 Profil Pemain</h2>

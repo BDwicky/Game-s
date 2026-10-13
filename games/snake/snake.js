@@ -44,6 +44,11 @@
       this.loadProfile();
       this.loadHighScore();
       this.cacheDom();
+      // Ensure all modals start forcefully hidden
+      document.querySelectorAll('.modal-backdrop').forEach(function (mb) {
+        mb.classList.remove('is-open');
+        mb.style.setProperty('display', 'none', 'important');
+      });
       this.bindEvents();
       this.updateProfileUI();
 

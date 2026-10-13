@@ -119,6 +119,11 @@
     init: function () {
       this.loadProfile();
       this.cacheDom();
+      // Ensure all modals start forcefully hidden
+      document.querySelectorAll('.modal-backdrop').forEach(function (mb) {
+        mb.classList.remove('is-open');
+        mb.style.setProperty('display', 'none', 'important');
+      });
       this.bindControls();
       this.resetGame();
       this.loop();
@@ -898,10 +903,16 @@
     },
 
     openModal: function (m) {
-      if (m) { m.classList.add('is-open'); m.style.display = 'flex'; }
+      if (m) {
+        m.classList.add('is-open');
+        m.style.setProperty('display', 'flex', 'important');
+      }
     },
     closeModal: function (m) {
-      if (m) { m.classList.remove('is-open'); m.style.display = 'none'; }
+      if (m) {
+        m.classList.remove('is-open');
+        m.style.setProperty('display', 'none', 'important');
+      }
     },
 
     toggleFullscreen: function () {

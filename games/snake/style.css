@@ -155,20 +155,28 @@ body {
 
 /* Stats Bar */
 .stats-bar {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(13, 21, 39, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding: 0 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 .stat-box {
-  background: rgba(13, 21, 39, 0.85);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  padding: 8px 6px;
+  background: transparent;
+  border: none;
+  padding: 0;
   text-align: center;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 2px;
+  flex: 1 1 0;
 }
 
 .stat-box.highlight {
@@ -199,13 +207,13 @@ body {
   width: 100%;
   aspect-ratio: 1 / 1;
   background: #04070d;
-  border-radius: 18px;
-  border: 2px solid rgba(16, 185, 129, 0.3);
-  box-shadow: 0 0 25px rgba(16, 185, 129, 0.2), inset 0 0 20px rgba(0, 0, 0, 0.7);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 10px 30px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
+  padding: 0;
+  margin: 0;
 }
 
 #snake-canvas {

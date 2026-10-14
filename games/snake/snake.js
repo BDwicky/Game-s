@@ -506,7 +506,7 @@
       ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
       // 2. Subtle grid lines
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
       ctx.lineWidth = 1;
       for (var x = 0; x <= CANVAS_SIZE; x += CELL_SIZE) {
         ctx.beginPath();
@@ -520,6 +520,11 @@
         ctx.lineTo(CANVAS_SIZE, y);
         ctx.stroke();
       }
+
+      // 3. Full Border / Arena Wall Glow (Boundary collision wall)
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(1, 1, CANVAS_SIZE - 2, CANVAS_SIZE - 2);
 
       // 3. Draw Normal Food (Glowing Emerald / Cyan Orb)
       var fx = this.food.x * CELL_SIZE + CELL_SIZE / 2;

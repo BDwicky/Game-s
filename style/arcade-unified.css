@@ -55,27 +55,6 @@ html, body {
   max-width: 440px !important;
 }
 
-.snake-wrapper,
-.pacman-wrapper,
-.game-wrapper,
-.xox-wrapper {
-  width: 100% !important;
-  max-width: 500px !important;
-  height: 100% !important;
-  height: 100dvh !important;
-  max-height: 100dvh !important;
-  min-height: auto !important;
-  margin: 0 auto !important;
-  padding: 8px 10px 10px !important;
-  box-sizing: border-box !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  align-items: center !important;
-  overflow: hidden !important;
-  gap: 8px !important;
-}
-
 /* Unified Arcade Header */
 .game-header,
 .flappy-header,
@@ -291,7 +270,6 @@ html, body {
 
 /* Center Play Area - Centered cohesive arcade unit without auto margin drift */
 .game-area,
-.canvas-container,
 .tetris-main-layout {
   flex: 0 0 auto !important;
   width: auto !important;
@@ -303,22 +281,6 @@ html, body {
   overflow: hidden !important;
   margin: 0 auto !important;
   padding: 0 !important;
-}
-
-#snake-canvas {
-  width: min(360px, 86vw, calc(100dvh - 125px)) !important;
-  height: min(360px, 86vw, calc(100dvh - 125px)) !important;
-  max-width: 100% !important;
-  max-height: calc(100dvh - 125px) !important;
-  aspect-ratio: 1 / 1 !important;
-}
-
-#pacman-canvas {
-  width: min(360px, 86vw, calc((100dvh - 125px) * 0.86)) !important;
-  height: auto !important;
-  max-width: 100% !important;
-  max-height: calc(100dvh - 125px) !important;
-  aspect-ratio: 19 / 22 !important;
 }
 
 /* Canvas Sizing: Never overflow viewport height */
@@ -1303,13 +1265,14 @@ body {
 
 
 /* ==========================================================================
-   Universal 2048-Matching Geometry & Flush Alignment
+   Universal 2048-Matching Geometry & Full-Border Composition
    (2048, Snake Neon, Pacman Arcade, Memory Match, and X O X)
    ========================================================================== */
 
-/* 1. SNAKE NEON - Matches 2048 board */
+/* 1. SNAKE NEON - Exact 2048 Placement, Full-Border & Sizing */
 .snake-wrapper {
   margin: auto !important;
+  padding: 0 !important;
   box-sizing: border-box !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1317,6 +1280,8 @@ body {
   justify-content: center !important;
   transform-origin: center center !important;
   will-change: transform;
+  height: auto !important;
+  max-height: none !important;
 }
 
 @media screen and (min-width: 521px) {
@@ -1327,12 +1292,31 @@ body {
     transform: scale(var(--desktop-scale, var(--desktop-fs-scale, 1))) !important;
   }
 
-  .snake-wrapper .snake-header,
+  .snake-wrapper .snake-header {
+    width: 500px !important;
+    max-width: 500px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    padding: 0 10px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 14px !important;
+  }
+
   .snake-wrapper .stats-bar {
     width: 500px !important;
     max-width: 500px !important;
     height: 48px !important;
     min-height: 48px !important;
+    max-height: 48px !important;
+    padding: 0 12px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
   }
 
   .snake-wrapper .canvas-container {
@@ -1342,9 +1326,14 @@ body {
     max-height: 500px !important;
     aspect-ratio: 1 / 1 !important;
     margin: 0 auto !important;
-    border-radius: 14px !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
+    box-sizing: border-box !important;
     position: relative !important;
     overflow: hidden !important;
+    border: 1px solid var(--border-arcade, rgba(255, 255, 255, 0.12)) !important;
+    box-shadow: 0 0 0 1px var(--border-arcade, rgba(255, 255, 255, 0.12)), 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+    background: #04070d !important;
   }
 }
 
@@ -1356,12 +1345,31 @@ body {
     transform: scale(var(--mobile-scale, var(--mobile-fs-scale, 1))) !important;
   }
 
-  .snake-wrapper .snake-header,
+  .snake-wrapper .snake-header {
+    width: 280px !important;
+    max-width: 280px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    padding: 0 6px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 10px !important;
+  }
+
   .snake-wrapper .stats-bar {
     width: 280px !important;
     max-width: 280px !important;
     height: 44px !important;
     min-height: 44px !important;
+    max-height: 44px !important;
+    padding: 0 6px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
   }
 
   .snake-wrapper .canvas-container {
@@ -1371,16 +1379,56 @@ body {
     max-height: 280px !important;
     aspect-ratio: 1 / 1 !important;
     margin: 0 auto !important;
-    border-radius: 12px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    box-sizing: border-box !important;
     position: relative !important;
     overflow: hidden !important;
+    border: 1px solid var(--border-arcade, rgba(255, 255, 255, 0.12)) !important;
+    box-shadow: 0 0 0 1px var(--border-arcade, rgba(255, 255, 255, 0.12)), 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+    background: #04070d !important;
   }
+}
+
+.snake-wrapper .stat-box {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 1 1 0 !important;
+}
+
+.snake-wrapper .stat-box .stat-label {
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: var(--text-muted, #94a3b8) !important;
+  line-height: 1 !important;
+  margin-bottom: 2px !important;
+}
+
+.snake-wrapper .stat-box .stat-value {
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+  color: var(--accent-emerald, #10b981) !important;
+}
+
+.snake-wrapper .stat-box.highlight .stat-value {
+  color: var(--accent-gold, #facc15) !important;
 }
 
 .snake-wrapper #snake-canvas {
   width: 100% !important;
   height: 100% !important;
   display: block !important;
+  border-radius: inherit !important;
 }
 
 .snake-wrapper .game-overlay {
@@ -1392,9 +1440,10 @@ body {
   box-sizing: border-box !important;
 }
 
-/* 2. PACMAN ARCADE - Matches 2048 width */
+/* 2. PACMAN ARCADE - Matches 2048 Sizing */
 .pacman-wrapper {
   margin: auto !important;
+  padding: 0 !important;
   box-sizing: border-box !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1402,6 +1451,7 @@ body {
   justify-content: center !important;
   transform-origin: center center !important;
   will-change: transform;
+  height: auto !important;
 }
 
 @media screen and (min-width: 521px) {
@@ -1489,6 +1539,7 @@ body {
 /* 3. MEMORY MATCH - Matches 2048 */
 .game-wrapper {
   margin: auto !important;
+  padding: 0 !important;
   box-sizing: border-box !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1496,6 +1547,7 @@ body {
   justify-content: center !important;
   transform-origin: center center !important;
   will-change: transform;
+  height: auto !important;
 }
 
 @media screen and (min-width: 521px) {
@@ -1579,9 +1631,10 @@ body {
   box-sizing: border-box !important;
 }
 
-/* 4. X O X (TIC-TAC-TOE) - Matches 2048 Sizing and Centering */
+/* 4. X O X (TIC-TAC-TOE) - Matches 2048 */
 .xox-wrapper {
   margin: auto !important;
+  padding: 0 !important;
   box-sizing: border-box !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1589,6 +1642,7 @@ body {
   justify-content: center !important;
   transform-origin: center center !important;
   will-change: transform;
+  height: auto !important;
 }
 
 @media screen and (min-width: 521px) {

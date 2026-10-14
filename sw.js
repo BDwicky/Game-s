@@ -4,7 +4,7 @@
  * Version: 2.0.0 (Network-First for fresh assets)
  */
 
-const CACHE_NAME = 'dwicky-gamehub-v17';
+const CACHE_NAME = 'dwicky-gamehub-v18';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

@@ -57,6 +57,20 @@
       [300, 240, 180].forEach(function (f, i) {
         setTimeout(function () { self.tone(f, 'sawtooth', 0.15, 0.15); }, i * 90);
       });
+    },
+    star: function () {
+      this.init(); this.resume();
+      var self = this;
+      [587.33, 739.99, 880, 1174.66].forEach(function (f, i) {
+        setTimeout(function () { self.tone(f, 'sine', 0.12, 0.18); }, i * 50);
+      });
+    },
+    themeChange: function () {
+      this.init(); this.resume();
+      var self = this;
+      [440, 554.37, 659.25, 880].forEach(function (f, i) {
+        setTimeout(function () { self.tone(f, 'triangle', 0.16, 0.22); }, i * 70);
+      });
     }
   };
 
@@ -97,6 +111,23 @@
     // Fixed 60Hz Timestep Accumulator (Refresh-Rate Independent)
     lastTime: 0,
     accumulator: 0,
+
+    // Collectible Stars & Dynamic Themes
+    starsCollected: 0,
+    currentTheme: 0,
+    themeBanner: null,
+    floatingTexts: [],
+    particles: [],
+    starAnimTimer: 0,
+    snowflakes: [],
+    nightStars: [],
+    THEMES: [
+      { id: 'day', name: 'Siang Cerah', icon: '☀️', bannerColor: '#0284c7' },
+      { id: 'sunset', name: 'Senja Keemasan', icon: '🌇', bannerColor: '#c2410c' },
+      { id: 'night', name: 'Malam Berbintang', icon: '🌙', bannerColor: '#312e81' },
+      { id: 'winter', name: 'Musim Salju', icon: '❄️', bannerColor: '#0369a1' },
+      { id: 'cyber', name: 'Cyber Neon', icon: '⚡', bannerColor: '#9333ea' }
+    ],
 
     // Shared Profile
     username: 'Pemain Baru',
@@ -151,6 +182,12 @@
       this.finalScoreEl = document.getElementById('final-score');
       this.finalBestEl = document.getElementById('final-best');
       this.medalIconEl = document.getElementById('medal-icon');
+      this.finalStarsEl = document.getElementById('final-stars');
+
+      this.hudThemePill = document.getElementById('hud-theme-pill');
+      this.hudStarsPill = document.getElementById('hud-stars-pill');
+
+      this.initThemeEffects();
 
       // Profile Header
       this.userNameEl = document.getElementById('username-display');
@@ -358,6 +395,11 @@
     reset: function () {
       this.state = 0;
       this.score = 0;
+      this.starsCollected = 0;
+      this.currentTheme = 0;
+      this.themeBanner = null;
+      this.floatingTexts = [];
+      this.particles = [];
       this.bird.x = Math.max(55, Math.round(this.width * (this.width <= 320 ? 0.21 : 0.18)));
       this.bird.y = 220;
       this.bird.vy = 0;
@@ -365,6 +407,8 @@
       this.pipes = [];
       this.pipeSpawnTimer = 0;
       if (this.hudScoreEl) this.hudScoreEl.textContent = '0';
+      this.updateStarsHUD();
+      this.updateThemeHUD();
       if (this.tapPromptEl) this.tapPromptEl.style.display = 'block';
       if (this.overlayEl) this.overlayEl.classList.remove('show');
     },
@@ -379,6 +423,51 @@
       }
 
       if (this.state === 2) return; // GameOver, physics frozen
+
+      this.starAnimTimer += 0.06;
+
+      // Update Floating Texts
+      for (var ftIdx = this.floatingTexts.length - 1; ftIdx >= 0; ftIdx--) {
+        var ft = this.floatingTexts[ftIdx];
+        ft.y += ft.vy;
+        ft.life--;
+        ft.opacity = Math.max(0, ft.life / 45);
+        if (ft.life <= 0) {
+          this.floatingTexts.splice(ftIdx, 1);
+        }
+      }
+
+      // Update Burst Particles
+      for (var ptIdx = this.particles.length - 1; ptIdx >= 0; ptIdx--) {
+        var pt = this.particles[ptIdx];
+        pt.x += pt.vx;
+        pt.y += pt.vy;
+        pt.vy += 0.08;
+        pt.life--;
+        pt.alpha = Math.max(0, pt.life / 35);
+        if (pt.life <= 0) {
+          this.particles.splice(ptIdx, 1);
+        }
+      }
+
+      // Update Snowflakes (for Winter theme)
+      if (this.currentTheme === 3 && this.snowflakes.length > 0) {
+        for (var snIdx = 0; snIdx < this.snowflakes.length; snIdx++) {
+          var sn = this.snowflakes[snIdx];
+          sn.y += sn.vy;
+          sn.wobble += 0.03;
+          sn.x += sn.vx + Math.sin(sn.wobble) * 0.4;
+          if (sn.y > this.groundY) {
+            sn.y = -6;
+            sn.x = Math.random() * this.width;
+          }
+        }
+      }
+
+      // Update Theme Banner life
+      if (this.themeBanner && this.themeBanner.life > 0) {
+        this.themeBanner.life--;
+      }
 
       // PLAYING Physics
       this.bird.vy += this.bird.gravity;
@@ -427,12 +516,24 @@
           return;
         }
 
+        // Check Collectible Star Collision
+        if (p.hasStar && !p.starCollected) {
+          var curStarY = p.starY + Math.sin(self.starAnimTimer + p.x * 0.04) * 6;
+          var starX = p.x + p.width / 2;
+          var dist = Math.hypot(self.bird.x - starX, self.bird.y - curStarY);
+          if (dist < (self.bird.radius + p.starRadius)) {
+            p.starCollected = true;
+            self.collectStar(starX, curStarY);
+          }
+        }
+
         // Score Check
         if (!p.scored && p.x + p.width < self.bird.x) {
           p.scored = true;
           self.score++;
           Sound.score();
           if (self.hudScoreEl) self.hudScoreEl.textContent = self.score;
+          self.checkThemeUpdate();
         }
 
         // Remove offscreen pipes
@@ -446,13 +547,22 @@
       var minTop = 60;
       var maxTop = this.groundY - this.pipeGap - 60;
       var topHeight = Math.floor(Math.random() * (maxTop - minTop + 1)) + minTop;
+      var bottomY = topHeight + this.pipeGap;
+
+      // Collectible star appears on ~45% of pipes
+      var hasStar = Math.random() < 0.45;
+      var starY = topHeight + Math.round(this.pipeGap / 2);
 
       this.pipes.push({
         x: x,
         topHeight: topHeight,
-        bottomY: topHeight + this.pipeGap,
+        bottomY: bottomY,
         width: 48,
-        scored: false
+        scored: false,
+        hasStar: hasStar,
+        starCollected: false,
+        starY: starY,
+        starRadius: 13
       });
     },
 
@@ -498,6 +608,7 @@
       if (this.finalScoreEl) this.finalScoreEl.textContent = this.score;
       if (this.finalBestEl) this.finalBestEl.textContent = this.highScore;
       if (this.medalIconEl) this.medalIconEl.textContent = medal;
+      if (this.finalStarsEl) this.finalStarsEl.textContent = '⭐ ' + this.starsCollected;
 
       if (this.overlayEl) this.overlayEl.classList.add('show');
     },
@@ -507,22 +618,288 @@
       var w = this.width;
       var h = this.height;
 
-      // 1. Sky Gradient (Day vibe)
-      var skyGrad = ctx.createLinearGradient(0, 0, 0, this.groundY);
-      skyGrad.addColorStop(0, '#0284c7');
-      skyGrad.addColorStop(1, '#7dd3fc');
-      ctx.fillStyle = skyGrad;
-      ctx.fillRect(0, 0, w, this.groundY);
+      // 1. Dynamic Thematic Background
+      this.drawBackground();
 
-      // 2. City Silhouette along horizon
-      ctx.fillStyle = 'rgba(14, 116, 144, 0.22)';
-      for (var bx = 0; bx < w; bx += 42) {
-        var bHeight = 22 + ((bx * 13) % 32);
-        ctx.fillRect(bx, this.groundY - bHeight, 38, bHeight);
+      // 2. Draw Pipes & Collectible Stars
+      var self = this;
+      this.pipes.forEach(function (p) {
+        self.drawPipe(p);
+      });
+
+      // 3. Thematic Ground
+      this.drawGround();
+
+      // 4. Draw Bird
+      this.drawBird();
+
+      // 5. Draw Collectible Burst Particles
+      this.particles.forEach(function (pt) {
+        ctx.save();
+        ctx.globalAlpha = pt.alpha;
+        ctx.fillStyle = pt.color;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, pt.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // 6. Draw Floating Score Texts (+3 ⭐)
+      this.floatingTexts.forEach(function (ft) {
+        ctx.save();
+        ctx.globalAlpha = ft.opacity;
+        ctx.font = 'bold 16px "Segoe UI", system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = ft.color || '#facc15';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 3;
+        ctx.strokeText(ft.text, ft.x, ft.y);
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+      });
+
+      // 7. Draw Theme Change Banner Pill
+      if (this.themeBanner && this.themeBanner.life > 0) {
+        var tb = this.themeBanner;
+        var alpha = Math.min(1, tb.life / 20);
+        ctx.save();
+        ctx.globalAlpha = alpha;
+
+        var bWidth = Math.min(260, w - 40);
+        var bHeight = 36;
+        var bx = (w - bWidth) / 2;
+        var by = 68;
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(bx, by, bWidth, bHeight, 18);
+        } else {
+          ctx.rect(bx, by, bWidth, bHeight);
+        }
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = 'bold 14px "Segoe UI", system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(tb.icon + ' ' + tb.title, w / 2, by + bHeight / 2);
+        ctx.restore();
       }
+    },
 
-      // 3. Clouds repeating across dynamic width
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+    drawBackground: function () {
+      var ctx = this.ctx;
+      var w = this.width;
+      var gy = this.groundY;
+      var theme = this.currentTheme;
+
+      if (theme === 0) {
+        // === SIANG CERAH (Day) ===
+        var skyGrad = ctx.createLinearGradient(0, 0, 0, gy);
+        skyGrad.addColorStop(0, '#0284c7');
+        skyGrad.addColorStop(1, '#7dd3fc');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, w, gy);
+
+        // Golden Radiant Sun
+        var sunX = Math.min(w - 70, Math.max(70, w * 0.8));
+        var sunGlow = ctx.createRadialGradient(sunX, 65, 10, sunX, 65, 45);
+        sunGlow.addColorStop(0, 'rgba(254, 240, 138, 0.9)');
+        sunGlow.addColorStop(0.4, 'rgba(250, 204, 21, 0.4)');
+        sunGlow.addColorStop(1, 'rgba(250, 204, 21, 0)');
+        ctx.fillStyle = sunGlow;
+        ctx.beginPath();
+        ctx.arc(sunX, 65, 45, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.arc(sunX, 65, 20, 0, Math.PI * 2);
+        ctx.fill();
+
+        // City Silhouette (Cyan)
+        ctx.fillStyle = 'rgba(14, 116, 144, 0.22)';
+        for (var bx = 0; bx < w; bx += 42) {
+          var bHeight = 22 + ((bx * 13) % 32);
+          ctx.fillRect(bx, gy - bHeight, 38, bHeight);
+        }
+
+        // Daylight Clouds
+        this.drawClouds('rgba(255, 255, 255, 0.45)');
+
+      } else if (theme === 1) {
+        // === SENJA KEEMASAN (Sunset) ===
+        var sunsetGrad = ctx.createLinearGradient(0, 0, 0, gy);
+        sunsetGrad.addColorStop(0, '#3b0764');
+        sunsetGrad.addColorStop(0.45, '#c2410c');
+        sunsetGrad.addColorStop(0.85, '#f59e0b');
+        sunsetGrad.addColorStop(1, '#fde047');
+        ctx.fillStyle = sunsetGrad;
+        ctx.fillRect(0, 0, w, gy);
+
+        // Sinking Sun near Horizon
+        var ssunX = w * 0.65;
+        var ssunY = gy - 40;
+        var ssunGlow = ctx.createRadialGradient(ssunX, ssunY, 15, ssunX, ssunY, 70);
+        ssunGlow.addColorStop(0, 'rgba(254, 240, 138, 0.95)');
+        ssunGlow.addColorStop(0.35, 'rgba(249, 115, 22, 0.6)');
+        ssunGlow.addColorStop(1, 'rgba(249, 115, 22, 0)');
+        ctx.fillStyle = ssunGlow;
+        ctx.beginPath();
+        ctx.arc(ssunX, ssunY, 70, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fed7aa';
+        ctx.beginPath();
+        ctx.arc(ssunX, ssunY, 32, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Sunset Skyline with glowing windows
+        ctx.fillStyle = 'rgba(30, 11, 54, 0.65)';
+        for (var sx = 0; sx < w; sx += 44) {
+          var sHeight = 25 + ((sx * 17) % 38);
+          ctx.fillRect(sx, gy - sHeight, 40, sHeight);
+          ctx.fillStyle = '#fef08a';
+          if ((sx % 3) === 0) {
+            ctx.fillRect(sx + 8, gy - sHeight + 8, 4, 5);
+            ctx.fillRect(sx + 20, gy - sHeight + 8, 4, 5);
+          }
+          ctx.fillStyle = 'rgba(30, 11, 54, 0.65)';
+        }
+
+        // Rosy Twilight Clouds
+        this.drawClouds('rgba(253, 164, 175, 0.35)');
+
+      } else if (theme === 2) {
+        // === MALAM BERBINTANG (Night) ===
+        var nightGrad = ctx.createLinearGradient(0, 0, 0, gy);
+        nightGrad.addColorStop(0, '#020617');
+        nightGrad.addColorStop(0.65, '#0f172a');
+        nightGrad.addColorStop(1, '#1e1b4b');
+        ctx.fillStyle = nightGrad;
+        ctx.fillRect(0, 0, w, gy);
+
+        // Twinkling Night Stars
+        this.drawNightStars();
+
+        // Crescent Moon
+        var moonX = Math.min(w - 70, Math.max(70, w * 0.82));
+        var moonY = 65;
+        var mGlow = ctx.createRadialGradient(moonX, moonY, 10, moonX, moonY, 40);
+        mGlow.addColorStop(0, 'rgba(224, 231, 255, 0.4)');
+        mGlow.addColorStop(1, 'rgba(224, 231, 255, 0)');
+        ctx.fillStyle = mGlow;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, 40, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#060d1f';
+        ctx.beginPath();
+        ctx.arc(moonX - 7, moonY - 5, 16, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Night Skyline with lit windows
+        ctx.fillStyle = 'rgba(3, 7, 18, 0.85)';
+        for (var nx = 0; nx < w; nx += 40) {
+          var nHeight = 28 + ((nx * 19) % 35);
+          ctx.fillRect(nx, gy - nHeight, 36, nHeight);
+          ctx.fillStyle = (nx % 2 === 0) ? '#38bdf8' : '#facc15';
+          ctx.fillRect(nx + 6, gy - nHeight + 6, 4, 4);
+          ctx.fillRect(nx + 16, gy - nHeight + 14, 4, 4);
+          ctx.fillStyle = 'rgba(3, 7, 18, 0.85)';
+        }
+
+        // Night Clouds
+        this.drawClouds('rgba(148, 163, 184, 0.18)');
+
+      } else if (theme === 3) {
+        // === MUSIM SALJU (Winter) ===
+        var winterGrad = ctx.createLinearGradient(0, 0, 0, gy);
+        winterGrad.addColorStop(0, '#0f172a');
+        winterGrad.addColorStop(0.55, '#334155');
+        winterGrad.addColorStop(1, '#93c5fd');
+        ctx.fillStyle = winterGrad;
+        ctx.fillRect(0, 0, w, gy);
+
+        // Snow-capped Mountain Peaks
+        ctx.fillStyle = '#475569';
+        for (var mx = -20; mx < w + 80; mx += 90) {
+          ctx.beginPath();
+          ctx.moveTo(mx, gy);
+          ctx.lineTo(mx + 45, gy - 65);
+          ctx.lineTo(mx + 90, gy);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = '#f8fafc';
+          ctx.beginPath();
+          ctx.moveTo(mx + 30, gy - 43);
+          ctx.lineTo(mx + 45, gy - 65);
+          ctx.lineTo(mx + 60, gy - 43);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = '#475569';
+        }
+
+        // Winter Clouds
+        this.drawClouds('rgba(241, 245, 249, 0.35)');
+
+        // Falling Snowflakes
+        this.drawFallingSnow();
+
+      } else {
+        // === CYBER NEON RETRO (Score 40+) ===
+        var cyberGrad = ctx.createLinearGradient(0, 0, 0, gy);
+        cyberGrad.addColorStop(0, '#18002a');
+        cyberGrad.addColorStop(0.6, '#4a044e');
+        cyberGrad.addColorStop(1, '#831843');
+        ctx.fillStyle = cyberGrad;
+        ctx.fillRect(0, 0, w, gy);
+
+        // Synthwave Sun with horizontal scanlines
+        var rsunX = w * 0.5;
+        var rsunY = gy - 30;
+        var rsunGlow = ctx.createRadialGradient(rsunX, rsunY, 10, rsunX, rsunY, 75);
+        rsunGlow.addColorStop(0, 'rgba(244, 63, 94, 0.8)');
+        rsunGlow.addColorStop(0.5, 'rgba(236, 72, 153, 0.3)');
+        rsunGlow.addColorStop(1, 'rgba(236, 72, 153, 0)');
+        ctx.fillStyle = rsunGlow;
+        ctx.beginPath();
+        ctx.arc(rsunX, rsunY, 75, 0, Math.PI * 2);
+        ctx.fill();
+
+        for (var slit = 0; slit < 6; slit++) {
+          var sY = rsunY - 35 + slit * 12;
+          ctx.fillStyle = slit < 3 ? '#facc15' : '#f43f5e';
+          ctx.beginPath();
+          ctx.arc(rsunX, rsunY, 36, 0, Math.PI * 2);
+          ctx.rect(rsunX - 40, sY, 80, 7);
+          ctx.fill();
+        }
+
+        // Cyber Skyline with glowing outlines
+        for (var cx2 = 0; cx2 < w; cx2 += 46) {
+          var cyHeight = 30 + ((cx2 * 11) % 40);
+          ctx.fillStyle = '#0f051d';
+          ctx.fillRect(cx2, gy - cyHeight, 42, cyHeight);
+          ctx.strokeStyle = (cx2 % 2 === 0) ? '#ec4899' : '#06b6d4';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(cx2, gy - cyHeight, 42, 2);
+        }
+      }
+    },
+
+    drawClouds: function (fillColor) {
+      var ctx = this.ctx;
+      var w = this.width;
+      ctx.fillStyle = fillColor || 'rgba(255, 255, 255, 0.45)';
       for (var cx = 60; cx < w + 80; cx += 180) {
         var step = Math.floor(cx / 180);
         var cy = (step % 2 === 0) ? 95 : 135;
@@ -533,50 +910,119 @@
         ctx.arc(cx + 22, cy + 5, r * 0.75, 0, Math.PI * 2);
         ctx.fill();
       }
+    },
 
-      // 4. Draw Pipes
+    drawNightStars: function () {
+      var ctx = this.ctx;
+      if (!this.nightStars || this.nightStars.length === 0) return;
       var self = this;
-      this.pipes.forEach(function (p) {
-        self.drawPipe(p);
+      this.nightStars.forEach(function (s) {
+        var alpha = 0.3 + 0.65 * (Math.sin(self.starAnimTimer * 2 + s.phase) * 0.5 + 0.5);
+        ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha.toFixed(2) + ')';
+        ctx.beginPath();
+        ctx.arc(s.x % self.width, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
       });
+    },
 
-      // 5. Ground
-      ctx.fillStyle = '#ded895';
-      ctx.fillRect(0, this.groundY, w, h - this.groundY);
+    drawFallingSnow: function () {
+      var ctx = this.ctx;
+      if (!this.snowflakes || this.snowflakes.length === 0) return;
+      var self = this;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      this.snowflakes.forEach(function (sn) {
+        ctx.beginPath();
+        ctx.arc(sn.x % self.width, sn.y, sn.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    },
 
-      // Grass strip
-      ctx.fillStyle = '#22c55e';
-      ctx.fillRect(0, this.groundY, w, 12);
-      ctx.fillStyle = '#15803d';
-      ctx.fillRect(0, this.groundY + 12, w, 4);
+    drawGround: function () {
+      var ctx = this.ctx;
+      var w = this.width;
+      var h = this.height;
+      var gy = this.groundY;
+      var theme = this.currentTheme;
 
-      // Ground pattern lines
-      ctx.strokeStyle = '#c5b86b';
+      if (theme === 0) {
+        ctx.fillStyle = '#ded895';
+        ctx.fillRect(0, gy, w, h - gy);
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(0, gy, w, 12);
+        ctx.fillStyle = '#15803d';
+        ctx.fillRect(0, gy + 12, w, 4);
+        ctx.strokeStyle = '#c5b86b';
+      } else if (theme === 1) {
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(0, gy, w, h - gy);
+        ctx.fillStyle = '#65a30d';
+        ctx.fillRect(0, gy, w, 12);
+        ctx.fillStyle = '#3f6212';
+        ctx.fillRect(0, gy + 12, w, 4);
+        ctx.strokeStyle = '#92400e';
+      } else if (theme === 2) {
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(0, gy, w, h - gy);
+        ctx.fillStyle = '#065f46';
+        ctx.fillRect(0, gy, w, 12);
+        ctx.fillStyle = '#064e3b';
+        ctx.fillRect(0, gy + 12, w, 4);
+        ctx.strokeStyle = '#0f172a';
+      } else if (theme === 3) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(0, gy, w, h - gy);
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, gy, w, 14);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(0, gy + 14, w, 4);
+        ctx.strokeStyle = '#64748b';
+      } else {
+        ctx.fillStyle = '#110226';
+        ctx.fillRect(0, gy, w, h - gy);
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(0, gy, w, 6);
+        ctx.fillStyle = '#a855f7';
+        ctx.fillRect(0, gy + 6, w, 4);
+        ctx.strokeStyle = '#c084fc';
+      }
+
       ctx.lineWidth = 2;
       for (var x = -this.groundOffset; x < w; x += 18) {
         ctx.beginPath();
-        ctx.moveTo(x, this.groundY + 16);
+        ctx.moveTo(x, gy + 16);
         ctx.lineTo(x + 10, h);
         ctx.stroke();
       }
-
-      // 6. Draw Bird
-      this.drawBird();
     },
 
     drawPipe: function (p) {
       var ctx = this.ctx;
+      var theme = this.currentTheme;
+
+      var g0, g1, g2, stroke;
+      if (theme === 0) {
+        g0 = '#15803d'; g1 = '#4ade80'; g2 = '#166534'; stroke = '#052e16';
+      } else if (theme === 1) {
+        g0 = '#78350f'; g1 = '#fb923c'; g2 = '#9a3412'; stroke = '#451a03';
+      } else if (theme === 2) {
+        g0 = '#1e3a8a'; g1 = '#38bdf8'; g2 = '#0369a1'; stroke = '#082f49';
+      } else if (theme === 3) {
+        g0 = '#0284c7'; g1 = '#e0f2fe'; g2 = '#0369a1'; stroke = '#075985';
+      } else {
+        g0 = '#701a75'; g1 = '#f43f5e'; g2 = '#c084fc'; stroke = '#4a044e';
+      }
+
+      var pipeGrad = ctx.createLinearGradient(p.x, 0, p.x + p.width, 0);
+      pipeGrad.addColorStop(0, g0);
+      pipeGrad.addColorStop(0.3, g1);
+      pipeGrad.addColorStop(1, g2);
+
+      ctx.fillStyle = pipeGrad;
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 2;
 
       // Top pipe
-      var topGrad = ctx.createLinearGradient(p.x, 0, p.x + p.width, 0);
-      topGrad.addColorStop(0, '#15803d');
-      topGrad.addColorStop(0.3, '#4ade80');
-      topGrad.addColorStop(1, '#166534');
-
-      ctx.fillStyle = topGrad;
       ctx.fillRect(p.x, 0, p.width, p.topHeight);
-      ctx.strokeStyle = '#052e16';
-      ctx.lineWidth = 2;
       ctx.strokeRect(p.x, 0, p.width, p.topHeight);
 
       // Top pipe cap rim
@@ -590,6 +1036,210 @@
       // Bottom pipe cap rim
       ctx.fillRect(p.x - 3, p.bottomY, p.width + 6, 20);
       ctx.strokeRect(p.x - 3, p.bottomY, p.width + 6, 20);
+
+      // Winter Snowcaps on Pipes
+      if (theme === 3) {
+        ctx.fillStyle = '#f8fafc';
+        // Snow on bottom pipe rim
+        if (ctx.roundRect) {
+          ctx.beginPath();
+          ctx.roundRect(p.x - 4, p.bottomY - 4, p.width + 8, 8, 4);
+          ctx.fill();
+        } else {
+          ctx.fillRect(p.x - 4, p.bottomY - 4, p.width + 8, 8);
+        }
+        // Icicles
+        ctx.beginPath();
+        ctx.moveTo(p.x + 6, p.bottomY + 4);
+        ctx.lineTo(p.x + 10, p.bottomY + 12);
+        ctx.lineTo(p.x + 14, p.bottomY + 4);
+        ctx.moveTo(p.x + 28, p.bottomY + 4);
+        ctx.lineTo(p.x + 32, p.bottomY + 14);
+        ctx.lineTo(p.x + 36, p.bottomY + 4);
+        ctx.fill();
+      }
+
+      // Collectible Star in middle of pipe
+      if (p.hasStar && !p.starCollected) {
+        this.drawCollectibleStar(p);
+      }
+    },
+
+    drawCollectibleStar: function (p) {
+      var ctx = this.ctx;
+      var starX = p.x + p.width / 2;
+      var curStarY = p.starY + Math.sin(this.starAnimTimer + p.x * 0.04) * 6;
+      var r = p.starRadius || 13;
+
+      ctx.save();
+      ctx.translate(starX, curStarY);
+
+      var pulse = 1 + Math.sin(this.starAnimTimer * 2 + p.x * 0.05) * 0.08;
+      ctx.scale(pulse, pulse);
+
+      // Radial golden glow
+      var glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 22);
+      glow.addColorStop(0, 'rgba(250, 204, 21, 0.7)');
+      glow.addColorStop(0.5, 'rgba(250, 204, 21, 0.22)');
+      glow.addColorStop(1, 'rgba(250, 204, 21, 0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Outer Star Shape
+      this.drawStarPath(0, 0, 5, r, r * 0.48);
+      var starGrad = ctx.createLinearGradient(0, -r, 0, r);
+      starGrad.addColorStop(0, '#fef08a');
+      starGrad.addColorStop(0.5, '#facc15');
+      starGrad.addColorStop(1, '#eab308');
+      ctx.fillStyle = starGrad;
+      ctx.fill();
+      ctx.strokeStyle = '#b45309';
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+
+      // Inner Highlight
+      this.drawStarPath(-1, -1, 5, r * 0.65, r * 0.32);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      ctx.fill();
+
+      // Rotating sparkle glint
+      var spAngle = (this.starAnimTimer * 1.5) % (Math.PI * 2);
+      ctx.rotate(spAngle);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(-1, -r - 3, 2, (r + 3) * 2);
+      ctx.fillRect(-r - 3, -1, (r + 3) * 2, 2);
+
+      ctx.restore();
+    },
+
+    drawStarPath: function (cx, cy, spikes, outerRadius, innerRadius) {
+      var ctx = this.ctx;
+      var rot = (Math.PI / 2) * 3;
+      var x = cx;
+      var y = cy;
+      var step = Math.PI / spikes;
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - outerRadius);
+      for (var i = 0; i < spikes; i++) {
+        x = cx + Math.cos(rot) * outerRadius;
+        y = cy + Math.sin(rot) * outerRadius;
+        ctx.lineTo(x, y);
+        rot += step;
+
+        x = cx + Math.cos(rot) * innerRadius;
+        y = cy + Math.sin(rot) * innerRadius;
+        ctx.lineTo(x, y);
+        rot += step;
+      }
+      ctx.lineTo(cx, cy - outerRadius);
+      ctx.closePath();
+    },
+
+    collectStar: function (x, y) {
+      this.starsCollected++;
+      this.score += 3; // +3 bonus points
+      Sound.star();
+      if (this.hudScoreEl) this.hudScoreEl.textContent = this.score;
+      this.updateStarsHUD();
+
+      // Floating text
+      this.floatingTexts.push({
+        x: x,
+        y: y - 10,
+        text: '+3 ⭐',
+        color: '#facc15',
+        opacity: 1,
+        vy: -1.6,
+        life: 45
+      });
+
+      // Burst particles
+      for (var k = 0; k < 12; k++) {
+        var angle = Math.random() * Math.PI * 2;
+        var speed = Math.random() * 2.8 + 1.2;
+        this.particles.push({
+          x: x,
+          y: y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          radius: Math.random() * 3.5 + 2,
+          color: k % 2 === 0 ? '#facc15' : '#ffffff',
+          alpha: 1,
+          life: 25 + Math.random() * 15
+        });
+      }
+
+      // Check if theme updates due to score bump
+      this.checkThemeUpdate();
+    },
+
+    getThemeIndex: function (score) {
+      // 0-9: Day, 10-19: Sunset, 20-29: Night, 30-39: Winter, 40+: Cyber Neon (cycles)
+      var cycle = Math.floor(score / 10) % 5;
+      return cycle;
+    },
+
+    checkThemeUpdate: function () {
+      var nextTheme = this.getThemeIndex(this.score);
+      if (nextTheme !== this.currentTheme) {
+        this.currentTheme = nextTheme;
+        Sound.themeChange();
+        var th = this.THEMES[nextTheme];
+        this.showThemeAnnouncement(th);
+        this.updateThemeHUD();
+      }
+    },
+
+    showThemeAnnouncement: function (th) {
+      this.themeBanner = {
+        title: th.name.toUpperCase(),
+        icon: th.icon,
+        opacity: 1,
+        life: 120
+      };
+      this.showToast(th.icon + ' ' + th.name + ' Tiba!');
+    },
+
+    updateThemeHUD: function () {
+      if (this.hudThemePill) {
+        var th = this.THEMES[this.currentTheme] || this.THEMES[0];
+        this.hudThemePill.textContent = th.icon + ' ' + th.name.split(' ')[0];
+      }
+    },
+
+    updateStarsHUD: function () {
+      if (this.hudStarsPill) {
+        this.hudStarsPill.textContent = '⭐ ' + this.starsCollected;
+      }
+    },
+
+    initThemeEffects: function () {
+      // Initialize Night Stars
+      this.nightStars = [];
+      for (var i = 0; i < 50; i++) {
+        this.nightStars.push({
+          x: Math.random() * 2400,
+          y: Math.random() * 360,
+          r: Math.random() * 1.5 + 0.8,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+
+      // Initialize Winter Snowflakes
+      this.snowflakes = [];
+      for (var j = 0; j < 45; j++) {
+        this.snowflakes.push({
+          x: Math.random() * 2400,
+          y: Math.random() * 512,
+          r: Math.random() * 2.2 + 1,
+          vy: Math.random() * 1.2 + 0.8,
+          vx: Math.random() * 0.6 - 0.3,
+          wobble: Math.random() * Math.PI * 2
+        });
+      }
     },
 
     drawBird: function () {

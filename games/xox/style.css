@@ -52,7 +52,8 @@ body.is-fullscreen {
 
 .xox-wrapper {
   width: 100%;
-  max-width: 500px;
+  max-width: min(500px, calc(100vw - 16px), calc(100dvh - 190px)) !important;
+  margin: 0 auto !important;
   height: 100% !important;
   height: 100dvh !important;
   max-height: 100dvh !important;
@@ -67,6 +68,16 @@ body.is-fullscreen {
 }
 
 /* Header */
+.xox-wrapper .xox-header,
+.xox-wrapper .mode-bar,
+.xox-wrapper .turn-banner,
+.xox-wrapper .score-board,
+.xox-wrapper .board-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
 .xox-header {
   width: 100%;
   display: flex;
@@ -257,8 +268,9 @@ body.is-fullscreen {
 /* Grid 3x3 Board */
 .board-container {
   position: relative !important;
-  width: min(500px, calc(100vw - 20px), calc(100dvh - 190px)) !important;
-  height: min(500px, calc(100vw - 20px), calc(100dvh - 190px)) !important;
+  overflow: hidden !important;
+  width: 100% !important;
+  height: auto !important;
   min-width: 240px !important;
   min-height: 240px !important;
   aspect-ratio: 1 / 1 !important;
@@ -269,7 +281,7 @@ body.is-fullscreen {
   display: grid !important;
   grid-template-columns: repeat(3, 1fr) !important;
   grid-template-rows: repeat(3, 1fr) !important;
-  gap: 8px !important;
+  gap: 10px !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   margin: 0 auto !important;
   flex: none !important;

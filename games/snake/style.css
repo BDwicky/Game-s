@@ -46,8 +46,8 @@ body {
 
 .snake-wrapper {
   width: 100%;
-  max-width: 440px;
-  padding: 12px 14px 24px;
+  max-width: 500px;
+  padding: 8px 10px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -362,7 +362,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 20px;
   width: 100%;
-  max-width: 440px;
+  max-width: 500px;
   max-height: 85vh;
   display: flex;
   flex-direction: column;

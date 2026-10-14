@@ -7,7 +7,7 @@
   'use strict';
 
   var GRID_SIZE = 20; // 20x20 grid
-  var CANVAS_SIZE = 400;
+  var CANVAS_SIZE = 500;
   var CELL_SIZE = CANVAS_SIZE / GRID_SIZE; // 20px per cell
 
   var SnakeGame = {

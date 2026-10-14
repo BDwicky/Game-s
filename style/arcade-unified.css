@@ -46,12 +46,12 @@ html, body {
 
 /* Unified Arcade Wrapper - Exact 100dvh viewport fitting, no double scrollbars */
 .arcade-wrapper,
-.snake-wrapper,
 .tetris-wrapper {
   width: 100% !important;
   max-width: 440px !important;
 }
 
+.snake-wrapper,
 .pacman-wrapper,
 .game-wrapper,
 .xox-wrapper {
@@ -1002,32 +1002,33 @@ body {
    Eliminates empty space across all arcade games
    ======================================================== */
 @media screen and (min-width: 601px), screen and (orientation: landscape) {
-  /* Snake Neon */
+  /* Snake Neon - Sized to match 2048 (500px board) */
   .snake-wrapper {
-    max-width: min(720px, 94vw) !important;
+    max-width: 500px !important;
   }
   .snake-wrapper .canvas-container {
-    max-height: min(540px, calc(100dvh - 120px)) !important;
-    max-width: min(540px, calc(100dvh - 120px)) !important;
+    max-height: min(500px, calc(100dvh - 130px)) !important;
+    max-width: min(500px, calc(100dvh - 130px), 94vw) !important;
     width: 100% !important;
     aspect-ratio: 1 / 1 !important;
     margin: 0 auto !important;
   }
 
-  /* Pacman Arcade - Matched with 2048 (500px width footprint) */
+  /* Pacman Arcade - Sized to match 2048 (500px width footprint, 19:22 ratio) */
   .pacman-wrapper {
-    max-width: 500px !important;
+    max-width: min(500px, calc((100dvh - 120px) * 19 / 22)) !important;
   }
   .pacman-wrapper .canvas-container {
-    max-height: min(500px, calc(100dvh - 120px)) !important;
-    width: auto !important;
+    max-width: min(500px, calc((100dvh - 120px) * 19 / 22), 94vw) !important;
+    max-height: min(580px, calc(100dvh - 120px)) !important;
+    aspect-ratio: 19 / 22 !important;
+    width: 100% !important;
     margin: 0 auto !important;
   }
   .pacman-wrapper #pacman-canvas {
-    max-height: min(500px, calc(100dvh - 120px)) !important;
-    max-width: min(440px, 92vw) !important;
-    width: auto !important;
-    height: auto !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
   }
 
   /* Tetris Classic */
@@ -1429,26 +1430,132 @@ body {
 
 
 /* ==========================================================================
-   2048-Matching Geometry for Memory Match, Pacman Arcade, and XOX
-   Matches standard 500px desktop footprint & full mobile screen width
+   Universal 2048-Matching Geometry & Flush Alignment
+   (2048, Snake Neon, Pacman Arcade, Memory Match, and X O X)
    ========================================================================== */
-.game-wrapper,
-.pacman-wrapper,
-.xox-wrapper {
-  width: 100% !important;
-  max-width: 500px !important;
-  margin: 0 auto !important;
-}
 
-/* Memory Match Board */
-.game-wrapper .cards-grid-container {
-  width: min(500px, calc(100vw - 20px), calc(100dvh - 170px)) !important;
-  height: min(500px, calc(100vw - 20px), calc(100dvh - 170px)) !important;
-  max-width: 100% !important;
-  max-height: calc(100dvh - 170px) !important;
-  aspect-ratio: 1 / 1 !important;
+/* 1. SNAKE NEON - Matches 2048 board (500px square on desktop, full mobile width) */
+.snake-wrapper {
+  width: 100% !important;
+  max-width: min(500px, calc(100vw - 16px), calc(100dvh - 130px)) !important;
   margin: 0 auto !important;
   box-sizing: border-box !important;
+}
+
+.snake-wrapper .snake-header,
+.snake-wrapper .stats-bar,
+.snake-wrapper .canvas-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.snake-wrapper .canvas-container {
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  height: auto !important;
+  max-width: min(500px, calc(100vw - 20px), calc(100dvh - 130px)) !important;
+  max-height: min(500px, calc(100vw - 20px), calc(100dvh - 130px)) !important;
+  margin: 0 auto !important;
+  border-radius: 14px !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.snake-wrapper #snake-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+}
+
+.snake-wrapper .game-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: inherit !important;
+  box-sizing: border-box !important;
+}
+
+/* 2. PACMAN ARCADE - Matches 2048 width (500px on desktop, full mobile width, 19:22 ratio) */
+.pacman-wrapper {
+  width: 100% !important;
+  max-width: min(500px, calc(100vw - 16px), calc((100dvh - 120px) * 19 / 22)) !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+}
+
+.pacman-wrapper .pacman-header,
+.pacman-wrapper .dash-bar,
+.pacman-wrapper .canvas-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.pacman-wrapper .canvas-container {
+  width: 100% !important;
+  aspect-ratio: 19 / 22 !important;
+  max-width: min(500px, calc(100vw - 20px), calc((100dvh - 120px) * 19 / 22)) !important;
+  max-height: min(580px, calc(100dvh - 120px)) !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  border-radius: 12px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #000 !important;
+  border: 2px solid var(--neon-wall) !important;
+  box-shadow: 0 0 25px rgba(37, 99, 235, 0.4) !important;
+}
+
+.pacman-wrapper #pacman-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  aspect-ratio: 19 / 22 !important;
+  image-rendering: pixelated !important;
+}
+
+.pacman-wrapper .game-msg-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: inherit !important;
+  box-sizing: border-box !important;
+}
+
+/* 3. MEMORY MATCH - Matches 2048 (500px square on desktop, full mobile width) */
+.game-wrapper {
+  width: 100% !important;
+  max-width: min(500px, calc(100vw - 16px), calc(100dvh - 170px)) !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+}
+
+.game-wrapper .game-header,
+.game-wrapper .stats-bar,
+.game-wrapper .controls-bar,
+.game-wrapper .cards-grid-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.game-wrapper .cards-grid-container {
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  height: auto !important;
+  max-width: min(500px, calc(100vw - 20px), calc(100dvh - 170px)) !important;
+  max-height: min(500px, calc(100vw - 20px), calc(100dvh - 170px)) !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+  border-radius: 14px !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
 .game-wrapper .cards-grid-container.grid-12 .card-front,
@@ -1465,33 +1572,108 @@ body {
   font-size: clamp(22px, 5vw, 34px) !important;
 }
 
-/* Pacman Arcade Board */
-.pacman-wrapper .canvas-container {
-  max-width: 500px !important;
+.game-wrapper .win-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: inherit !important;
+  box-sizing: border-box !important;
+}
+
+/* 4. X O X (TIC-TAC-TOE) - Locked 100% Flush Alignment to Eliminate Offside Cards */
+.xox-wrapper {
+  width: 100% !important;
+  max-width: min(500px, calc(100vw - 16px), calc(100dvh - 190px)) !important;
   margin: 0 auto !important;
-  border-radius: 10px !important;
+  padding: 6px 10px 10px !important;
+  box-sizing: border-box !important;
 }
 
-.pacman-wrapper #pacman-canvas {
-  max-width: min(440px, calc(100vw - 20px), calc((100dvh - 130px) * 19 / 22)) !important;
-  max-height: min(500px, calc(100dvh - 130px)) !important;
-  width: auto !important;
-  height: auto !important;
-  aspect-ratio: 19 / 22 !important;
-}
-
-/* XOX Board */
+.xox-wrapper .xox-header,
+.xox-wrapper .mode-bar,
+.xox-wrapper .turn-banner,
+.xox-wrapper .score-board,
 .xox-wrapper .board-container,
 .xox-wrapper #board-grid {
-  width: min(500px, calc(100vw - 20px), calc(100dvh - 190px)) !important;
-  height: min(500px, calc(100vw - 20px), calc(100dvh - 190px)) !important;
+  width: 100% !important;
   max-width: 100% !important;
-  max-height: calc(100dvh - 190px) !important;
-  aspect-ratio: 1 / 1 !important;
-  margin: 0 auto !important;
   box-sizing: border-box !important;
+}
+
+.xox-wrapper .score-board {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 6px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  margin: 0 !important;
+}
+
+.xox-wrapper .score-card {
+  width: 100% !important;
+  height: 38px !important;
+  box-sizing: border-box !important;
+}
+
+.xox-wrapper .board-container,
+.xox-wrapper #board-grid {
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  height: auto !important;
+  min-width: 240px !important;
+  min-height: 240px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  grid-template-rows: repeat(3, 1fr) !important;
+  gap: 10px !important;
+  margin: 0 auto !important;
+  padding: 10px !important;
+  border-radius: 14px !important;
 }
 
 .xox-wrapper .grid-cell {
   font-size: clamp(48px, 12vw, 72px) !important;
+}
+
+/* XOX Game Over Overlay - strictly flush inside board */
+.xox-gameover-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: inherit !important;
+  background: rgba(15, 23, 42, 0.94) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 14px !important;
+  z-index: 50 !important;
+  gap: 8px !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+
+.xox-scorecard {
+  display: flex !important;
+  gap: 8px !important;
+  width: 100% !important;
+  max-width: 240px !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
+}
+
+.xox-overlay-actions {
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: 320px !important;
+  margin: 4px auto 0 !important;
 }

@@ -115,6 +115,7 @@
     // Collectible Stars & Dynamic Themes
     starsCollected: 0,
     currentTheme: 0,
+    pipesSinceLastStar: 0,
     themeBanner: null,
     floatingTexts: [],
     particles: [],
@@ -397,6 +398,7 @@
       this.score = 0;
       this.starsCollected = 0;
       this.currentTheme = 0;
+      this.pipesSinceLastStar = 0;
       this.themeBanner = null;
       this.floatingTexts = [];
       this.particles = [];
@@ -549,8 +551,13 @@
       var topHeight = Math.floor(Math.random() * (maxTop - minTop + 1)) + minTop;
       var bottomY = topHeight + this.pipeGap;
 
-      // Collectible star appears on ~45% of pipes
-      var hasStar = Math.random() < 0.45;
+      // Collectible star spacing: balanced frequency (min 3 pipes apart, skip first 2, ~22% chance)
+      this.pipesSinceLastStar = (this.pipesSinceLastStar || 0) + 1;
+      var canSpawnStar = this.pipesSinceLastStar >= 3 && (this.score >= 2 || this.pipes.length >= 2);
+      var hasStar = canSpawnStar && (Math.random() < 0.22 || this.pipesSinceLastStar >= 6);
+      if (hasStar) {
+        this.pipesSinceLastStar = 0;
+      }
       var starY = topHeight + Math.round(this.pipeGap / 2);
 
       this.pipes.push({
@@ -1180,8 +1187,8 @@
     },
 
     getThemeIndex: function (score) {
-      // 0-9: Day, 10-19: Sunset, 20-29: Night, 30-39: Winter, 40+: Cyber Neon (cycles)
-      var cycle = Math.floor(score / 10) % 5;
+      // Target setiap 25 poin: 0-24 Siang, 25-49 Senja, 50-74 Malam, 75-99 Salju, 100+ Cyber Master
+      var cycle = Math.floor(score / 25) % 5;
       return cycle;
     },
 
@@ -1210,6 +1217,7 @@
       if (this.hudThemePill) {
         var th = this.THEMES[this.currentTheme] || this.THEMES[0];
         this.hudThemePill.textContent = th.icon + ' ' + th.name.split(' ')[0];
+        this.hudThemePill.title = 'Tema: ' + th.name + ' (Target setiap 25 poin)';
       }
     },
 

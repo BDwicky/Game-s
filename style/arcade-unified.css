@@ -42,6 +42,10 @@ html, body {
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
 
 /* Unified Arcade Wrapper - Exact 100dvh viewport fitting, no double scrollbars */
@@ -413,7 +417,11 @@ body {
   overflow: hidden !important;
 }
 
-.container {
+.container,
+.snake-wrapper,
+.pacman-wrapper,
+.game-wrapper,
+.xox-wrapper {
   margin: auto !important;
   padding: 0 !important;
   box-sizing: border-box !important;
@@ -1002,35 +1010,6 @@ body {
    Eliminates empty space across all arcade games
    ======================================================== */
 @media screen and (min-width: 601px), screen and (orientation: landscape) {
-  /* Snake Neon - Sized to match 2048 (500px board) */
-  .snake-wrapper {
-    max-width: 500px !important;
-  }
-  .snake-wrapper .canvas-container {
-    max-height: min(500px, calc(100dvh - 130px)) !important;
-    max-width: min(500px, calc(100dvh - 130px), 94vw) !important;
-    width: 100% !important;
-    aspect-ratio: 1 / 1 !important;
-    margin: 0 auto !important;
-  }
-
-  /* Pacman Arcade - Sized to match 2048 (500px width footprint, 19:22 ratio) */
-  .pacman-wrapper {
-    max-width: min(500px, calc((100dvh - 120px) * 19 / 22)) !important;
-  }
-  .pacman-wrapper .canvas-container {
-    max-width: min(500px, calc((100dvh - 120px) * 19 / 22), 94vw) !important;
-    max-height: min(580px, calc(100dvh - 120px)) !important;
-    aspect-ratio: 19 / 22 !important;
-    width: 100% !important;
-    margin: 0 auto !important;
-  }
-  .pacman-wrapper #pacman-canvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block !important;
-  }
-
   /* Tetris Classic */
   .tetris-wrapper {
     max-width: min(760px, 94vw) !important;
@@ -1052,30 +1031,6 @@ body {
   }
   .tetris-wrapper .tetris-side-col {
     width: 90px !important;
-  }
-
-  /* Memory Match - Exactly 500px x 500px matching 2048 */
-  .game-wrapper {
-    max-width: 500px !important;
-  }
-  .game-wrapper .cards-grid-container {
-    max-height: min(500px, calc(100dvh - 170px)) !important;
-    width: min(500px, calc(100dvh - 170px), 92vw) !important;
-    height: min(500px, calc(100dvh - 170px), 92vw) !important;
-    aspect-ratio: 1 / 1 !important;
-    margin: 0 auto !important;
-  }
-
-  /* X O X (Tic-Tac-Toe) - Exactly 500px x 500px matching 2048 */
-  .xox-wrapper {
-    max-width: 500px !important;
-  }
-  .xox-wrapper .board-container {
-    width: min(500px, 92vw, calc(100dvh - 190px)) !important;
-    height: min(500px, 92vw, calc(100dvh - 190px)) !important;
-  }
-  .xox-wrapper .grid-cell {
-    font-size: min(72px, 14vw) !important;
   }
 
   .arcade-wrapper {
@@ -1132,50 +1087,10 @@ body {
   }
 
   .arcade-wrapper,
-  .pacman-wrapper,
-  .snake-wrapper,
-  .tetris-wrapper,
-  .game-wrapper,
-  .xox-wrapper {
+  .tetris-wrapper {
     gap: 4px !important;
     padding: 4px env(safe-area-inset-right, 6px) 4px env(safe-area-inset-left, 6px) !important;
     max-width: min(860px, 96vw) !important;
-  }
-
-  /* Snake in landscape */
-  .snake-wrapper .stats-bar {
-    gap: 4px !important;
-  }
-  .snake-wrapper .stat-box {
-    padding: 2px 6px !important;
-  }
-  .snake-wrapper .stat-label {
-    font-size: 9px !important;
-  }
-  .snake-wrapper .stat-value {
-    font-size: 13px !important;
-  }
-  .snake-wrapper .canvas-container {
-    max-height: calc(100dvh - 90px) !important;
-    max-width: calc(100dvh - 90px) !important;
-    width: auto !important;
-    aspect-ratio: 1 / 1 !important;
-  }
-
-  /* Pacman in landscape */
-  .pacman-wrapper .dash-bar {
-    height: 30px !important;
-    min-height: 30px !important;
-    padding: 2px 8px !important;
-  }
-  .pacman-wrapper .canvas-container {
-    max-height: calc(100dvh - 80px) !important;
-  }
-  .pacman-wrapper #pacman-canvas {
-    max-height: calc(100dvh - 80px) !important;
-    max-width: calc((100dvh - 80px) * 19 / 22) !important;
-    width: auto !important;
-    height: auto !important;
   }
 
   /* Tetris in landscape */
@@ -1191,48 +1106,6 @@ body {
   }
   .tetris-wrapper .panel-box {
     padding: 4px !important;
-  }
-
-  /* Memory in landscape */
-  .game-wrapper .stats-bar {
-    gap: 4px !important;
-  }
-  .game-wrapper .stat-box {
-    padding: 2px 6px !important;
-  }
-  .game-wrapper .diff-btn-group {
-    display: none !important;
-  }
-  .game-wrapper .cards-grid-container {
-    max-height: calc(100dvh - 80px) !important;
-    width: calc(100dvh - 80px) !important;
-    padding: 6px !important;
-    gap: 4px !important;
-  }
-
-  /* XOX in landscape */
-  .xox-wrapper .mode-bar {
-    height: 28px !important;
-    min-height: 28px !important;
-  }
-  .xox-wrapper .turn-banner {
-    display: none !important;
-  }
-  .xox-wrapper .score-board {
-    height: 28px !important;
-    min-height: 28px !important;
-  }
-  .xox-wrapper .board-container {
-    width: calc(100dvh - 105px) !important;
-    height: calc(100dvh - 105px) !important;
-    min-width: auto !important;
-    min-height: auto !important;
-    padding: 6px !important;
-    gap: 6px !important;
-  }
-  .xox-wrapper .grid-cell {
-    min-height: auto !important;
-    font-size: min(32px, 8vw) !important;
   }
 }
 
@@ -1324,7 +1197,7 @@ body {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-radius: inherit;
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -1434,32 +1307,74 @@ body {
    (2048, Snake Neon, Pacman Arcade, Memory Match, and X O X)
    ========================================================================== */
 
-/* 1. SNAKE NEON - Matches 2048 board (500px square on desktop, full mobile width) */
+/* 1. SNAKE NEON - Matches 2048 board */
 .snake-wrapper {
-  width: 100% !important;
-  max-width: min(500px, calc(100vw - 16px), calc(100dvh - 130px)) !important;
-  margin: 0 auto !important;
+  margin: auto !important;
   box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform-origin: center center !important;
+  will-change: transform;
 }
 
-.snake-wrapper .snake-header,
-.snake-wrapper .stats-bar,
-.snake-wrapper .canvas-container {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
+@media screen and (min-width: 521px) {
+  .snake-wrapper {
+    width: 500px !important;
+    max-width: 500px !important;
+    gap: 12px !important;
+    transform: scale(var(--desktop-scale, var(--desktop-fs-scale, 1))) !important;
+  }
+
+  .snake-wrapper .snake-header,
+  .snake-wrapper .stats-bar {
+    width: 500px !important;
+    max-width: 500px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+  }
+
+  .snake-wrapper .canvas-container {
+    width: 500px !important;
+    height: 500px !important;
+    max-width: 500px !important;
+    max-height: 500px !important;
+    aspect-ratio: 1 / 1 !important;
+    margin: 0 auto !important;
+    border-radius: 14px !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
 }
 
-.snake-wrapper .canvas-container {
-  width: 100% !important;
-  aspect-ratio: 1 / 1 !important;
-  height: auto !important;
-  max-width: min(500px, calc(100vw - 20px), calc(100dvh - 130px)) !important;
-  max-height: min(500px, calc(100vw - 20px), calc(100dvh - 130px)) !important;
-  margin: 0 auto !important;
-  border-radius: 14px !important;
-  position: relative !important;
-  overflow: hidden !important;
+@media screen and (max-width: 520px) {
+  .snake-wrapper {
+    width: 280px !important;
+    max-width: 280px !important;
+    gap: 8px !important;
+    transform: scale(var(--mobile-scale, var(--mobile-fs-scale, 1))) !important;
+  }
+
+  .snake-wrapper .snake-header,
+  .snake-wrapper .stats-bar {
+    width: 280px !important;
+    max-width: 280px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+  }
+
+  .snake-wrapper .canvas-container {
+    width: 280px !important;
+    height: 280px !important;
+    max-width: 280px !important;
+    max-height: 280px !important;
+    aspect-ratio: 1 / 1 !important;
+    margin: 0 auto !important;
+    border-radius: 12px !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
 }
 
 .snake-wrapper #snake-canvas {
@@ -1477,38 +1392,81 @@ body {
   box-sizing: border-box !important;
 }
 
-/* 2. PACMAN ARCADE - Matches 2048 width (500px on desktop, full mobile width, 19:22 ratio) */
+/* 2. PACMAN ARCADE - Matches 2048 width */
 .pacman-wrapper {
-  width: 100% !important;
-  max-width: min(500px, calc(100vw - 16px), calc((100dvh - 120px) * 19 / 22)) !important;
-  margin: 0 auto !important;
+  margin: auto !important;
   box-sizing: border-box !important;
-}
-
-.pacman-wrapper .pacman-header,
-.pacman-wrapper .dash-bar,
-.pacman-wrapper .canvas-container {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-.pacman-wrapper .canvas-container {
-  width: 100% !important;
-  aspect-ratio: 19 / 22 !important;
-  max-width: min(500px, calc(100vw - 20px), calc((100dvh - 120px) * 19 / 22)) !important;
-  max-height: min(580px, calc(100dvh - 120px)) !important;
-  height: auto !important;
-  margin: 0 auto !important;
-  border-radius: 12px !important;
-  position: relative !important;
-  overflow: hidden !important;
   display: flex !important;
+  flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  background: #000 !important;
-  border: 2px solid var(--neon-wall) !important;
-  box-shadow: 0 0 25px rgba(37, 99, 235, 0.4) !important;
+  transform-origin: center center !important;
+  will-change: transform;
+}
+
+@media screen and (min-width: 521px) {
+  .pacman-wrapper {
+    width: 500px !important;
+    max-width: 500px !important;
+    gap: 12px !important;
+    transform: scale(var(--desktop-scale, var(--desktop-fs-scale, 1))) !important;
+  }
+
+  .pacman-wrapper .pacman-header,
+  .pacman-wrapper .dash-bar {
+    width: 500px !important;
+    max-width: 500px !important;
+  }
+
+  .pacman-wrapper .canvas-container {
+    width: 440px !important;
+    height: 510px !important;
+    max-width: 440px !important;
+    max-height: 510px !important;
+    aspect-ratio: 19 / 22 !important;
+    margin: 0 auto !important;
+    border-radius: 12px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #000 !important;
+    border: 2px solid var(--neon-wall) !important;
+    box-shadow: 0 0 25px rgba(37, 99, 235, 0.4) !important;
+  }
+}
+
+@media screen and (max-width: 520px) {
+  .pacman-wrapper {
+    width: 280px !important;
+    max-width: 280px !important;
+    gap: 8px !important;
+    transform: scale(var(--mobile-scale, var(--mobile-fs-scale, 1))) !important;
+  }
+
+  .pacman-wrapper .pacman-header,
+  .pacman-wrapper .dash-bar {
+    width: 280px !important;
+    max-width: 280px !important;
+  }
+
+  .pacman-wrapper .canvas-container {
+    width: 260px !important;
+    height: 300px !important;
+    max-width: 260px !important;
+    max-height: 300px !important;
+    aspect-ratio: 19 / 22 !important;
+    margin: 0 auto !important;
+    border-radius: 10px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #000 !important;
+    border: 2px solid var(--neon-wall) !important;
+  }
 }
 
 .pacman-wrapper #pacman-canvas {
@@ -1528,34 +1486,74 @@ body {
   box-sizing: border-box !important;
 }
 
-/* 3. MEMORY MATCH - Matches 2048 (500px square on desktop, full mobile width) */
+/* 3. MEMORY MATCH - Matches 2048 */
 .game-wrapper {
-  width: 100% !important;
-  max-width: min(500px, calc(100vw - 16px), calc(100dvh - 170px)) !important;
-  margin: 0 auto !important;
+  margin: auto !important;
   box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform-origin: center center !important;
+  will-change: transform;
 }
 
-.game-wrapper .game-header,
-.game-wrapper .stats-bar,
-.game-wrapper .controls-bar,
-.game-wrapper .cards-grid-container {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
+@media screen and (min-width: 521px) {
+  .game-wrapper {
+    width: 500px !important;
+    max-width: 500px !important;
+    gap: 12px !important;
+    transform: scale(var(--desktop-scale, var(--desktop-fs-scale, 1))) !important;
+  }
+
+  .game-wrapper .game-header,
+  .game-wrapper .stats-bar,
+  .game-wrapper .controls-bar {
+    width: 500px !important;
+    max-width: 500px !important;
+  }
+
+  .game-wrapper .cards-grid-container {
+    width: 500px !important;
+    height: 500px !important;
+    max-width: 500px !important;
+    max-height: 500px !important;
+    aspect-ratio: 1 / 1 !important;
+    margin: 0 auto !important;
+    border-radius: 14px !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
 }
 
-.game-wrapper .cards-grid-container {
-  width: 100% !important;
-  aspect-ratio: 1 / 1 !important;
-  height: auto !important;
-  max-width: min(500px, calc(100vw - 20px), calc(100dvh - 170px)) !important;
-  max-height: min(500px, calc(100vw - 20px), calc(100dvh - 170px)) !important;
-  margin: 0 auto !important;
-  box-sizing: border-box !important;
-  border-radius: 14px !important;
-  position: relative !important;
-  overflow: hidden !important;
+@media screen and (max-width: 520px) {
+  .game-wrapper {
+    width: 280px !important;
+    max-width: 280px !important;
+    gap: 8px !important;
+    transform: scale(var(--mobile-scale, var(--mobile-fs-scale, 1))) !important;
+  }
+
+  .game-wrapper .game-header,
+  .game-wrapper .stats-bar,
+  .game-wrapper .controls-bar {
+    width: 280px !important;
+    max-width: 280px !important;
+  }
+
+  .game-wrapper .cards-grid-container {
+    width: 280px !important;
+    height: 280px !important;
+    max-width: 280px !important;
+    max-height: 280px !important;
+    aspect-ratio: 1 / 1 !important;
+    margin: 0 auto !important;
+    border-radius: 12px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    padding: 6px !important;
+    gap: 6px !important;
+  }
 }
 
 .game-wrapper .cards-grid-container.grid-12 .card-front,
@@ -1581,24 +1579,84 @@ body {
   box-sizing: border-box !important;
 }
 
-/* 4. X O X (TIC-TAC-TOE) - Locked 100% Flush Alignment to Eliminate Offside Cards */
+/* 4. X O X (TIC-TAC-TOE) - Matches 2048 Sizing and Centering */
 .xox-wrapper {
-  width: 100% !important;
-  max-width: min(500px, calc(100vw - 16px), calc(100dvh - 190px)) !important;
-  margin: 0 auto !important;
-  padding: 6px 10px 10px !important;
+  margin: auto !important;
   box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform-origin: center center !important;
+  will-change: transform;
 }
 
-.xox-wrapper .xox-header,
-.xox-wrapper .mode-bar,
-.xox-wrapper .turn-banner,
-.xox-wrapper .score-board,
-.xox-wrapper .board-container,
-.xox-wrapper #board-grid {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
+@media screen and (min-width: 521px) {
+  .xox-wrapper {
+    width: 500px !important;
+    max-width: 500px !important;
+    gap: 10px !important;
+    padding: 0 !important;
+    transform: scale(var(--desktop-scale, var(--desktop-fs-scale, 1))) !important;
+  }
+
+  .xox-wrapper .xox-header,
+  .xox-wrapper .mode-bar,
+  .xox-wrapper .turn-banner,
+  .xox-wrapper .score-board {
+    width: 500px !important;
+    max-width: 500px !important;
+  }
+
+  .xox-wrapper .board-container,
+  .xox-wrapper #board-grid {
+    width: 440px !important;
+    height: 440px !important;
+    max-width: 440px !important;
+    max-height: 440px !important;
+    aspect-ratio: 1 / 1 !important;
+    padding: 12px !important;
+    gap: 10px !important;
+    border-radius: 16px !important;
+  }
+
+  .xox-wrapper .grid-cell {
+    font-size: 64px !important;
+  }
+}
+
+@media screen and (max-width: 520px) {
+  .xox-wrapper {
+    width: 280px !important;
+    max-width: 280px !important;
+    gap: 6px !important;
+    padding: 0 !important;
+    transform: scale(var(--mobile-scale, var(--mobile-fs-scale, 1))) !important;
+  }
+
+  .xox-wrapper .xox-header,
+  .xox-wrapper .mode-bar,
+  .xox-wrapper .turn-banner,
+  .xox-wrapper .score-board {
+    width: 280px !important;
+    max-width: 280px !important;
+  }
+
+  .xox-wrapper .board-container,
+  .xox-wrapper #board-grid {
+    width: 280px !important;
+    height: 280px !important;
+    max-width: 280px !important;
+    max-height: 280px !important;
+    aspect-ratio: 1 / 1 !important;
+    padding: 8px !important;
+    gap: 6px !important;
+    border-radius: 12px !important;
+  }
+
+  .xox-wrapper .grid-cell {
+    font-size: 42px !important;
+  }
 }
 
 .xox-wrapper .score-board {
@@ -1618,24 +1676,13 @@ body {
 
 .xox-wrapper .board-container,
 .xox-wrapper #board-grid {
-  width: 100% !important;
-  aspect-ratio: 1 / 1 !important;
-  height: auto !important;
-  min-width: 240px !important;
-  min-height: 240px !important;
   position: relative !important;
   overflow: hidden !important;
   display: grid !important;
   grid-template-columns: repeat(3, 1fr) !important;
   grid-template-rows: repeat(3, 1fr) !important;
-  gap: 10px !important;
   margin: 0 auto !important;
-  padding: 10px !important;
-  border-radius: 14px !important;
-}
-
-.xox-wrapper .grid-cell {
-  font-size: clamp(48px, 12vw, 72px) !important;
+  box-sizing: border-box !important;
 }
 
 /* XOX Game Over Overlay - strictly flush inside board */
@@ -1648,7 +1695,8 @@ body {
   background: rgba(15, 23, 42, 0.94) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
-  display: flex !important;
+  display: none !important;
+  pointer-events: none !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
@@ -1657,6 +1705,12 @@ body {
   gap: 8px !important;
   text-align: center !important;
   box-sizing: border-box !important;
+}
+
+.xox-gameover-overlay.show,
+.xox-gameover-overlay.is-open {
+  display: flex !important;
+  pointer-events: auto !important;
 }
 
 .xox-scorecard {

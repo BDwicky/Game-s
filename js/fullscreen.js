@@ -57,6 +57,41 @@
     window.addEventListener("pagehide", markNavigating);
   }
 
+  
+  function updateArcadeScale() {
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+    var w = window.innerWidth;
+    var h = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+
+    if (w <= 520) {
+      // Mobile scaling: base 280x390
+      var availW = Math.max(240, w - 16);
+      var availH = Math.max(240, h - 20);
+      var baseW = 280;
+      var baseH = 390;
+      var scale = Math.min(availW / baseW, availH / baseH);
+      scale = Math.max(0.70, Math.min(1.45, scale));
+      var scaleStr = scale.toFixed(3);
+      document.documentElement.style.setProperty("--mobile-scale", scaleStr);
+      document.documentElement.style.setProperty("--mobile-fs-scale", scaleStr);
+      document.documentElement.style.removeProperty("--desktop-scale");
+      document.documentElement.style.removeProperty("--desktop-fs-scale");
+    } else {
+      // Desktop / Tablet / Landscape: base 500x630
+      var baseW = 500;
+      var baseH = 630;
+      var availW = Math.max(300, w - 32);
+      var availH = Math.max(300, h - 24);
+      var scale = Math.min(availW / baseW, availH / baseH, 1.25);
+      scale = Math.max(0.50, scale);
+      var scaleStr = scale.toFixed(3);
+      document.documentElement.style.setProperty("--desktop-scale", scaleStr);
+      document.documentElement.style.setProperty("--desktop-fs-scale", scaleStr);
+      document.documentElement.style.removeProperty("--mobile-scale");
+      document.documentElement.style.removeProperty("--mobile-fs-scale");
+    }
+  }
+
   var FullscreenSync = {
     _lastToggle: 0,
     _onGesture: null,
@@ -206,6 +241,7 @@
     },
 
     applyClasses: function (active) {
+      updateArcadeScale();
       if (typeof document === "undefined") return;
       if (active) {
         document.documentElement.classList.add("is-fullscreen");
@@ -352,6 +388,16 @@
 
     init: function () {
       var self = this;
+      updateArcadeScale();
+      window.addEventListener("resize", updateArcadeScale);
+      window.addEventListener("orientationchange", function () {
+        setTimeout(updateArcadeScale, 50);
+        setTimeout(updateArcadeScale, 150);
+      });
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", updateArcadeScale);
+      }
+
 
       if (isIframe) {
         // In iframe mode, query parent state and intercept navigation
@@ -436,5 +482,6 @@
     }
   }
 
+    FullscreenSync.updateArcadeScale = updateArcadeScale;
   return FullscreenSync;
 });

@@ -36,22 +36,29 @@ body {
     linear-gradient(180deg, #060b13 0%, #09101f 100%);
   color: var(--text-main);
   min-height: 100vh;
+  min-height: 100dvh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
+  overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
+  margin: 0;
+  padding: 0;
 }
 
 .snake-wrapper {
-  width: 100%;
-  max-width: 500px;
-  padding: 8px 10px 16px;
+  margin: auto;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center center;
+  will-change: transform;
 }
 
 /* Header */

@@ -1068,26 +1068,30 @@
     drawCollectibleStar: function (p) {
       var ctx = this.ctx;
       var starX = p.x + p.width / 2;
-      var curStarY = p.starY + Math.sin(this.starAnimTimer + p.x * 0.04) * 6;
+      var curStarY = p.starY + Math.sin(this.starAnimTimer * 2 + p.x * 0.04) * 6;
       var r = p.starRadius || 13;
 
       ctx.save();
       ctx.translate(starX, curStarY);
 
-      var pulse = 1 + Math.sin(this.starAnimTimer * 2 + p.x * 0.05) * 0.08;
-      ctx.scale(pulse, pulse);
-
-      // Radial golden glow
-      var glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 22);
-      glow.addColorStop(0, 'rgba(250, 204, 21, 0.7)');
-      glow.addColorStop(0.5, 'rgba(250, 204, 21, 0.22)');
+      // 1. Soft pulsing radial glow
+      var glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 24);
+      glow.addColorStop(0, 'rgba(250, 204, 21, 0.65)');
+      glow.addColorStop(0.45, 'rgba(250, 204, 21, 0.2)');
       glow.addColorStop(1, 'rgba(250, 204, 21, 0)');
       ctx.fillStyle = glow;
       ctx.beginPath();
-      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.arc(0, 0, 24, 0, Math.PI * 2);
       ctx.fill();
 
-      // Outer Star Shape
+      // 2. ROTATE THE STAR ITSELF!
+      var starAngle = (this.starAnimTimer * 1.6 + p.x * 0.02) % (Math.PI * 2);
+      ctx.rotate(starAngle);
+
+      var pulse = 1 + Math.sin(this.starAnimTimer * 3 + p.x * 0.05) * 0.08;
+      ctx.scale(pulse, pulse);
+
+      // 3. Draw Rotating 5-Point Star Body
       this.drawStarPath(0, 0, 5, r, r * 0.48);
       var starGrad = ctx.createLinearGradient(0, -r, 0, r);
       starGrad.addColorStop(0, '#fef08a');
@@ -1099,17 +1103,16 @@
       ctx.lineWidth = 1.6;
       ctx.stroke();
 
-      // Inner Highlight
-      this.drawStarPath(-1, -1, 5, r * 0.65, r * 0.32);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      // 4. Inner Star Highlight Layer
+      this.drawStarPath(0, 0, 5, r * 0.65, r * 0.32);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
       ctx.fill();
 
-      // Rotating sparkle glint
-      var spAngle = (this.starAnimTimer * 1.5) % (Math.PI * 2);
-      ctx.rotate(spAngle);
+      // 5. Center Gleam Sparkle
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(-1, -r - 3, 2, (r + 3) * 2);
-      ctx.fillRect(-r - 3, -1, (r + 3) * 2, 2);
+      ctx.beginPath();
+      ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
+      ctx.fill();
 
       ctx.restore();
     },

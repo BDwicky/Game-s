@@ -113,6 +113,15 @@
     accumulator: 0,
 
     // Collectible Stars & Dynamic Themes with Silky Cross-Dissolve
+        // Bird Skins Catalog
+    currentSkin: 'classic',
+    SKINS: {
+      classic: { id: 'classic', name: 'Kuning Klasik', icon: '🐤', body: '#facc15', wing: '#fde047', beak: '#f97316', eye: '#000000', desc: 'Burung kuning arcade retro legendaris' },
+      blue:    { id: 'blue',    name: 'Biru Phoenix', icon: '🐦', body: '#0284c7', wing: '#38bdf8', beak: '#fbbf24', eye: '#0f172a', desc: 'Burung biru samudra gesit & sejuk' },
+      crimson: { id: 'crimson', name: 'Elang Merah',   icon: '🦅', body: '#e11d48', wing: '#f43f5e', beak: '#facc15', eye: '#450a0a', desc: 'Elang merah kobar dengan sayap membara' },
+      bat:     { id: 'bat',     name: 'Kelelawar',    icon: '🦇', body: '#312e81', wing: '#4f46e5', beak: '#f8fafc', eye: '#facc15', desc: 'Sayap malam misterius bertaring putih' },
+      cyber:   { id: 'cyber',   name: 'Robot Cyber',  icon: '🤖', body: '#0f172a', wing: '#06b6d4', beak: '#94a3b8', eye: '#22d3ee', desc: 'Burung mecha titanium dengan visor neon' }
+    },
     starsCollected: 0,
     currentTheme: 0,
     previousTheme: 0,
@@ -163,6 +172,7 @@
         if (u) this.username = u;
         var av = localStorage.getItem('user_profile_avatar') || localStorage.getItem('2048_avatar');
         if (av) this.avatar = av;
+        var sk = localStorage.getItem('flappy_selected_skin'); if (sk && this.SKINS[sk]) this.currentSkin = sk;
         var hs = localStorage.getItem('flappy_high_score');
         if (hs) this.highScore = parseInt(hs, 10) || 0;
       } catch (e) {}
@@ -226,21 +236,28 @@
       var aspect = wrapW / wrapH;
       if (!aspect || isNaN(aspect) || aspect <= 0) aspect = 288 / 512;
 
-      // Keep virtual height 512 to preserve 100% identical 60fps arcade physics
+      // Virtual arcade coordinate system (Always 512 units high for 100% calibrated physics)
       var targetHeight = 512;
-      // Compute virtual width strictly matching display aspect ratio (zero distortion)
       var targetWidth = Math.round(targetHeight * aspect);
 
-      // Safety clamps
       if (targetWidth < 220) targetWidth = 220;
       if (targetWidth > 2400) targetWidth = 2400;
 
-      if (this.canvas.width !== targetWidth || this.canvas.height !== targetHeight) {
-        this.canvas.width = targetWidth;
-        this.canvas.height = targetHeight;
-        this.width = targetWidth;
-        this.height = targetHeight;
+      this.width = targetWidth;
+      this.height = targetHeight;
+
+      // High-DPI / Retina Resolution Scaling: Eliminates Canvas Blur Completely!
+      var dpr = Math.min(window.devicePixelRatio || 1, 3);
+      var bufferW = Math.round(wrapW * dpr);
+      var bufferH = Math.round(wrapH * dpr);
+
+      if (this.canvas.width !== bufferW || this.canvas.height !== bufferH) {
+        this.canvas.width = bufferW;
+        this.canvas.height = bufferH;
       }
+
+      this.dprScaleX = bufferW / this.width;
+      this.dprScaleY = bufferH / this.height;
 
       // Dynamic bird horizontal positioning
       this.initThemeGradients();
@@ -337,6 +354,9 @@
 
       var btnLdb = document.getElementById('btn-leaderboard');
       if (btnLdb) btnLdb.addEventListener('click', function () { self.openLeaderboard(); });
+
+      var btnSkins = document.getElementById('btn-skins');
+      if (btnSkins) btnSkins.addEventListener('click', function () { self.openSkinsModal(); });
 
       var btnFs = document.getElementById('btn-fullscreen');
       if (btnFs) btnFs.addEventListener('click', function () { self.toggleFullscreen(); });
@@ -647,6 +667,12 @@
       var w = this.width;
       var h = this.height;
 
+      ctx.save();
+      // Apply High-DPI Retina Transform (100% Crisp & Zero Blur!)
+      if (this.dprScaleX && this.dprScaleY) {
+        ctx.setTransform(this.dprScaleX, 0, 0, this.dprScaleY, 0, 0);
+      }
+
       // 1. Dynamic Thematic Background
       this.drawBackground();
 
@@ -719,6 +745,8 @@
         ctx.fillText(tb.icon + ' ' + tb.title, w / 2, by + bHeight / 2);
         ctx.restore();
       }
+
+      ctx.restore(); // Restore High-DPI transform
     },
 
     drawBackground: function () {
@@ -1346,48 +1374,131 @@
     drawBird: function () {
       var ctx = this.ctx;
       var b = this.bird;
+      var s = this.SKINS[this.currentSkin] || this.SKINS['classic'];
 
       ctx.save();
       ctx.translate(b.x, b.y);
       ctx.rotate(b.rotation);
 
-      // Body (Yellow)
-      ctx.fillStyle = '#facc15';
+      if (s.id === 'bat') {
+        // Cute Bat Ears
+        ctx.fillStyle = s.body;
+        ctx.beginPath();
+        ctx.moveTo(-5, -b.radius + 2);
+        ctx.lineTo(-2, -b.radius - 6);
+        ctx.lineTo(1, -b.radius + 1);
+        ctx.moveTo(3, -b.radius + 1);
+        ctx.lineTo(6, -b.radius - 6);
+        ctx.lineTo(9, -b.radius + 2);
+        ctx.fill();
+      }
+
+      // 1. Body
+      ctx.fillStyle = s.body;
       ctx.beginPath();
       ctx.arc(0, 0, b.radius, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = '#78350f';
+      ctx.strokeStyle = (s.id === 'cyber') ? '#06b6d4' : (s.id === 'bat' ? '#1e1b4b' : '#000000');
       ctx.lineWidth = 1.8;
       ctx.stroke();
 
-      // Wing
-      ctx.fillStyle = '#fde047';
-      ctx.beginPath();
-      ctx.ellipse(-4, 2, 7, 5, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
+      // 2. Wing
+      ctx.fillStyle = s.wing;
+      if (s.id === 'bat') {
+        // Scalloped Bat Wing
+        ctx.beginPath();
+        ctx.moveTo(-2, 0);
+        ctx.lineTo(-12, -4);
+        ctx.lineTo(-10, 5);
+        ctx.lineTo(-6, 2);
+        ctx.lineTo(-3, 6);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.ellipse(-4, 2, 7, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
 
-      // Big Eye
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(6, -4, 4.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#000000';
-      ctx.beginPath();
-      ctx.arc(7.5, -4, 2, 0, Math.PI * 2);
-      ctx.fill();
+      // 3. Eye / Visor
+      if (s.id === 'cyber') {
+        // Neon Visor Line
+        ctx.fillStyle = s.eye;
+        ctx.shadowColor = s.eye;
+        ctx.shadowBlur = 6;
+        ctx.fillRect(4, -5, 8, 4);
+        ctx.shadowBlur = 0;
+      } else {
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(6, -4, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = s.eye || '#000000';
+        ctx.beginPath();
+        ctx.arc(7.5, -4, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
-      // Beak (Orange)
-      ctx.fillStyle = '#f97316';
-      ctx.beginPath();
-      ctx.moveTo(9, 0);
-      ctx.lineTo(16, 3);
-      ctx.lineTo(9, 6);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
+      // 4. Beak / Fangs
+      if (s.id === 'bat') {
+        // White Vampire Fangs
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(8, 0);
+        ctx.lineTo(11, 4);
+        ctx.lineTo(9, 0);
+        ctx.moveTo(11, 0);
+        ctx.lineTo(14, 4);
+        ctx.lineTo(12, 0);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = s.beak;
+        ctx.beginPath();
+        ctx.moveTo(9, 0);
+        ctx.lineTo(16, 3);
+        ctx.lineTo(9, 6);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
 
       ctx.restore();
+    },
+
+    openSkinsModal: function () {
+      var self = this;
+      var grid = document.getElementById('flappy-skins-grid');
+      var modal = document.getElementById('modal-skins');
+      if (!grid || !modal) return;
+
+      var html = '';
+      Object.keys(this.SKINS).forEach(function (k) {
+        var sk = self.SKINS[k];
+        var isActive = (self.currentSkin === k);
+        html += '<div class="skin-card ' + (isActive ? 'active' : '') + '" data-skin-id="' + k + '">' +
+          '<div class="skin-preview-icon">' + sk.icon + '</div>' +
+          '<div class="skin-name">' + sk.name + '</div>' +
+          '<div class="skin-desc">' + sk.desc + '</div>' +
+          '<div class="skin-status-badge">' + (isActive ? 'Dipakai' : 'Pilih Skin') + '</div>' +
+          '</div>';
+      });
+      grid.innerHTML = html;
+
+      grid.querySelectorAll('.skin-card').forEach(function (c) {
+        c.addEventListener('click', function () {
+          var id = c.getAttribute('data-skin-id');
+          if (id && self.SKINS[id]) {
+            self.currentSkin = id;
+            try { localStorage.setItem('flappy_selected_skin', id); } catch (e) {}
+            self.showToast('Skin ' + self.SKINS[id].name + ' Dipasang!');
+            self.closeModal(modal);
+          }
+        });
+      });
+
+      this.openModal(modal);
     },
 
     loop: function (timestamp) {

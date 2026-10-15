@@ -136,6 +136,7 @@
         if (u) this.username = u;
         var av = localStorage.getItem('user_profile_avatar') || localStorage.getItem('2048_avatar');
         if (av) this.avatar = av;
+        var sk = localStorage.getItem('pacman_selected_skin'); if (sk && this.SKINS[sk]) this.currentSkin = sk;
         var hs = localStorage.getItem('pacman_high_score');
         if (hs) this.highScore = parseInt(hs, 10) || 0;
       } catch (e) {}
@@ -270,6 +271,9 @@
 
       var btnLdb = document.getElementById('btn-leaderboard');
       if (btnLdb) btnLdb.addEventListener('click', function () { self.openLeaderboard(); });
+
+      var btnSkins = document.getElementById('btn-skins');
+      if (btnSkins) btnSkins.addEventListener('click', function () { self.openSkinsModal(); });
 
       var btnFs = document.getElementById('btn-fullscreen');
       if (btnFs) btnFs.addEventListener('click', function () { self.toggleFullscreen(); });
@@ -758,7 +762,7 @@
         }
       }
 
-      // Draw Pacman
+      // Draw Pacman (with Skin support)
       var px = this.pac.x * t + t / 2;
       var py = this.pac.y * t + t / 2;
       var rad = t / 2 - 2;
@@ -768,11 +772,42 @@
       if (this.pac.dir === D.LEFT)  angle = Math.PI;
       if (this.pac.dir === D.UP)    angle = Math.PI * 1.5;
 
-      this.ctx.fillStyle = '#facc15';
+      var skin = this.SKINS[this.currentSkin] || this.SKINS['classic'];
+
+      this.ctx.save();
+      if (skin.id === 'cyber') {
+        this.ctx.shadowColor = '#06b6d4';
+        this.ctx.shadowBlur = 10;
+      }
+
+      this.ctx.fillStyle = skin.body;
       this.ctx.beginPath();
       this.ctx.arc(px, py, rad, angle + this.pac.mouth, angle + Math.PI * 2 - this.pac.mouth);
       this.ctx.lineTo(px, py);
       this.ctx.fill();
+
+      // Skin Accents
+      if (skin.accent === 'bow') {
+        // Ms. Pac Golden Bow
+        this.ctx.fillStyle = '#fbbf24';
+        this.ctx.beginPath();
+        this.ctx.arc(px, py - rad + 1, 3, 0, Math.PI * 2);
+        this.ctx.fill();
+      } else if (skin.accent === 'alien') {
+        // Toxic Alien Glowing Eye
+        this.ctx.fillStyle = '#06b6d4';
+        this.ctx.beginPath();
+        this.ctx.arc(px - 2, py - 3, 2, 0, Math.PI * 2);
+        this.ctx.fill();
+      } else if (skin.accent === 'ninja') {
+        // White Ninja Mask Headband Line
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.arc(px, py, rad, angle + 0.3, angle + 1.2);
+        this.ctx.stroke();
+      }
+      this.ctx.restore();
 
       // Draw Ghosts
       var self = this;
@@ -846,6 +881,40 @@
           avatar: this.avatar
         })
       }).catch(function () {});
+    },
+
+        openSkinsModal: function () {
+      var self = this;
+      var grid = document.getElementById('pacman-skins-grid');
+      var modal = document.getElementById('modal-skins');
+      if (!grid || !modal) return;
+
+      var html = '';
+      Object.keys(this.SKINS).forEach(function (k) {
+        var sk = self.SKINS[k];
+        var isActive = (self.currentSkin === k);
+        html += '<div class="skin-card ' + (isActive ? 'active' : '') + '" data-skin-id="' + k + '">' +
+          '<div class="skin-preview-icon">' + sk.icon + '</div>' +
+          '<div class="skin-name">' + sk.name + '</div>' +
+          '<div class="skin-desc">' + sk.desc + '</div>' +
+          '<div class="skin-status-badge">' + (isActive ? 'Dipakai' : 'Pilih Skin') + '</div>' +
+          '</div>';
+      });
+      grid.innerHTML = html;
+
+      grid.querySelectorAll('.skin-card').forEach(function (c) {
+        c.addEventListener('click', function () {
+          var id = c.getAttribute('data-skin-id');
+          if (id && self.SKINS[id]) {
+            self.currentSkin = id;
+            try { localStorage.setItem('pacman_selected_skin', id); } catch (e) {}
+            self.showToast('Skin ' + self.SKINS[id].name + ' Dipasang!');
+            self.closeModal(modal);
+          }
+        });
+      });
+
+      this.openModal(modal);
     },
 
     openLeaderboard: function () {

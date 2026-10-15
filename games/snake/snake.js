@@ -14,6 +14,17 @@
     canvas: null,
     ctx: null,
 
+    // Snake Skins Catalog
+    currentSkin: 'emerald',
+    rainbowTick: 0,
+    SKINS: {
+      emerald: { id: 'emerald', name: 'Neon Emerald', icon: '🐍', head: '#06b6d4', body1: '#10b981', body2: '#059669', border: '#10b981', food: '#10b981', desc: 'Ular neon hijau zamrud klasik' },
+      dragon:  { id: 'dragon',  name: 'Naga Api',     icon: '🐉', head: '#ef4444', body1: '#f97316', body2: '#dc2626', border: '#f97316', food: '#f59e0b', desc: 'Naga kobaran api crimson membara' },
+      cyber:   { id: 'cyber',   name: 'Cyber Violet', icon: '⚡', head: '#f43f5e', body1: '#d946ef', body2: '#8b5cf6', border: '#ec4899', food: '#a855f7', desc: 'Synthwave neon ungu & magenta laser' },
+      arctic:  { id: 'arctic',  name: 'Ice Frost',    icon: '🧊', head: '#e0f2fe', body1: '#38bdf8', body2: '#0284c7', border: '#38bdf8', food: '#bae6fd', desc: 'Kristal es kutub utara membeku' },
+      rainbow: { id: 'rainbow', name: 'Rainbow RGB',  icon: '🌈', head: '#ffffff', body1: 'rainbow', body2: 'rainbow', border: '#a855f7', food: '#facc15', desc: 'Spektrum pelangi RGB mengalir dinamis' }
+    },
+
     // State
     snake: [],
     dir: { x: 1, y: 0 },
@@ -61,7 +72,8 @@
       try {
         var u = localStorage.getItem('user_profile_name') || localStorage.getItem('2048_username');
         if (u) this.username = u;
-        var av = localStorage.getItem('user_profile_avatar') || localStorage.getItem('2048_avatar');
+        var sk = localStorage.getItem('snake_selected_skin'); if (sk && this.SKINS[sk]) this.currentSkin = sk;
+      var av = localStorage.getItem('user_profile_avatar') || localStorage.getItem('2048_avatar');
         if (av) this.avatar = av;
       } catch (e) {}
     },
@@ -162,6 +174,19 @@
       }
 
       // Leaderboard modal
+      var btnSkins = document.getElementById('btn-skins');
+      if (btnSkins) {
+        btnSkins.addEventListener('click', function () {
+          self.openSkinsModal();
+        });
+      }
+      var btnOverlaySkin = document.getElementById('btn-overlay-skin');
+      if (btnOverlaySkin) {
+        btnOverlaySkin.addEventListener('click', function () {
+          self.openSkinsModal();
+        });
+      }
+
       if (this.btnLeaderboard) {
         this.btnLeaderboard.addEventListener('click', function () {
           self.openLeaderboard();
@@ -500,6 +525,7 @@
     draw: function () {
       var ctx = this.ctx;
       if (!ctx) return;
+      this.rainbowTick = (this.rainbowTick || 0) + 1;
 
       // 1. Clear background
       ctx.fillStyle = '#060b13';
@@ -521,20 +547,22 @@
         ctx.stroke();
       }
 
+      var skin = this.SKINS[this.currentSkin] || this.SKINS['emerald'];
+
       // 3. Full Border / Arena Wall Glow (Boundary collision wall)
-      ctx.strokeStyle = '#10b981';
+      ctx.strokeStyle = skin.border;
       ctx.lineWidth = 2;
       ctx.strokeRect(1, 1, CANVAS_SIZE - 2, CANVAS_SIZE - 2);
 
-      // 3. Draw Normal Food (Glowing Emerald / Cyan Orb)
+      // 3. Draw Normal Food (Skin-themed Glowing Orb)
       var fx = this.food.x * CELL_SIZE + CELL_SIZE / 2;
       var fy = this.food.y * CELL_SIZE + CELL_SIZE / 2;
       var fRad = CELL_SIZE / 2 - 2;
 
       ctx.save();
-      ctx.shadowColor = '#10b981';
+      ctx.shadowColor = skin.food;
       ctx.shadowBlur = 12;
-      ctx.fillStyle = '#10b981';
+      ctx.fillStyle = skin.food;
       ctx.beginPath();
       ctx.arc(fx, fy, fRad, 0, Math.PI * 2);
       ctx.fill();
@@ -577,15 +605,15 @@
 
         ctx.save();
         if (isHead) {
-          // Snake Head: Cyan Glow
-          ctx.shadowColor = '#06b6d4';
+          // Snake Head with Skin Glow
+          ctx.shadowColor = skin.head;
           ctx.shadowBlur = 14;
-          ctx.fillStyle = '#06b6d4';
+          ctx.fillStyle = skin.head;
           this.roundRect(ctx, sx + 1, sy + 1, CELL_SIZE - 2, CELL_SIZE - 2, 6);
           ctx.fill();
 
           // Eyes
-          ctx.fillStyle = '#0f172a';
+          ctx.fillStyle = (skin.id === 'arctic' || skin.id === 'dragon') ? '#ffffff' : '#0f172a';
           var eyeOffsetX = this.dir.x * 3;
           var eyeOffsetY = this.dir.y * 3;
           var eye1X = sx + CELL_SIZE / 2 + (this.dir.y !== 0 ? -4 : 0) + eyeOffsetX;
@@ -598,11 +626,18 @@
           ctx.arc(eye2X, eye2Y, 2.2, 0, Math.PI * 2);
           ctx.fill();
         } else {
-          // Snake Body: Gradient Emerald to Cyan
-          var ratio = i / this.snake.length;
-          ctx.shadowColor = '#10b981';
+          // Snake Body with Skin Color
+          var bodyColor = skin.body1;
+          if (skin.id === 'rainbow') {
+            bodyColor = 'hsl(' + ((i * 16 + this.rainbowTick * 2) % 360) + ', 100%, 55%)';
+            ctx.shadowColor = bodyColor;
+          } else {
+            var ratio = i / this.snake.length;
+            bodyColor = ratio < 0.5 ? skin.body1 : skin.body2;
+            ctx.shadowColor = skin.body1;
+          }
           ctx.shadowBlur = 6;
-          ctx.fillStyle = ratio < 0.5 ? '#10b981' : '#059669';
+          ctx.fillStyle = bodyColor;
           this.roundRect(ctx, sx + 2, sy + 2, CELL_SIZE - 4, CELL_SIZE - 4, 4);
           ctx.fill();
         }
@@ -622,6 +657,53 @@
       ctx.lineTo(x, y + r);
       ctx.quadraticCurveTo(x, y, x + r, y);
       ctx.closePath();
+    },
+
+        openModal: function (m) {
+      if (!m) return;
+      m.classList.add('is-open');
+      m.style.setProperty('display', 'flex', 'important');
+    },
+
+    closeModal: function (m) {
+      if (!m) return;
+      m.classList.remove('is-open');
+      m.style.setProperty('display', 'none', 'important');
+    },
+
+    openSkinsModal: function () {
+      var self = this;
+      var grid = document.getElementById('snake-skins-grid');
+      var modal = document.getElementById('modal-skins');
+      if (!grid || !modal) return;
+
+      var html = '';
+      Object.keys(this.SKINS).forEach(function (k) {
+        var sk = self.SKINS[k];
+        var isActive = (self.currentSkin === k);
+        html += '<div class="skin-card ' + (isActive ? 'active' : '') + '" data-skin-id="' + k + '">' +
+          '<div class="skin-preview-icon">' + sk.icon + '</div>' +
+          '<div class="skin-name">' + sk.name + '</div>' +
+          '<div class="skin-desc">' + sk.desc + '</div>' +
+          '<div class="skin-status-badge">' + (isActive ? 'Dipakai' : 'Pilih Skin') + '</div>' +
+          '</div>';
+      });
+      grid.innerHTML = html;
+
+      grid.querySelectorAll('.skin-card').forEach(function (c) {
+        c.addEventListener('click', function () {
+          var id = c.getAttribute('data-skin-id');
+          if (id && self.SKINS[id]) {
+            self.currentSkin = id;
+            try { localStorage.setItem('snake_selected_skin', id); } catch (e) {}
+            self.showToast('Skin ' + self.SKINS[id].name + ' Dipasang!');
+            self.closeModal(modal);
+            self.draw();
+          }
+        });
+      });
+
+      this.openModal(modal);
     },
 
     openLeaderboard: function () {

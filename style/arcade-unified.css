@@ -1786,3 +1786,76 @@ body {
   max-width: 320px !important;
   margin: 4px auto 0 !important;
 }
+
+
+/* ========================================================
+   UNIFIED ARCADE SKIN SELECTOR MODAL
+   ======================================================== */
+.skins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.skin-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.skin-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.skin-card.active {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: #10b981 !important;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.35) !important;
+}
+
+.skin-preview-icon {
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.skin-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.skin-desc {
+  font-size: 10px;
+  color: #94a3b8;
+  line-height: 1.25;
+}
+
+.skin-status-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  margin-top: 4px;
+  width: auto;
+}
+
+.skin-card.active .skin-status-badge {
+  background: #10b981;
+  color: #000;
+}

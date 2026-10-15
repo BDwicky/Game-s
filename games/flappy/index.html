@@ -5,8 +5,8 @@
   <title>Flappy Bird - Aksi Terbang & Papan Peringkat | game.dwicky.dev</title>
   <meta name="description" content="Mainkan game Flappy Bird 60fps yang adiktif di game.dwicky.dev. Terbangkan burung melewati rintangan pipa, dapatkan medali emas, dan catat skormu di papan peringkat global!">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <link rel="stylesheet" href="../../style/arcade-unified.css?v=20261015-v22">
-  <link rel="stylesheet" href="style.css?v=20261015-v22">
+  <link rel="stylesheet" href="../../style/arcade-unified.css?v=20261015-skins1">
+  <link rel="stylesheet" href="style.css?v=20261015-skins1">
   <link rel="shortcut icon" href="../../favicon.ico">
   <script>try{if(localStorage.getItem('game_hub_fullscreen')==='true')document.documentElement.classList.add('is-fullscreen');}catch(e){}</script>
   <style>.modal-backdrop:not(.is-open){display:none !important;}</style>
@@ -28,6 +28,7 @@
         <a class="btn-icon btn-home" id="btn-home" href="../../index.html" title="Kembali ke Home Page" aria-label="Kembali ke Home Page">
           <span>🏠</span><span class="btn-text">Home</span>
         </a>
+        <button class="btn-icon" id="btn-skins" type="button" title="Pilih Skin Burung">🎨</button>
         <button class="btn-icon" id="btn-sound" type="button" title="Suara">
           🔊
         </button>
@@ -144,6 +145,20 @@
     </div>
   </div>
 
+    <!-- Modal Skins -->
+  <div class="modal-backdrop" id="modal-skins" style="display: none !important;">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2 class="modal-title">🎨 Pilih Skin Burung</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:12px; color:#94a3b8; margin:0 0 12px 0;">Pilih kostum visual burung favoritmu untuk terbang melewati rintangan!</p>
+        <div class="skins-grid" id="flappy-skins-grid"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Leaderboard -->
   <div class="modal-backdrop" id="modal-leaderboard" style="display: none !important;">
     <div class="modal-card">
@@ -178,6 +193,6 @@
 
     <script src="../../js/fullscreen.js?v=20261014-fix17"></script>
   <script src="../../js/photo_viewer.js?v=4"></script>
-  <script src="flappy.js?v=20261015-v22"></script>
+  <script src="flappy.js?v=20261015-skins1"></script>
 </body>
 </html>

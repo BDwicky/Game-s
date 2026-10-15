@@ -5,8 +5,8 @@
   <title>Snake Neon - Arcade Ular Klasik & Leaderboard | game.dwicky.dev</title>
   <meta name="description" content="Mainkan Snake Neon Arcade klasik dengan visual neon 60fps, bonus buah spesial, dan papan peringkat global terhubung di game.dwicky.dev.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <link rel="stylesheet" href="../../style/arcade-unified.css?v=20261015-v22">
-  <link rel="stylesheet" href="style.css?v=20261015-v22">
+  <link rel="stylesheet" href="../../style/arcade-unified.css?v=20261015-skins1">
+  <link rel="stylesheet" href="style.css?v=20261015-skins1">
   <link rel="shortcut icon" href="../../favicon.ico">
   <script>
     try {
@@ -47,6 +47,7 @@
         <a class="btn-icon btn-home" id="btn-home" href="../../index.html" title="Kembali ke Home Page" aria-label="Kembali ke Home Page">
           <span>🏠</span><span class="btn-text">Home</span>
         </a>
+        <button class="btn-icon" id="btn-skins" type="button" title="Pilih Skin Ular">🎨</button>
         <button class="btn-icon" id="btn-sound" type="button" title="Suara">
           🔊
         </button>
@@ -96,7 +97,7 @@
             <span>💻 Keyboard: Panah / WASD</span>
             <span>📱 Layar Sentuh: Geser (Swipe) / D-Pad</span>
           </div>
-          <button type="button" class="btn-primary" id="btn-start">MULAI MAIN ▶</button>
+          <div style="display:flex; gap:8px; width:100%; justify-content:center;"><button type="button" class="btn-primary" id="btn-start" style="flex:2;">MULAI MAIN ▶</button><button type="button" class="btn-secondary" id="btn-overlay-skin" style="flex:1;">🎨 Skin</button></div>
         </div>
       </div>
 
@@ -122,6 +123,20 @@
 
   </div>
 
+    <!-- Modal Skins -->
+  <div class="modal-backdrop" id="modal-skins" style="display: none !important;">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2 class="modal-title">🎨 Pilih Skin Ular</h2>
+        <button type="button" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:12px; color:#94a3b8; margin:0 0 12px 0;">Pilih visual kosmetik favoritmu untuk ular neon!</p>
+        <div class="skins-grid" id="snake-skins-grid"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Leaderboard -->
   <div class="modal-backdrop" id="modal-leaderboard" style="display: none !important;">
     <div class="modal-card">
@@ -142,6 +157,6 @@
   <script src="../../js/audio.js?v=1"></script>
     <script src="../../js/fullscreen.js?v=20261014-fix17"></script>
   <script src="../../js/photo_viewer.js?v=4"></script>
-  <script src="snake.js?v=20261014-fullborder1"></script>
+  <script src="snake.js?v=20261015-skins1"></script>
 </body>
 </html>

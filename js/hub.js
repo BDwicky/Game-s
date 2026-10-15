@@ -1166,12 +1166,16 @@
       var avWrap = cardEl.querySelector('.podium-avatar-wrap');
 
       if (!p) {
+        cardEl.removeAttribute('data-player-username');
+        cardEl.removeAttribute('data-player-avatar');
         if (nameEl) nameEl.textContent = 'Belum Ada';
         if (scoreEl) scoreEl.textContent = '0 Poin';
         if (countEl) countEl.textContent = '- Game';
         if (avWrap) avWrap.innerHTML = '<div class="podium-avatar-placeholder">' + medal + '</div><span class="podium-rank-badge">' + medal + '</span>';
         return;
       }
+      cardEl.setAttribute('data-player-username', p.username || '');
+      cardEl.setAttribute('data-player-avatar', p.avatar || '');
 
       if (nameEl) nameEl.textContent = p.username || 'Pemain';
       if (scoreEl) scoreEl.textContent = Number(p.total_score || 0).toLocaleString() + ' Poin';
@@ -1249,7 +1253,7 @@
         var av = row.avatar ? '<img src="' + row.avatar + '" style="width:26px; height:26px; border-radius:50%; object-fit:cover;">' :
                  '<div style="width:26px; height:26px; border-radius:50%; background:#334155; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">' + (row.username ? row.username.charAt(0).toUpperCase() : '?') + '</div>';
 
-        html += '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">' +
+        html += '<tr class="leaderboard-player-row" data-player-username="' + (row.username || '') + '" data-player-avatar="' + (row.avatar || '') + '" style="cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.05);">' +
                 '<td style="padding:10px 6px; font-weight:800; font-size:14px;">' + medal + '</td>' +
                 '<td style="padding:10px 6px;"><div style="display:flex; align-items:center; gap:8px;">' + av + '<span style="font-weight:700;">' + row.username + '</span></div></td>' +
                 '<td style="padding:10px 6px; text-align:center; color:#94a3b8; font-size:12px;">' + row.games_played + '</td>' +
@@ -1290,7 +1294,7 @@
         var av = row.avatar ? '<img src="' + row.avatar + '" style="width:26px; height:26px; border-radius:50%; object-fit:cover;">' :
                  '<div style="width:26px; height:26px; border-radius:50%; background:#334155; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">' + (row.username ? row.username.charAt(0).toUpperCase() : '?') + '</div>';
 
-        html += '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">' +
+        html += '<tr class="leaderboard-player-row" data-player-username="' + (row.username || '') + '" data-player-avatar="' + (row.avatar || '') + '" style="cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.05);">' +
                 '<td style="padding:10px 6px; font-weight:800; font-size:14px;">' + medal + '</td>' +
                 '<td style="padding:10px 6px;"><div style="display:flex; align-items:center; gap:8px;">' + av + '<span style="font-weight:700;">' + row.username + '</span></div></td>' +
                 '<td style="padding:10px 6px; text-align:right; font-weight:800; color:#38bdf8;">' + Number(row.best_score).toLocaleString() + '</td>' +

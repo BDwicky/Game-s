@@ -127,16 +127,27 @@
     return modal;
   }
 
-  function openPhotoViewer(customSrc, customName) {
+  function openPhotoViewer(customSrc, customName, isOwnProfile) {
     var modal = ensureModal();
-    var avatarSrc = customSrc || getAvatarSrc();
-    var username = customName || getUsername();
+    var myUsername = getUsername();
 
+    if (typeof isOwnProfile === 'undefined') {
+      isOwnProfile = !customName || (customName.trim().toLowerCase() === myUsername.trim().toLowerCase());
+    }
+
+    var avatarSrc = (customSrc !== undefined && customSrc !== null && customSrc !== '') ? customSrc : (isOwnProfile ? getAvatarSrc() : '');
+    var username = customName || myUsername;
+
+    var titleEl = modal.querySelector("h3");
     var img = modal.querySelector("#pv-img");
     var placeholder = modal.querySelector("#pv-placeholder");
     var userEl = modal.querySelector("#pv-username");
     var subtitleEl = modal.querySelector("#pv-subtitle");
     var btnEdit = modal.querySelector("#pv-btn-edit");
+
+    if (titleEl) {
+      titleEl.innerHTML = isOwnProfile ? '<span>🖼️</span> Foto Profil Kamu' : '<span>👤</span> Profil Pemain';
+    }
 
     if (userEl) userEl.textContent = username;
 
@@ -146,8 +157,9 @@
         img.style.display = "block";
       }
       if (placeholder) placeholder.style.display = "none";
-      if (subtitleEl) subtitleEl.textContent = "Foto Profil Akun DWICKY GAME HUB";
-      if (btnEdit) btnEdit.textContent = "✏️ Ganti Foto";
+      if (subtitleEl) {
+        subtitleEl.textContent = isOwnProfile ? "Foto Profil Akun DWICKY GAME HUB" : "Pemain Global DWICKY GAME HUB";
+      }
     } else {
       if (img) {
         img.src = "";
@@ -158,8 +170,18 @@
         placeholder.textContent = (username && username !== "Pemain" && username !== "Pemain Baru") ? username.charAt(0).toUpperCase() : "👤";
         placeholder.style.display = "block";
       }
-      if (subtitleEl) subtitleEl.textContent = "Belum ada foto profil";
-      if (btnEdit) btnEdit.textContent = "📷 Unggah Foto Profil";
+      if (subtitleEl) {
+        subtitleEl.textContent = isOwnProfile ? "Belum ada foto profil" : "Pemain ini belum memasang foto profil";
+      }
+    }
+
+    if (btnEdit) {
+      if (isOwnProfile) {
+        btnEdit.style.display = "block";
+        btnEdit.textContent = (avatarSrc && avatarSrc.trim()) ? "✏️ Ganti Foto" : "📷 Unggah Foto";
+      } else {
+        btnEdit.style.display = "none"; // Sembunyikan tombol edit saat melihat profil orang lain!
+      }
     }
 
     modal.classList.add("is-open");
@@ -168,7 +190,7 @@
 
   root.openPhotoViewer = openPhotoViewer;
 
-  // Global event delegation for avatar taps/clicks
+  // Global event delegation for avatar & podium & leaderboard taps/clicks
   document.addEventListener("click", function (e) {
     var target = e.target;
     if (!target) return;
@@ -179,8 +201,44 @@
     // If clicking the edit pencil badge, let default profile edit modal open
     if (target.closest(".profile-edit-badge")) return;
 
-    // Check if target is an avatar element
-    var isAvatar = target.closest(
+    // 1. Check if clicking on Top 3 Podium Card or its elements
+    var podiumCard = target.closest(".podium-card, .podium-avatar-wrap");
+    if (podiumCard) {
+      var card = podiumCard.closest(".podium-card") || podiumCard;
+      var nameEl = card.querySelector(".podium-name");
+      var pName = card.getAttribute("data-player-username") || (nameEl ? nameEl.textContent.trim() : "");
+      var imgEl = card.querySelector(".podium-avatar");
+      var pAvatar = card.getAttribute("data-player-avatar") || (imgEl ? imgEl.src : "");
+
+      if (pName && pName !== "Memuat..." && pName !== "Belum Ada") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        var myName = getUsername();
+        var isMe = (pName.toLowerCase() === myName.toLowerCase());
+        openPhotoViewer(pAvatar, pName, isMe);
+        return false;
+      }
+    }
+
+    // 2. Check if clicking a row in Leaderboard Table
+    var ldbRow = target.closest(".leaderboard-player-row, tr[data-player-username]");
+    if (ldbRow) {
+      var lName = ldbRow.getAttribute("data-player-username");
+      var lAvatar = ldbRow.getAttribute("data-player-avatar") || "";
+      if (lName) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        var myName2 = getUsername();
+        var isMe2 = (lName.toLowerCase() === myName2.toLowerCase());
+        openPhotoViewer(lAvatar, lName, isMe2);
+        return false;
+      }
+    }
+
+    // 3. Check if target is user's own avatar element
+    var isOwnAvatar = target.closest(
       ".profile-avatar-stack, " +
       ".avatar-circle, " +
       "#user-avatar-wrap, " +
@@ -190,15 +248,14 @@
       "#user-avatar-placeholder, " +
       ".modal-avatar-preview-wrap, " +
       "#modal-avatar-preview-img, " +
-      "#modal-avatar-preview-text, " +
-      ".podium-avatar-wrap"
+      "#modal-avatar-preview-text"
     );
 
-    if (isAvatar) {
+    if (isOwnAvatar) {
       e.preventDefault();
       e.stopPropagation();
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      openPhotoViewer();
+      openPhotoViewer(null, null, true);
       return false;
     }
   }, true);

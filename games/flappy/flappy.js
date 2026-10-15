@@ -112,10 +112,16 @@
     lastTime: 0,
     accumulator: 0,
 
-    // Collectible Stars & Dynamic Themes
+    // Collectible Stars & Dynamic Themes with Silky Cross-Dissolve
     starsCollected: 0,
     currentTheme: 0,
+    previousTheme: 0,
+    transitionAlpha: 1.0,
+    transitioning: false,
     pipesSinceLastStar: 0,
+    pipeGradients: [],
+    skyGradients: [],
+    starOffscreen: null,
     themeBanner: null,
     floatingTexts: [],
     particles: [],
@@ -189,6 +195,8 @@
       this.hudStarsPill = document.getElementById('hud-stars-pill');
 
       this.initThemeEffects();
+      this.initThemeGradients();
+      this.initStarCanvas();
 
       // Profile Header
       this.userNameEl = document.getElementById('username-display');
@@ -235,6 +243,7 @@
       }
 
       // Dynamic bird horizontal positioning
+      this.initThemeGradients();
       if (this.state === 0) {
         this.bird.x = Math.max(55, Math.round(this.width * (this.width <= 320 ? 0.21 : 0.18)));
       } else if (this.state === 1) {
@@ -398,6 +407,9 @@
       this.score = 0;
       this.starsCollected = 0;
       this.currentTheme = 0;
+      this.previousTheme = 0;
+      this.transitionAlpha = 1.0;
+      this.transitioning = false;
       this.pipesSinceLastStar = 0;
       this.themeBanner = null;
       this.floatingTexts = [];
@@ -463,6 +475,16 @@
             sn.y = -6;
             sn.x = Math.random() * this.width;
           }
+        }
+      }
+
+      // Smooth Cross-Dissolve Background Transition (Zero Flashbang)
+      if (this.transitioning) {
+        this.transitionAlpha += 0.02; // ~50 frames = 0.83s silky smooth cross-fade
+        if (this.transitionAlpha >= 1.0) {
+          this.transitionAlpha = 1.0;
+          this.transitioning = false;
+          this.previousTheme = this.currentTheme;
         }
       }
 
@@ -703,104 +725,85 @@
       var ctx = this.ctx;
       var w = this.width;
       var gy = this.groundY;
-      var theme = this.currentTheme;
+
+      if (this.transitioning && this.transitionAlpha < 1.0) {
+        // 1. Draw previous theme background
+        this.drawSingleThemeBackground(this.previousTheme, gy, w);
+
+        // 2. Cross-dissolve new theme on top with smooth alpha (Zero Flashbang!)
+        ctx.save();
+        ctx.globalAlpha = this.transitionAlpha;
+        this.drawSingleThemeBackground(this.currentTheme, gy, w);
+        ctx.restore();
+      } else {
+        this.drawSingleThemeBackground(this.currentTheme, gy, w);
+      }
+    },
+
+    drawSingleThemeBackground: function (theme, gy, w) {
+      var ctx = this.ctx;
+
+      // Draw Cached Sky Gradient
+      ctx.fillStyle = (this.skyGradients && this.skyGradients[theme]) || '#0284c7';
+      ctx.fillRect(0, 0, w, gy);
 
       if (theme === 0) {
         // === SIANG CERAH (Day) ===
-        var skyGrad = ctx.createLinearGradient(0, 0, 0, gy);
-        skyGrad.addColorStop(0, '#0284c7');
-        skyGrad.addColorStop(1, '#7dd3fc');
-        ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, w, gy);
-
-        // Golden Radiant Sun
         var sunX = Math.min(w - 70, Math.max(70, w * 0.8));
-        var sunGlow = ctx.createRadialGradient(sunX, 65, 10, sunX, 65, 45);
-        sunGlow.addColorStop(0, 'rgba(254, 240, 138, 0.9)');
-        sunGlow.addColorStop(0.4, 'rgba(250, 204, 21, 0.4)');
-        sunGlow.addColorStop(1, 'rgba(250, 204, 21, 0)');
-        ctx.fillStyle = sunGlow;
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.35)';
         ctx.beginPath();
-        ctx.arc(sunX, 65, 45, 0, Math.PI * 2);
+        ctx.arc(sunX, 65, 42, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = '#fef08a';
         ctx.beginPath();
         ctx.arc(sunX, 65, 20, 0, Math.PI * 2);
         ctx.fill();
 
-        // City Silhouette (Cyan)
+        // City Silhouette
         ctx.fillStyle = 'rgba(14, 116, 144, 0.22)';
         for (var bx = 0; bx < w; bx += 42) {
           var bHeight = 22 + ((bx * 13) % 32);
           ctx.fillRect(bx, gy - bHeight, 38, bHeight);
         }
 
-        // Daylight Clouds
         this.drawClouds('rgba(255, 255, 255, 0.45)');
 
       } else if (theme === 1) {
         // === SENJA KEEMASAN (Sunset) ===
-        var sunsetGrad = ctx.createLinearGradient(0, 0, 0, gy);
-        sunsetGrad.addColorStop(0, '#3b0764');
-        sunsetGrad.addColorStop(0.45, '#c2410c');
-        sunsetGrad.addColorStop(0.85, '#f59e0b');
-        sunsetGrad.addColorStop(1, '#fde047');
-        ctx.fillStyle = sunsetGrad;
-        ctx.fillRect(0, 0, w, gy);
-
-        // Sinking Sun near Horizon
         var ssunX = w * 0.65;
         var ssunY = gy - 40;
-        var ssunGlow = ctx.createRadialGradient(ssunX, ssunY, 15, ssunX, ssunY, 70);
-        ssunGlow.addColorStop(0, 'rgba(254, 240, 138, 0.95)');
-        ssunGlow.addColorStop(0.35, 'rgba(249, 115, 22, 0.6)');
-        ssunGlow.addColorStop(1, 'rgba(249, 115, 22, 0)');
-        ctx.fillStyle = ssunGlow;
+        ctx.fillStyle = 'rgba(249, 115, 22, 0.45)';
         ctx.beginPath();
-        ctx.arc(ssunX, ssunY, 70, 0, Math.PI * 2);
+        ctx.arc(ssunX, ssunY, 65, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = '#fed7aa';
         ctx.beginPath();
-        ctx.arc(ssunX, ssunY, 32, 0, Math.PI * 2);
+        ctx.arc(ssunX, ssunY, 30, 0, Math.PI * 2);
         ctx.fill();
 
-        // Sunset Skyline with glowing windows
         ctx.fillStyle = 'rgba(30, 11, 54, 0.65)';
         for (var sx = 0; sx < w; sx += 44) {
           var sHeight = 25 + ((sx * 17) % 38);
           ctx.fillRect(sx, gy - sHeight, 40, sHeight);
-          ctx.fillStyle = '#fef08a';
           if ((sx % 3) === 0) {
+            ctx.fillStyle = '#fef08a';
             ctx.fillRect(sx + 8, gy - sHeight + 8, 4, 5);
             ctx.fillRect(sx + 20, gy - sHeight + 8, 4, 5);
+            ctx.fillStyle = 'rgba(30, 11, 54, 0.65)';
           }
-          ctx.fillStyle = 'rgba(30, 11, 54, 0.65)';
         }
 
-        // Rosy Twilight Clouds
         this.drawClouds('rgba(253, 164, 175, 0.35)');
 
       } else if (theme === 2) {
         // === MALAM BERBINTANG (Night) ===
-        var nightGrad = ctx.createLinearGradient(0, 0, 0, gy);
-        nightGrad.addColorStop(0, '#020617');
-        nightGrad.addColorStop(0.65, '#0f172a');
-        nightGrad.addColorStop(1, '#1e1b4b');
-        ctx.fillStyle = nightGrad;
-        ctx.fillRect(0, 0, w, gy);
-
-        // Twinkling Night Stars
         this.drawNightStars();
 
-        // Crescent Moon
         var moonX = Math.min(w - 70, Math.max(70, w * 0.82));
         var moonY = 65;
-        var mGlow = ctx.createRadialGradient(moonX, moonY, 10, moonX, moonY, 40);
-        mGlow.addColorStop(0, 'rgba(224, 231, 255, 0.4)');
-        mGlow.addColorStop(1, 'rgba(224, 231, 255, 0)');
-        ctx.fillStyle = mGlow;
+        ctx.fillStyle = 'rgba(224, 231, 255, 0.3)';
         ctx.beginPath();
-        ctx.arc(moonX, moonY, 40, 0, Math.PI * 2);
+        ctx.arc(moonX, moonY, 36, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#fef08a';
@@ -812,7 +815,6 @@
         ctx.arc(moonX - 7, moonY - 5, 16, 0, Math.PI * 2);
         ctx.fill();
 
-        // Night Skyline with lit windows
         ctx.fillStyle = 'rgba(3, 7, 18, 0.85)';
         for (var nx = 0; nx < w; nx += 40) {
           var nHeight = 28 + ((nx * 19) % 35);
@@ -823,19 +825,10 @@
           ctx.fillStyle = 'rgba(3, 7, 18, 0.85)';
         }
 
-        // Night Clouds
         this.drawClouds('rgba(148, 163, 184, 0.18)');
 
       } else if (theme === 3) {
         // === MUSIM SALJU (Winter) ===
-        var winterGrad = ctx.createLinearGradient(0, 0, 0, gy);
-        winterGrad.addColorStop(0, '#0f172a');
-        winterGrad.addColorStop(0.55, '#334155');
-        winterGrad.addColorStop(1, '#93c5fd');
-        ctx.fillStyle = winterGrad;
-        ctx.fillRect(0, 0, w, gy);
-
-        // Snow-capped Mountain Peaks
         ctx.fillStyle = '#475569';
         for (var mx = -20; mx < w + 80; mx += 90) {
           ctx.beginPath();
@@ -855,31 +848,16 @@
           ctx.fillStyle = '#475569';
         }
 
-        // Winter Clouds
         this.drawClouds('rgba(241, 245, 249, 0.35)');
-
-        // Falling Snowflakes
         this.drawFallingSnow();
 
       } else {
-        // === CYBER NEON RETRO (Score 40+) ===
-        var cyberGrad = ctx.createLinearGradient(0, 0, 0, gy);
-        cyberGrad.addColorStop(0, '#18002a');
-        cyberGrad.addColorStop(0.6, '#4a044e');
-        cyberGrad.addColorStop(1, '#831843');
-        ctx.fillStyle = cyberGrad;
-        ctx.fillRect(0, 0, w, gy);
-
-        // Synthwave Sun with horizontal scanlines
+        // === CYBER NEON RETRO (Score 100+) ===
         var rsunX = w * 0.5;
         var rsunY = gy - 30;
-        var rsunGlow = ctx.createRadialGradient(rsunX, rsunY, 10, rsunX, rsunY, 75);
-        rsunGlow.addColorStop(0, 'rgba(244, 63, 94, 0.8)');
-        rsunGlow.addColorStop(0.5, 'rgba(236, 72, 153, 0.3)');
-        rsunGlow.addColorStop(1, 'rgba(236, 72, 153, 0)');
-        ctx.fillStyle = rsunGlow;
+        ctx.fillStyle = 'rgba(244, 63, 94, 0.4)';
         ctx.beginPath();
-        ctx.arc(rsunX, rsunY, 75, 0, Math.PI * 2);
+        ctx.arc(rsunX, rsunY, 70, 0, Math.PI * 2);
         ctx.fill();
 
         for (var slit = 0; slit < 6; slit++) {
@@ -891,7 +869,6 @@
           ctx.fill();
         }
 
-        // Cyber Skyline with glowing outlines
         for (var cx2 = 0; cx2 < w; cx2 += 46) {
           var cyHeight = 30 + ((cx2 * 11) % 40);
           ctx.fillStyle = '#0f051d';
@@ -907,41 +884,51 @@
       var ctx = this.ctx;
       var w = this.width;
       ctx.fillStyle = fillColor || 'rgba(255, 255, 255, 0.45)';
+      ctx.beginPath();
       for (var cx = 60; cx < w + 80; cx += 180) {
         var step = Math.floor(cx / 180);
         var cy = (step % 2 === 0) ? 95 : 135;
         var r = (step % 2 === 0) ? 26 : 22;
-        ctx.beginPath();
+        ctx.moveTo(cx - 20 + r * 0.8, cy + 5);
         ctx.arc(cx - 20, cy + 5, r * 0.8, 0, Math.PI * 2);
+        ctx.moveTo(cx + r, cy);
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.moveTo(cx + 22 + r * 0.75, cy + 5);
         ctx.arc(cx + 22, cy + 5, r * 0.75, 0, Math.PI * 2);
-        ctx.fill();
       }
+      ctx.fill();
     },
 
     drawNightStars: function () {
       var ctx = this.ctx;
       if (!this.nightStars || this.nightStars.length === 0) return;
       var self = this;
-      this.nightStars.forEach(function (s) {
-        var alpha = 0.3 + 0.65 * (Math.sin(self.starAnimTimer * 2 + s.phase) * 0.5 + 0.5);
-        ctx.fillStyle = 'rgba(255, 255, 255, ' + alpha.toFixed(2) + ')';
+      var w = this.width;
+      ctx.fillStyle = '#ffffff';
+      for (var i = 0; i < this.nightStars.length; i++) {
+        var s = this.nightStars[i];
+        ctx.save();
+        ctx.globalAlpha = 0.25 + 0.65 * (Math.sin(self.starAnimTimer * 2 + s.phase) * 0.5 + 0.5);
         ctx.beginPath();
-        ctx.arc(s.x % self.width, s.y, s.r, 0, Math.PI * 2);
+        ctx.arc(s.x % w, s.y, s.r, 0, Math.PI * 2);
         ctx.fill();
-      });
+        ctx.restore();
+      }
     },
 
     drawFallingSnow: function () {
       var ctx = this.ctx;
       if (!this.snowflakes || this.snowflakes.length === 0) return;
-      var self = this;
+      var w = this.width;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-      this.snowflakes.forEach(function (sn) {
-        ctx.beginPath();
-        ctx.arc(sn.x % self.width, sn.y, sn.r, 0, Math.PI * 2);
-        ctx.fill();
-      });
+      ctx.beginPath();
+      for (var i = 0; i < this.snowflakes.length; i++) {
+        var sn = this.snowflakes[i];
+        var sx = sn.x % w;
+        ctx.moveTo(sx + sn.r, sn.y);
+        ctx.arc(sx, sn.y, sn.r, 0, Math.PI * 2);
+      }
+      ctx.fill();
     },
 
     drawGround: function () {
@@ -949,50 +936,19 @@
       var w = this.width;
       var h = this.height;
       var gy = this.groundY;
-      var theme = this.currentTheme;
 
-      if (theme === 0) {
-        ctx.fillStyle = '#ded895';
-        ctx.fillRect(0, gy, w, h - gy);
-        ctx.fillStyle = '#22c55e';
-        ctx.fillRect(0, gy, w, 12);
-        ctx.fillStyle = '#15803d';
-        ctx.fillRect(0, gy + 12, w, 4);
-        ctx.strokeStyle = '#c5b86b';
-      } else if (theme === 1) {
-        ctx.fillStyle = '#b45309';
-        ctx.fillRect(0, gy, w, h - gy);
-        ctx.fillStyle = '#65a30d';
-        ctx.fillRect(0, gy, w, 12);
-        ctx.fillStyle = '#3f6212';
-        ctx.fillRect(0, gy + 12, w, 4);
-        ctx.strokeStyle = '#92400e';
-      } else if (theme === 2) {
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(0, gy, w, h - gy);
-        ctx.fillStyle = '#065f46';
-        ctx.fillRect(0, gy, w, 12);
-        ctx.fillStyle = '#064e3b';
-        ctx.fillRect(0, gy + 12, w, 4);
-        ctx.strokeStyle = '#0f172a';
-      } else if (theme === 3) {
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillRect(0, gy, w, h - gy);
-        ctx.fillStyle = '#f8fafc';
-        ctx.fillRect(0, gy, w, 14);
-        ctx.fillStyle = '#cbd5e1';
-        ctx.fillRect(0, gy + 14, w, 4);
-        ctx.strokeStyle = '#64748b';
+      if (this.transitioning && this.transitionAlpha < 1.0) {
+        this.drawSingleThemeGround(this.previousTheme, gy, w, h);
+        ctx.save();
+        ctx.globalAlpha = this.transitionAlpha;
+        this.drawSingleThemeGround(this.currentTheme, gy, w, h);
+        ctx.restore();
       } else {
-        ctx.fillStyle = '#110226';
-        ctx.fillRect(0, gy, w, h - gy);
-        ctx.fillStyle = '#06b6d4';
-        ctx.fillRect(0, gy, w, 6);
-        ctx.fillStyle = '#a855f7';
-        ctx.fillRect(0, gy + 6, w, 4);
-        ctx.strokeStyle = '#c084fc';
+        this.drawSingleThemeGround(this.currentTheme, gy, w, h);
       }
 
+      // Scrolling ground pattern lines
+      ctx.strokeStyle = this.getGroundStripeColor(this.currentTheme);
       ctx.lineWidth = 2;
       for (var x = -this.groundOffset; x < w; x += 18) {
         ctx.beginPath();
@@ -1002,69 +958,105 @@
       }
     },
 
+    getGroundStripeColor: function (theme) {
+      if (theme === 0) return '#c5b86b';
+      if (theme === 1) return '#92400e';
+      if (theme === 2) return '#0f172a';
+      if (theme === 3) return '#64748b';
+      return '#c084fc';
+    },
+
+    drawSingleThemeGround: function (theme, gy, w, h) {
+      var ctx = this.ctx;
+      if (theme === 0) {
+        ctx.fillStyle = '#ded895';
+        ctx.fillRect(0, gy, w, h - gy);
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(0, gy, w, 12);
+        ctx.fillStyle = '#15803d';
+        ctx.fillRect(0, gy + 12, w, 4);
+      } else if (theme === 1) {
+        ctx.fillStyle = '#b45309';
+        ctx.fillRect(0, gy, w, h - gy);
+        ctx.fillStyle = '#65a30d';
+        ctx.fillRect(0, gy, w, 12);
+        ctx.fillStyle = '#3f6212';
+        ctx.fillRect(0, gy + 12, w, 4);
+      } else if (theme === 2) {
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(0, gy, w, h - gy);
+        ctx.fillStyle = '#065f46';
+        ctx.fillRect(0, gy, w, 12);
+        ctx.fillStyle = '#064e3b';
+        ctx.fillRect(0, gy + 12, w, 4);
+      } else if (theme === 3) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(0, gy, w, h - gy);
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, gy, w, 14);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(0, gy + 14, w, 4);
+      } else {
+        ctx.fillStyle = '#110226';
+        ctx.fillRect(0, gy, w, h - gy);
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(0, gy, w, 6);
+        ctx.fillStyle = '#a855f7';
+        ctx.fillRect(0, gy + 6, w, 4);
+      }
+    },
+
     drawPipe: function (p) {
       var ctx = this.ctx;
       var theme = this.currentTheme;
 
-      var g0, g1, g2, stroke;
-      if (theme === 0) {
-        g0 = '#15803d'; g1 = '#4ade80'; g2 = '#166534'; stroke = '#052e16';
-      } else if (theme === 1) {
-        g0 = '#78350f'; g1 = '#fb923c'; g2 = '#9a3412'; stroke = '#451a03';
-      } else if (theme === 2) {
-        g0 = '#1e3a8a'; g1 = '#38bdf8'; g2 = '#0369a1'; stroke = '#082f49';
-      } else if (theme === 3) {
-        g0 = '#0284c7'; g1 = '#e0f2fe'; g2 = '#0369a1'; stroke = '#075985';
-      } else {
-        g0 = '#701a75'; g1 = '#f43f5e'; g2 = '#c084fc'; stroke = '#4a044e';
-      }
+      var stroke = (theme === 0) ? '#052e16' : (theme === 1 ? '#451a03' : (theme === 2 ? '#082f49' : (theme === 3 ? '#075985' : '#4a044e')));
 
-      var pipeGrad = ctx.createLinearGradient(p.x, 0, p.x + p.width, 0);
-      pipeGrad.addColorStop(0, g0);
-      pipeGrad.addColorStop(0.3, g1);
-      pipeGrad.addColorStop(1, g2);
+      ctx.save();
+      ctx.translate(p.x, 0);
 
-      ctx.fillStyle = pipeGrad;
+      // Pre-cached linear gradient for ultra-smooth 60fps performance
+      ctx.fillStyle = (this.pipeGradients && this.pipeGradients[theme]) || '#15803d';
       ctx.strokeStyle = stroke;
       ctx.lineWidth = 2;
 
       // Top pipe
-      ctx.fillRect(p.x, 0, p.width, p.topHeight);
-      ctx.strokeRect(p.x, 0, p.width, p.topHeight);
+      ctx.fillRect(0, 0, p.width, p.topHeight);
+      ctx.strokeRect(0, 0, p.width, p.topHeight);
 
       // Top pipe cap rim
-      ctx.fillRect(p.x - 3, p.topHeight - 20, p.width + 6, 20);
-      ctx.strokeRect(p.x - 3, p.topHeight - 20, p.width + 6, 20);
+      ctx.fillRect(-3, p.topHeight - 20, p.width + 6, 20);
+      ctx.strokeRect(-3, p.topHeight - 20, p.width + 6, 20);
 
       // Bottom pipe
-      ctx.fillRect(p.x, p.bottomY, p.width, this.groundY - p.bottomY);
-      ctx.strokeRect(p.x, p.bottomY, p.width, this.groundY - p.bottomY);
+      ctx.fillRect(0, p.bottomY, p.width, this.groundY - p.bottomY);
+      ctx.strokeRect(0, p.bottomY, p.width, this.groundY - p.bottomY);
 
       // Bottom pipe cap rim
-      ctx.fillRect(p.x - 3, p.bottomY, p.width + 6, 20);
-      ctx.strokeRect(p.x - 3, p.bottomY, p.width + 6, 20);
+      ctx.fillRect(-3, p.bottomY, p.width + 6, 20);
+      ctx.strokeRect(-3, p.bottomY, p.width + 6, 20);
 
       // Winter Snowcaps on Pipes
       if (theme === 3) {
         ctx.fillStyle = '#f8fafc';
-        // Snow on bottom pipe rim
         if (ctx.roundRect) {
           ctx.beginPath();
-          ctx.roundRect(p.x - 4, p.bottomY - 4, p.width + 8, 8, 4);
+          ctx.roundRect(-4, p.bottomY - 4, p.width + 8, 8, 4);
           ctx.fill();
         } else {
-          ctx.fillRect(p.x - 4, p.bottomY - 4, p.width + 8, 8);
+          ctx.fillRect(-4, p.bottomY - 4, p.width + 8, 8);
         }
-        // Icicles
         ctx.beginPath();
-        ctx.moveTo(p.x + 6, p.bottomY + 4);
-        ctx.lineTo(p.x + 10, p.bottomY + 12);
-        ctx.lineTo(p.x + 14, p.bottomY + 4);
-        ctx.moveTo(p.x + 28, p.bottomY + 4);
-        ctx.lineTo(p.x + 32, p.bottomY + 14);
-        ctx.lineTo(p.x + 36, p.bottomY + 4);
+        ctx.moveTo(6, p.bottomY + 4);
+        ctx.lineTo(10, p.bottomY + 12);
+        ctx.lineTo(14, p.bottomY + 4);
+        ctx.moveTo(28, p.bottomY + 4);
+        ctx.lineTo(32, p.bottomY + 14);
+        ctx.lineTo(36, p.bottomY + 4);
         ctx.fill();
       }
+
+      ctx.restore();
 
       // Collectible Star in middle of pipe
       if (p.hasStar && !p.starCollected) {
@@ -1076,52 +1068,147 @@
       var ctx = this.ctx;
       var starX = p.x + p.width / 2;
       var curStarY = p.starY + Math.sin(this.starAnimTimer * 2 + p.x * 0.04) * 6;
-      var r = p.starRadius || 13;
 
       ctx.save();
       ctx.translate(starX, curStarY);
 
-      // 1. Soft pulsing radial glow
-      var glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 24);
-      glow.addColorStop(0, 'rgba(250, 204, 21, 0.65)');
-      glow.addColorStop(0.45, 'rgba(250, 204, 21, 0.2)');
-      glow.addColorStop(1, 'rgba(250, 204, 21, 0)');
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(0, 0, 24, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 2. ROTATE THE STAR ITSELF!
+      // 1. ROTATE THE STAR ITSELF!
       var starAngle = (this.starAnimTimer * 1.6 + p.x * 0.02) % (Math.PI * 2);
       ctx.rotate(starAngle);
 
       var pulse = 1 + Math.sin(this.starAnimTimer * 3 + p.x * 0.05) * 0.08;
       ctx.scale(pulse, pulse);
 
-      // 3. Draw Rotating 5-Point Star Body
-      this.drawStarPath(0, 0, 5, r, r * 0.48);
-      var starGrad = ctx.createLinearGradient(0, -r, 0, r);
+      // 2. High-performance offscreen bitmap draw
+      if (this.starOffscreen) {
+        ctx.drawImage(this.starOffscreen, -24, -24);
+      } else {
+        var r = p.starRadius || 13;
+        this.drawStarPath(0, 0, 5, r, r * 0.48);
+        ctx.fillStyle = '#facc15';
+        ctx.fill();
+      }
+
+      ctx.restore();
+    },
+
+    initThemeGradients: function () {
+      var ctx = this.ctx;
+      if (!ctx) return;
+
+      this.pipeGradients = [];
+      var themeColors = [
+        ['#15803d', '#4ade80', '#166534'], // 0 Day
+        ['#78350f', '#fb923c', '#9a3412'], // 1 Sunset
+        ['#1e3a8a', '#38bdf8', '#0369a1'], // 2 Night
+        ['#0284c7', '#e0f2fe', '#0369a1'], // 3 Winter
+        ['#701a75', '#f43f5e', '#c084fc']  // 4 Cyber
+      ];
+
+      for (var t = 0; t < themeColors.length; t++) {
+        var pg = ctx.createLinearGradient(0, 0, 48, 0);
+        pg.addColorStop(0, themeColors[t][0]);
+        pg.addColorStop(0.3, themeColors[t][1]);
+        pg.addColorStop(1, themeColors[t][2]);
+        this.pipeGradients[t] = pg;
+      }
+
+      // Pre-cached Sky Gradients
+      this.skyGradients = [];
+      var gy = this.groundY;
+
+      var sg0 = ctx.createLinearGradient(0, 0, 0, gy);
+      sg0.addColorStop(0, '#0284c7'); sg0.addColorStop(1, '#7dd3fc');
+      this.skyGradients[0] = sg0;
+
+      var sg1 = ctx.createLinearGradient(0, 0, 0, gy);
+      sg1.addColorStop(0, '#3b0764'); sg1.addColorStop(0.45, '#c2410c'); sg1.addColorStop(0.85, '#f59e0b'); sg1.addColorStop(1, '#fde047');
+      this.skyGradients[1] = sg1;
+
+      var sg2 = ctx.createLinearGradient(0, 0, 0, gy);
+      sg2.addColorStop(0, '#020617'); sg2.addColorStop(0.65, '#0f172a'); sg2.addColorStop(1, '#1e1b4b');
+      this.skyGradients[2] = sg2;
+
+      var sg3 = ctx.createLinearGradient(0, 0, 0, gy);
+      sg3.addColorStop(0, '#0f172a'); sg3.addColorStop(0.55, '#334155'); sg3.addColorStop(1, '#93c5fd');
+      this.skyGradients[3] = sg3;
+
+      var sg4 = ctx.createLinearGradient(0, 0, 0, gy);
+      sg4.addColorStop(0, '#18002a'); sg4.addColorStop(0.6, '#4a044e'); sg4.addColorStop(1, '#831843');
+      this.skyGradients[4] = sg4;
+    },
+
+    initStarCanvas: function () {
+      var sc = document.createElement('canvas');
+      sc.width = 48;
+      sc.height = 48;
+      var sctx = sc.getContext('2d');
+      var cx = 24, cy = 24, r = 13;
+
+      // Glow halo
+      var glow = sctx.createRadialGradient(cx, cy, 2, cx, cy, 23);
+      glow.addColorStop(0, 'rgba(250, 204, 21, 0.7)');
+      glow.addColorStop(0.5, 'rgba(250, 204, 21, 0.22)');
+      glow.addColorStop(1, 'rgba(250, 204, 21, 0)');
+      sctx.fillStyle = glow;
+      sctx.beginPath();
+      sctx.arc(cx, cy, 23, 0, Math.PI * 2);
+      sctx.fill();
+
+      // Star Shape
+      var rot = (Math.PI / 2) * 3;
+      var step = Math.PI / 5;
+      sctx.beginPath();
+      sctx.moveTo(cx, cy - r);
+      for (var i = 0; i < 5; i++) {
+        var x = cx + Math.cos(rot) * r;
+        var y = cy + Math.sin(rot) * r;
+        sctx.lineTo(x, y);
+        rot += step;
+        x = cx + Math.cos(rot) * (r * 0.48);
+        y = cy + Math.sin(rot) * (r * 0.48);
+        sctx.lineTo(x, y);
+        rot += step;
+      }
+      sctx.lineTo(cx, cy - r);
+      sctx.closePath();
+
+      var starGrad = sctx.createLinearGradient(cx, cy - r, cx, cy + r);
       starGrad.addColorStop(0, '#fef08a');
       starGrad.addColorStop(0.5, '#facc15');
       starGrad.addColorStop(1, '#eab308');
-      ctx.fillStyle = starGrad;
-      ctx.fill();
-      ctx.strokeStyle = '#b45309';
-      ctx.lineWidth = 1.6;
-      ctx.stroke();
+      sctx.fillStyle = starGrad;
+      sctx.fill();
+      sctx.strokeStyle = '#b45309';
+      sctx.lineWidth = 1.6;
+      sctx.stroke();
 
-      // 4. Inner Star Highlight Layer
-      this.drawStarPath(0, 0, 5, r * 0.65, r * 0.32);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-      ctx.fill();
+      // Inner Highlight
+      var rotH = (Math.PI / 2) * 3;
+      sctx.beginPath();
+      sctx.moveTo(cx, cy - (r * 0.65));
+      for (var j = 0; j < 5; j++) {
+        var xH = cx + Math.cos(rotH) * (r * 0.65);
+        var yH = cy + Math.sin(rotH) * (r * 0.65);
+        sctx.lineTo(xH, yH);
+        rotH += step;
+        xH = cx + Math.cos(rotH) * (r * 0.32);
+        yH = cy + Math.sin(rotH) * (r * 0.32);
+        sctx.lineTo(xH, yH);
+        rotH += step;
+      }
+      sctx.lineTo(cx, cy - (r * 0.65));
+      sctx.closePath();
+      sctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+      sctx.fill();
 
-      // 5. Center Gleam Sparkle
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
-      ctx.fill();
+      // Specular center dot
+      sctx.fillStyle = '#ffffff';
+      sctx.beginPath();
+      sctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+      sctx.fill();
 
-      ctx.restore();
+      this.starOffscreen = sc;
     },
 
     drawStarPath: function (cx, cy, spikes, outerRadius, innerRadius) {
@@ -1194,8 +1281,11 @@
 
     checkThemeUpdate: function () {
       var nextTheme = this.getThemeIndex(this.score);
-      if (nextTheme !== this.currentTheme) {
+      if (nextTheme !== this.currentTheme && !this.transitioning) {
+        this.previousTheme = this.currentTheme;
         this.currentTheme = nextTheme;
+        this.transitionAlpha = 0.0;
+        this.transitioning = true;
         Sound.themeChange();
         var th = this.THEMES[nextTheme];
         this.showThemeAnnouncement(th);

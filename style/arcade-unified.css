@@ -1438,6 +1438,7 @@ body {
   height: 100% !important;
   border-radius: inherit !important;
   box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 /* 2. PACMAN ARCADE - Matches 2048 Sizing */

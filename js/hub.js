@@ -430,8 +430,8 @@
         });
       }
 
-      // 10. Guest mode button
-            var btnForgotPin = document.getElementById('btn-forgot-pin');
+      // 10. Forgot PIN & Auth Step 2C listeners
+      var btnForgotPin = document.getElementById('btn-forgot-pin');
       if (btnForgotPin) {
         btnForgotPin.addEventListener('click', function () {
           self.openForgotPinStep();
@@ -455,6 +455,302 @@
           e.preventDefault();
           self.submitForgotPin();
         });
+      }
+
+      if (this.btnAuthGuest) {
+        this.btnAuthGuest.addEventListener('click', function () {
+          self.handleGuestMode();
+        });
+      }
+
+      // 11. Profile Modal: Toggle PIN change
+      if (this.btnTogglePinEdit) {
+        this.btnTogglePinEdit.addEventListener('click', function () {
+          if (!self.pinChangeFields) return;
+          var isHidden = self.pinChangeFields.style.display === 'none';
+          self.pinChangeFields.style.display = isHidden ? 'block' : 'none';
+          self.btnTogglePinEdit.textContent = isHidden ? 'Batal Ubah PIN' : 'Ubah PIN';
+        });
+      }
+
+      // 12. Profile Form Submit (Save changes)
+      if (this.formProfile) {
+        this.formProfile.addEventListener('submit', function (e) {
+          e.preventDefault();
+          self.saveProfileFromModal();
+        });
+      }
+
+      // 13. Avatar File Upload
+      if (this.inputAvatarFile) {
+        this.inputAvatarFile.addEventListener('change', function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+
+          if (!file.type.match(/^image\//)) {
+            self.showToast('File harus berupa gambar (JPG/PNG/WEBP)');
+            return;
+          }
+
+          var reader = new FileReader();
+          reader.onload = function (evt) {
+            self.resizeAvatarImage(evt.target.result, function (compressedDataUrl) {
+              self.tempAvatar = compressedDataUrl;
+              self.updateModalAvatarPreview(compressedDataUrl, self.username);
+              self.showToast('Foto berhasil dimuat. Klik Simpan Profil!');
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // 14. Remove Avatar
+      if (this.btnRemoveAvatar) {
+        this.btnRemoveAvatar.addEventListener('click', function () {
+          self.tempAvatar = '';
+          self.updateModalAvatarPreview('', self.username);
+          self.showToast('Foto profil akan dihapus saat disimpan');
+        });
+      }
+
+      // 15. Leaderboard Tab Clicks
+      document.querySelectorAll('.ldb-tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          document.querySelectorAll('.ldb-tab').forEach(function (t) { t.classList.remove('active'); });
+          tab.classList.add('active');
+          var gameKey = tab.getAttribute('data-tab');
+          self.loadLeaderboardTable(gameKey);
+        });
+      });
+    },
+
+    /* ========================================================
+       AUTH & SESSION ENGINE
+       ======================================================== */
+    initAuth: function () {
+      var self = this;
+      var savedToken = '';
+      try {
+        savedToken = localStorage.getItem('game_hub_token') || '';
+      } catch (e) {}
+
+      if (savedToken) {
+        // Verify token with backend
+        fetch('/api/auth.php?action=verify', {
+          headers: {
+            'Authorization': 'Bearer ' + savedToken
+          }
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data && data.status === 'success' && data.authenticated) {
+            self.token = savedToken;
+            self.username = data.user.username;
+            self.avatar = data.user.avatar || '';
+            self.isAuthenticated = true;
+            self.isGuest = false;
+            self.saveProfileLocal(self.username, self.avatar);
+            self.updateProfileUI();
+            self.closeModal(self.modalAuth);
+          } else {
+            self.onSessionInvalid();
+          }
+        })
+        .catch(function () {
+          // If network error, still check local storage fallback
+          self.loadProfileFallback();
+        });
+      } else {
+        this.onSessionInvalid();
+      }
+    },
+
+    onSessionInvalid: function () {
+      this.token = '';
+      this.isAuthenticated = false;
+      this.loadProfileFallback();
+      this.updateProfileUI();
+      // Show login dialog at start as requested by user
+      this.openAuthModal();
+    },
+
+    loadProfileFallback: function () {
+      try {
+        var u = localStorage.getItem('user_profile_name') || localStorage.getItem('2048_username');
+        if (u) {
+          this.username = u;
+          if (this.authInputUsername) this.authInputUsername.value = u;
+        }
+        var av = localStorage.getItem('user_profile_avatar') || localStorage.getItem('2048_avatar');
+        if (av) this.avatar = av;
+      } catch (e) {}
+    },
+
+    saveProfileLocal: function (newName, newAvatar) {
+      if (newName) this.username = newName;
+      if (typeof newAvatar !== 'undefined') this.avatar = newAvatar;
+      try {
+        if (this.token) localStorage.setItem('game_hub_token', this.token);
+        localStorage.setItem('user_profile_name', this.username);
+        localStorage.setItem('2048_username', this.username);
+        localStorage.setItem('user_profile_avatar', this.avatar);
+        localStorage.setItem('2048_avatar', this.avatar);
+      } catch (e) {}
+    },
+
+    updateProfileUI: function () {
+      // 1. Username label
+      if (this.navUsername) {
+        this.navUsername.textContent = this.username;
+      }
+
+      // 2. Status hint
+      if (this.profileStatusHint) {
+        if (this.isAuthenticated) {
+          this.profileStatusHint.textContent = 'Akun Terverifikasi';
+          this.profileStatusHint.style.color = '#38bdf8';
+        } else if (this.isGuest) {
+          this.profileStatusHint.textContent = 'Mode Tamu';
+          this.profileStatusHint.style.color = '#facc15';
+        } else {
+          this.profileStatusHint.textContent = 'Belum Masuk';
+          this.profileStatusHint.style.color = '#94a3b8';
+        }
+      }
+
+      // 3. Avatar Photo
+      if (this.avatar) {
+        if (this.navAvatarImg) {
+          this.navAvatarImg.src = this.avatar;
+          this.navAvatarImg.style.display = 'block';
+        }
+        if (this.navAvatarText) {
+          this.navAvatarText.style.display = 'none';
+        }
+      } else {
+        if (this.navAvatarImg) {
+          this.navAvatarImg.src = '';
+          this.navAvatarImg.removeAttribute('src');
+          this.navAvatarImg.style.display = 'none';
+        }
+        if (this.navAvatarText) {
+          this.navAvatarText.textContent = (this.username && this.username !== 'Pemain Baru') ? this.username.charAt(0).toUpperCase() : '👤';
+          this.navAvatarText.style.display = 'flex';
+        }
+      }
+
+      // 4. Action Buttons (Logout vs Login)
+      if (this.btnLogout) {
+        this.btnLogout.style.display = this.isAuthenticated ? 'inline-flex' : 'none';
+      }
+      if (this.btnLoginOpen) {
+        this.btnLoginOpen.style.display = this.isAuthenticated ? 'none' : 'inline-flex';
+      }
+
+      // 5. Sound Button State
+      if (this.navSoundIcon && window.RetroAudio) {
+        this.navSoundIcon.textContent = window.RetroAudio.isEnabled() ? '🔊' : '🔇';
+      }
+    },
+
+    /* ========================================================
+       AUTH MODAL FLOW (STEP 1, 2A, 2B)
+       ======================================================== */
+    openAuthModal: function () {
+      this.showAuthStep('username');
+      if (this.authUsernameError) this.authUsernameError.style.display = 'none';
+      if (this.loginPinError) this.loginPinError.style.display = 'none';
+      if (this.regPinError) this.regPinError.style.display = 'none';
+
+      // If user is already authenticated or guest, allow closing modal
+      if (this.authModalClose) {
+        this.authModalClose.style.display = (this.isAuthenticated || this.isGuest) ? 'block' : 'none';
+      }
+
+      this.openModal(this.modalAuth);
+      if (this.authInputUsername) {
+        var self = this;
+        setTimeout(function () {
+          self.authInputUsername.focus();
+        }, 150);
+      }
+    },
+
+    showAuthStep: function (step) {
+      if (this.authStepUsername) this.authStepUsername.style.display = (step === 'username') ? 'block' : 'none';
+      if (this.authStepLoginPin) this.authStepLoginPin.style.display = (step === 'login_pin') ? 'block' : 'none';
+      if (this.authStepRegisterPin) this.authStepRegisterPin.style.display = (step === 'register_pin') ? 'block' : 'none';
+      if (this.authStepForgotPin) this.authStepForgotPin.style.display = (step === 'forgot_pin') ? 'block' : 'none';
+    },
+
+    handleCheckUser: function (rawName) {
+      var self = this;
+      if (!rawName || rawName.length < 2 || rawName.length > 20) {
+        this.showAuthError(this.authUsernameError, 'Username harus terdiri dari 2 - 20 karakter.');
+        return;
+      }
+
+      var btnCheck = document.getElementById('btn-auth-check');
+      if (btnCheck) {
+        btnCheck.disabled = true;
+        btnCheck.innerHTML = '<span>Memeriksa...</span>';
+      }
+
+      fetch('/api/auth.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'check_user', username: rawName })
+      })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (btnCheck) {
+          btnCheck.disabled = false;
+          btnCheck.innerHTML = '<span>Lanjutkan</span><span>➔</span>';
+        }
+
+        if (data && data.status === 'success') {
+          self.targetUsername = data.username;
+          if (data.exists) {
+            // STEP 2A: Pemain sudah terdaftar -> Minta PIN 6 Digit
+            self.prepareLoginPinStep(data.username, data.avatar);
+          } else {
+            // STEP 2B: Pemain baru -> Minta buat PIN 6 Digit
+            self.prepareRegisterPinStep(data.username, data.suggested_avatar);
+          }
+        } else {
+          self.showAuthError(self.authUsernameError, (data && data.message) || 'Gagal memeriksa username.');
+        }
+      })
+      .catch(function () {
+        if (btnCheck) {
+          btnCheck.disabled = false;
+          btnCheck.innerHTML = '<span>Lanjutkan</span><span>➔</span>';
+        }
+        self.showAuthError(self.authUsernameError, 'Koneksi ke server gagal. Coba lagi.');
+      });
+    },
+
+    prepareLoginPinStep: function (username, avatar) {
+      this.loginPin = '';
+      if (this.loginDisplayUsername) this.loginDisplayUsername.textContent = username;
+      if (this.loginAvatarPreview) {
+        if (avatar) {
+          this.loginAvatarPreview.innerHTML = '<img src="' + avatar + '" alt="' + username + '">';
+        } else {
+          this.loginAvatarPreview.textContent = username.charAt(0).toUpperCase() || '👤';
+        }
+      }
+      this.updatePinBoxes();
+      if (this.loginPinError) this.loginPinError.style.display = 'none';
+      if (this.loginSpinner) this.loginSpinner.style.display = 'none';
+      if (this.loginKeypad) this.loginKeypad.style.display = 'grid';
+      this.showAuthStep('login_pin');
+      if (this.loginPinHidden) {
+        this.loginPinHidden.value = '';
+        var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 768);
+        if (!isTouchDevice) {
+          try { this.loginPinHidden.focus(); } catch (e) {}
+        }
       }
     },
 
@@ -527,6 +823,200 @@
       if (this.loginSpinner) this.loginSpinner.style.display = 'flex';
       if (this.loginKeypad) this.loginKeypad.style.display = 'none';
       if (this.loginPinError) this.loginPinError.style.display = 'none';
+
+      fetch('/api/auth.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'login',
+          username: this.targetUsername,
+          pin: this.loginPin
+        })
+      })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          return { ok: res.ok, data: data };
+        }).catch(function () {
+          return { ok: false, data: null, status: res.status };
+        });
+      })
+      .then(function (result) {
+        var data = result.data;
+        if (result.ok && data && data.status === 'success') {
+          self.token = data.token;
+          self.username = data.user.username;
+          self.avatar = data.user.avatar || '';
+          self.isAuthenticated = true;
+          self.isGuest = false;
+          self.saveProfileLocal(self.username, self.avatar);
+          self.updateProfileUI();
+          self.closeModal(self.modalAuth);
+          self.showToast('Selamat datang kembali, ' + self.username + '! 🎮');
+          self.loadPersonalBestScores();
+          self.fetchTop3Overall();
+        } else {
+          var msg = (data && data.message) ? data.message : 'PIN keamanan salah. Silakan coba lagi.';
+          self.onPinFailed(msg);
+        }
+      })
+      .catch(function (err) {
+        self.onPinFailed('Koneksi gagal saat memverifikasi PIN.');
+      });
+    },
+
+    onPinFailed: function (msg) {
+      var self = this;
+      if (this.loginSpinner) this.loginSpinner.style.display = 'none';
+      if (this.loginKeypad) this.loginKeypad.style.display = 'grid';
+      this.showAuthError(this.loginPinError, msg);
+
+      // Shake animation
+      var boxes = document.querySelectorAll('#login-pin-display .pin-dot-box');
+      boxes.forEach(function (b) { b.classList.add('shake'); });
+
+      setTimeout(function () {
+        boxes.forEach(function (b) { b.classList.remove('shake'); });
+        self.handlePinClear();
+      }, 500);
+    },
+
+    openForgotPinStep: function () {
+      var self = this;
+      if (this.forgotDisplayUsername) this.forgotDisplayUsername.textContent = this.targetUsername;
+      if (this.forgotAvatarPreview) {
+        if (this.targetAvatar) {
+          this.forgotAvatarPreview.innerHTML = '<img src="' + this.targetAvatar + '" alt="' + this.targetUsername + '">';
+        } else {
+          this.forgotAvatarPreview.textContent = (this.targetUsername && this.targetUsername.charAt(0).toUpperCase()) || '👤';
+        }
+      }
+
+      if (this.forgotInputAnswer) this.forgotInputAnswer.value = '';
+      if (this.forgotInputNewPin) this.forgotInputNewPin.value = '';
+      if (this.forgotInputNewPinConfirm) this.forgotInputNewPinConfirm.value = '';
+      if (this.forgotPinError) this.forgotPinError.style.display = 'none';
+
+      // Fetch security question from backend
+      fetch('/api/auth.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get_security_question', username: this.targetUsername })
+      })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data && data.status === 'success') {
+          if (data.has_security_question && data.security_question) {
+            if (self.forgotDisplayQuestion) self.forgotDisplayQuestion.textContent = data.security_question;
+            if (self.forgotHasQuestionContainer) self.forgotHasQuestionContainer.style.display = 'block';
+            if (self.forgotNoQuestionContainer) self.forgotNoQuestionContainer.style.display = 'none';
+            if (self.forgotInputAnswer) {
+              setTimeout(function () { self.forgotInputAnswer.focus(); }, 150);
+            }
+          } else {
+            if (self.forgotHasQuestionContainer) self.forgotHasQuestionContainer.style.display = 'none';
+            if (self.forgotNoQuestionContainer) self.forgotNoQuestionContainer.style.display = 'block';
+          }
+        } else {
+          self.showAuthError(self.forgotPinError, (data && data.message) || 'Gagal memuat pertanyaan keamanan.');
+        }
+      })
+      .catch(function () {
+        self.showAuthError(self.forgotPinError, 'Koneksi ke server gagal.');
+      });
+
+      this.showAuthStep('forgot_pin');
+    },
+
+    submitForgotPin: function () {
+      var self = this;
+      var answer = this.forgotInputAnswer ? (this.forgotInputAnswer.value || '').trim() : '';
+      var newPin = this.forgotInputNewPin ? (this.forgotInputNewPin.value || '').trim() : '';
+      var newPinConfirm = this.forgotInputNewPinConfirm ? (this.forgotInputNewPinConfirm.value || '').trim() : '';
+
+      if (answer.length < 2) {
+        this.showAuthError(this.forgotPinError, 'Ketik jawaban pertanyaan keamanan minimal 2 karakter.');
+        return;
+      }
+      if (!/^[0-9]{6}$/.test(newPin)) {
+        this.showAuthError(this.forgotPinError, 'PIN baru harus tepat 6 digit angka numerik.');
+        return;
+      }
+      if (newPin !== newPinConfirm) {
+        this.showAuthError(this.forgotPinError, 'Konfirmasi PIN tidak cocok dengan PIN baru.');
+        return;
+      }
+
+      if (this.btnForgotSubmit) {
+        this.btnForgotSubmit.disabled = true;
+        this.btnForgotSubmit.innerHTML = '<span>Memverifikasi & Mereset...</span>';
+      }
+      if (this.forgotPinError) this.forgotPinError.style.display = 'none';
+
+      fetch('/api/auth.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reset_pin_with_answer',
+          username: this.targetUsername,
+          answer: answer,
+          new_pin: newPin
+        })
+      })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          return { ok: res.ok, data: data };
+        }).catch(function () {
+          return { ok: false, data: null };
+        });
+      })
+      .then(function (result) {
+        if (self.btnForgotSubmit) {
+          self.btnForgotSubmit.disabled = false;
+          self.btnForgotSubmit.innerHTML = '<span>Reset PIN & Masuk</span><span>➔</span>';
+        }
+        var data = result.data;
+        if (result.ok && data && data.status === 'success') {
+          self.token = data.token;
+          self.username = data.user.username;
+          self.avatar = data.user.avatar || '';
+          self.isAuthenticated = true;
+          self.isGuest = false;
+          self.saveProfileLocal(self.username, self.avatar);
+          self.updateProfileUI();
+          self.closeModal(self.modalAuth);
+          self.showToast('PIN berhasil direset! Selamat bermain kembali, ' + self.username + '! 🎉');
+          self.loadPersonalBestScores();
+          self.fetchTop3Overall();
+        } else {
+          var msg = (data && data.message) ? data.message : 'Jawaban keamanan tidak cocok atau gagal mereset PIN.';
+          self.showAuthError(self.forgotPinError, msg);
+        }
+      })
+      .catch(function () {
+        if (self.btnForgotSubmit) {
+          self.btnForgotSubmit.disabled = false;
+          self.btnForgotSubmit.innerHTML = '<span>Reset PIN & Masuk</span><span>➔</span>';
+        }
+        self.showAuthError(self.forgotPinError, 'Koneksi gagal saat mereset PIN.');
+      });
+    },
+
+    submitRegister: function (pin, pinConfirm) {
+      var self = this;
+      if (!/^[0-9]{6}$/.test(pin)) {
+        this.showAuthError(this.regPinError, 'PIN harus tepat 6 digit angka.');
+        return;
+      }
+      if (pin !== pinConfirm) {
+        this.showAuthError(this.regPinError, 'Konfirmasi PIN tidak cocok dengan PIN yang dibuat.');
+        return;
+      }
+
+      var btnSubmit = document.getElementById('btn-auth-register-submit');
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<span>Mendaftarkan Akun...</span>';
+      }
 
       fetch('/api/auth.php', {
         method: 'POST',
@@ -664,6 +1154,31 @@
       }
       if (this.inputOldPin) this.inputOldPin.value = '';
       if (this.inputNewPin) this.inputNewPin.value = '';
+
+      if (this.profileInputSecA) this.profileInputSecA.value = '';
+      if (this.isAuthenticated && this.token) {
+        var selfProfile = this;
+        fetch('/api/auth.php?action=verify&token=' + encodeURIComponent(this.token))
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data && data.user) {
+              if (data.user.has_security_question && data.user.security_question) {
+                if (selfProfile.profileSecQBadge) {
+                  selfProfile.profileSecQBadge.textContent = '✅ Aktif';
+                  selfProfile.profileSecQBadge.style.color = '#10b981';
+                }
+                if (selfProfile.profileSelectSecQ) selfProfile.profileSelectSecQ.value = data.user.security_question;
+              } else {
+                if (selfProfile.profileSecQBadge) {
+                  selfProfile.profileSecQBadge.textContent = '⚠️ Belum Disetel';
+                  selfProfile.profileSecQBadge.style.color = '#f59e0b';
+                }
+              }
+            }
+          })
+          .catch(function () {});
+      }
+
       this.openModal(this.modalProfile);
     },
 

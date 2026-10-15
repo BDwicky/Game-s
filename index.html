@@ -788,6 +788,34 @@
     </div>
   </div>
 
+  <!-- ========================================================
+       MODAL: FULLSCREEN PROMPT (Best Experience)
+       ======================================================== -->
+  <div class="modal-backdrop" id="modal-fullscreen-prompt" style="display: none !important;">
+    <div class="modal-card" style="max-width: 400px; text-align: center;">
+      <div class="modal-header" style="justify-content: flex-end; padding-bottom: 0;">
+        <button type="button" class="modal-close" aria-label="Tutup">&times;</button>
+      </div>
+      <div class="modal-body" style="padding-top: 0; padding-bottom: 24px;">
+        <div style="font-size: 46px; line-height: 1; margin-bottom: 12px; filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.45));">⛶</div>
+        <h2 style="font-size: 20px; font-weight: 800; color: #fff; margin: 0 0 6px 0; letter-spacing: -0.5px;">For Best Experience</h2>
+        <p style="font-size: 15px; color: #38bdf8; font-weight: 700; margin: 0 0 8px 0;">Use Fullscreen?</p>
+        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0 auto 22px auto; max-width: 290px;">
+          Mainkan dengan layar penuh untuk tampilan visual arcade maksimal tanpa gangguan bilah browser.
+        </p>
+
+        <div style="display: flex; gap: 12px; justify-content: center; width: 100%;">
+          <button type="button" id="btn-fs-prompt-yes" class="btn-auth-action" style="flex: 1; height: 46px; margin: 0; background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%); box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4);">
+            <span>⛶ Yes</span>
+          </button>
+          <button type="button" id="btn-fs-prompt-no" class="btn-auth-action" style="flex: 1; height: 46px; margin: 0; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.16); color: #cbd5e1; box-shadow: none;">
+            <span>No</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Seamless Fullscreen Game Runner Container -->
   <div id="game-runner-container" class="game-runner-container" style="display:none;" aria-hidden="true">
     <iframe id="game-runner-frame" class="game-runner-frame" title="Game View" allow="autoplay; fullscreen" allowfullscreen="true" tabindex="-1"></iframe>
@@ -800,6 +828,6 @@
   <script src="js/audio.js?v=1"></script>
     <script src="js/fullscreen.js?v=2"></script>
   <script src="js/photo_viewer.js?v=4"></script>
-  <script src="js/hub.js?v=20261015-secq2"></script>
+  <script src="js/hub.js?v=20261015-fsprompt1"></script>
 </body>
 </html>

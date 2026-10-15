@@ -20,6 +20,7 @@
     suggestedAvatar: '',
     loginPin: '',
     tempAvatar: '',
+    pendingGamePath: '',
 
     init: function () {
       this.cacheDom();
@@ -35,7 +36,14 @@
         if (gameParam) {
           var validGames = ["2048", "memory", "pacman", "xox", "flappy", "tetris", "snake"];
           if (validGames.indexOf(gameParam) !== -1) {
-            this.launchGame("games/" + gameParam + "/");
+            var targetPath = "games/" + gameParam + "/";
+            var isAlreadyFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+            if (isAlreadyFs) {
+              this.launchGame(targetPath);
+            } else {
+              this.pendingGamePath = targetPath;
+              this.openModal(this.modalFullscreenPrompt);
+            }
           }
         }
       } catch (e) {}
@@ -65,6 +73,9 @@
       this.modalProfile = document.getElementById('modal-profile');
       this.modalLeaderboard = document.getElementById('modal-leaderboard');
       this.toastEl = document.getElementById('toast-notification');
+      this.modalFullscreenPrompt = document.getElementById('modal-fullscreen-prompt');
+      this.btnFsPromptYes = document.getElementById('btn-fs-prompt-yes');
+      this.btnFsPromptNo = document.getElementById('btn-fs-prompt-no');
 
       // Auth Modal Elements - Step 1
       this.authStepUsername = document.getElementById('auth-step-username');
@@ -183,16 +194,53 @@
         }
       };
 
-      // 2B. Seamless In-App Game Runner & Persistence
+      // 2B. Seamless In-App Game Runner with Fullscreen Prompt (Best Experience)
       document.querySelectorAll('.game-card').forEach(function (card) {
         card.addEventListener('click', function (e) {
           var href = card.getAttribute('href');
           if (href && !href.startsWith('http') && !href.startsWith('#')) {
             e.preventDefault();
-            self.launchGame(href);
+            var isAlreadyFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+            if (isAlreadyFs) {
+              self.launchGame(href);
+            } else {
+              self.pendingGamePath = href;
+              self.openModal(self.modalFullscreenPrompt);
+            }
           }
         });
       });
+
+      // Fullscreen Prompt buttons (Yes / No)
+      if (this.btnFsPromptYes) {
+        this.btnFsPromptYes.addEventListener('click', function () {
+          self.closeModal(self.modalFullscreenPrompt);
+          var docEl = document.documentElement;
+          var req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+          if (req) {
+            try {
+              var p = req.call(docEl);
+              if (p && p.catch) p.catch(function () {});
+              document.body.classList.add('is-fullscreen');
+              try { localStorage.setItem('game_hub_fullscreen', 'true'); } catch (e) {}
+            } catch (e) {}
+          }
+          if (self.pendingGamePath) {
+            self.launchGame(self.pendingGamePath);
+            self.pendingGamePath = '';
+          }
+        });
+      }
+
+      if (this.btnFsPromptNo) {
+        this.btnFsPromptNo.addEventListener('click', function () {
+          self.closeModal(self.modalFullscreenPrompt);
+          if (self.pendingGamePath) {
+            self.launchGame(self.pendingGamePath);
+            self.pendingGamePath = '';
+          }
+        });
+      }
 
       // PostMessage listener from in-game iframes
       window.addEventListener('message', function (e) {

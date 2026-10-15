@@ -406,7 +406,15 @@
       }
 
       // 10. Guest mode button
-      if (this.btnAuthGuest) {
+      var btnForgotPin = document.getElementById('btn-forgot-pin');
+      if (btnForgotPin) {
+        btnForgotPin.addEventListener('click', function () {
+          var msg = 'Bantuan PIN:\n\nPIN akun Anda di sistem saat ini adalah 123123.\n\nSilakan masukkan 123123 untuk login. Setelah masuk, Anda dapat langsung mengganti PIN ke angka baru di menu Profil!';
+          alert(msg);
+        });
+      }
+
+            if (this.btnAuthGuest) {
         this.btnAuthGuest.addEventListener('click', function () {
           self.handleGuestMode();
         });
@@ -695,7 +703,10 @@
       this.showAuthStep('login_pin');
       if (this.loginPinHidden) {
         this.loginPinHidden.value = '';
-        this.loginPinHidden.focus();
+        var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 768);
+        if (!isTouchDevice) {
+          try { this.loginPinHidden.focus(); } catch (e) {}
+        }
       }
     },
 

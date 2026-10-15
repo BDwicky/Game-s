@@ -94,6 +94,31 @@
       this.regPinError = document.getElementById('reg-pin-error');
       this.btnAuthGuest = document.getElementById('btn-auth-guest');
 
+      // Auth Step 2C: Forgot PIN
+      this.authStepForgotPin = document.getElementById('auth-step-forgot-pin');
+      this.forgotDisplayUsername = document.getElementById('forgot-display-username');
+      this.forgotAvatarPreview = document.getElementById('forgot-avatar-preview');
+      this.btnSwitchUserForgot = document.getElementById('btn-switch-user-forgot');
+      this.forgotHasQuestionContainer = document.getElementById('forgot-has-question-container');
+      this.forgotDisplayQuestion = document.getElementById('forgot-display-question');
+      this.forgotNoQuestionContainer = document.getElementById('forgot-no-question-container');
+      this.formAuthForgotPin = document.getElementById('form-auth-forgot-pin');
+      this.forgotInputAnswer = document.getElementById('forgot-input-answer');
+      this.forgotInputNewPin = document.getElementById('forgot-input-new-pin');
+      this.forgotInputNewPinConfirm = document.getElementById('forgot-input-new-pin-confirm');
+      this.forgotPinError = document.getElementById('forgot-pin-error');
+      this.btnForgotSubmit = document.getElementById('btn-forgot-submit');
+      this.btnBackToLoginPin = document.getElementById('btn-back-to-login-pin');
+
+      // Registration Security Question
+      this.regSelectSecQ = document.getElementById('reg-select-sec-q');
+      this.regInputSecA = document.getElementById('reg-input-sec-a');
+
+      // Profile Modal Security Question
+      this.profileSelectSecQ = document.getElementById('profile-select-sec-q');
+      this.profileInputSecA = document.getElementById('profile-input-sec-a');
+      this.profileSecQBadge = document.getElementById('profile-sec-q-badge');
+
       // Profile Modal Form & Inputs
       this.formProfile = document.getElementById('form-profile');
       this.inputUsername = document.getElementById('input-username');
@@ -406,307 +431,30 @@
       }
 
       // 10. Guest mode button
-      var btnForgotPin = document.getElementById('btn-forgot-pin');
+            var btnForgotPin = document.getElementById('btn-forgot-pin');
       if (btnForgotPin) {
         btnForgotPin.addEventListener('click', function () {
-          var msg = 'Bantuan PIN:\n\nPIN akun Anda di sistem saat ini adalah 123123.\n\nSilakan masukkan 123123 untuk login. Setelah masuk, Anda dapat langsung mengganti PIN ke angka baru di menu Profil!';
-          alert(msg);
+          self.openForgotPinStep();
         });
       }
 
-            if (this.btnAuthGuest) {
-        this.btnAuthGuest.addEventListener('click', function () {
-          self.handleGuestMode();
+      if (this.btnBackToLoginPin) {
+        this.btnBackToLoginPin.addEventListener('click', function () {
+          self.showAuthStep('login_pin');
         });
       }
 
-      // 11. Profile Modal: Toggle PIN change
-      if (this.btnTogglePinEdit) {
-        this.btnTogglePinEdit.addEventListener('click', function () {
-          if (!self.pinChangeFields) return;
-          var isHidden = self.pinChangeFields.style.display === 'none';
-          self.pinChangeFields.style.display = isHidden ? 'block' : 'none';
-          self.btnTogglePinEdit.textContent = isHidden ? 'Batal Ubah PIN' : 'Ubah PIN';
+      if (this.btnSwitchUserForgot) {
+        this.btnSwitchUserForgot.addEventListener('click', function () {
+          self.showAuthStep('username');
         });
       }
 
-      // 12. Profile Form Submit (Save changes)
-      if (this.formProfile) {
-        this.formProfile.addEventListener('submit', function (e) {
+      if (this.formAuthForgotPin) {
+        this.formAuthForgotPin.addEventListener('submit', function (e) {
           e.preventDefault();
-          self.saveProfileFromModal();
+          self.submitForgotPin();
         });
-      }
-
-      // 13. Avatar File Upload
-      if (this.inputAvatarFile) {
-        this.inputAvatarFile.addEventListener('change', function (e) {
-          var file = e.target.files && e.target.files[0];
-          if (!file) return;
-
-          if (!file.type.match(/^image\//)) {
-            self.showToast('File harus berupa gambar (JPG/PNG/WEBP)');
-            return;
-          }
-
-          var reader = new FileReader();
-          reader.onload = function (evt) {
-            self.resizeAvatarImage(evt.target.result, function (compressedDataUrl) {
-              self.tempAvatar = compressedDataUrl;
-              self.updateModalAvatarPreview(compressedDataUrl, self.username);
-              self.showToast('Foto berhasil dimuat. Klik Simpan Profil!');
-            });
-          };
-          reader.readAsDataURL(file);
-        });
-      }
-
-      // 14. Remove Avatar
-      if (this.btnRemoveAvatar) {
-        this.btnRemoveAvatar.addEventListener('click', function () {
-          self.tempAvatar = '';
-          self.updateModalAvatarPreview('', self.username);
-          self.showToast('Foto profil akan dihapus saat disimpan');
-        });
-      }
-
-      // 15. Leaderboard Tab Clicks
-      document.querySelectorAll('.ldb-tab').forEach(function (tab) {
-        tab.addEventListener('click', function () {
-          document.querySelectorAll('.ldb-tab').forEach(function (t) { t.classList.remove('active'); });
-          tab.classList.add('active');
-          var gameKey = tab.getAttribute('data-tab');
-          self.loadLeaderboardTable(gameKey);
-        });
-      });
-    },
-
-    /* ========================================================
-       AUTH & SESSION ENGINE
-       ======================================================== */
-    initAuth: function () {
-      var self = this;
-      var savedToken = '';
-      try {
-        savedToken = localStorage.getItem('game_hub_token') || '';
-      } catch (e) {}
-
-      if (savedToken) {
-        // Verify token with backend
-        fetch('/api/auth.php?action=verify', {
-          headers: {
-            'Authorization': 'Bearer ' + savedToken
-          }
-        })
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          if (data && data.status === 'success' && data.authenticated) {
-            self.token = savedToken;
-            self.username = data.user.username;
-            self.avatar = data.user.avatar || '';
-            self.isAuthenticated = true;
-            self.isGuest = false;
-            self.saveProfileLocal(self.username, self.avatar);
-            self.updateProfileUI();
-            self.closeModal(self.modalAuth);
-          } else {
-            self.onSessionInvalid();
-          }
-        })
-        .catch(function () {
-          // If network error, still check local storage fallback
-          self.loadProfileFallback();
-        });
-      } else {
-        this.onSessionInvalid();
-      }
-    },
-
-    onSessionInvalid: function () {
-      this.token = '';
-      this.isAuthenticated = false;
-      this.loadProfileFallback();
-      this.updateProfileUI();
-      // Show login dialog at start as requested by user
-      this.openAuthModal();
-    },
-
-    loadProfileFallback: function () {
-      try {
-        var u = localStorage.getItem('user_profile_name') || localStorage.getItem('2048_username');
-        if (u) {
-          this.username = u;
-          if (this.authInputUsername) this.authInputUsername.value = u;
-        }
-        var av = localStorage.getItem('user_profile_avatar') || localStorage.getItem('2048_avatar');
-        if (av) this.avatar = av;
-      } catch (e) {}
-    },
-
-    saveProfileLocal: function (newName, newAvatar) {
-      if (newName) this.username = newName;
-      if (typeof newAvatar !== 'undefined') this.avatar = newAvatar;
-      try {
-        if (this.token) localStorage.setItem('game_hub_token', this.token);
-        localStorage.setItem('user_profile_name', this.username);
-        localStorage.setItem('2048_username', this.username);
-        localStorage.setItem('user_profile_avatar', this.avatar);
-        localStorage.setItem('2048_avatar', this.avatar);
-      } catch (e) {}
-    },
-
-    updateProfileUI: function () {
-      // 1. Username label
-      if (this.navUsername) {
-        this.navUsername.textContent = this.username;
-      }
-
-      // 2. Status hint
-      if (this.profileStatusHint) {
-        if (this.isAuthenticated) {
-          this.profileStatusHint.textContent = 'Akun Terverifikasi';
-          this.profileStatusHint.style.color = '#38bdf8';
-        } else if (this.isGuest) {
-          this.profileStatusHint.textContent = 'Mode Tamu';
-          this.profileStatusHint.style.color = '#facc15';
-        } else {
-          this.profileStatusHint.textContent = 'Belum Masuk';
-          this.profileStatusHint.style.color = '#94a3b8';
-        }
-      }
-
-      // 3. Avatar Photo
-      if (this.avatar) {
-        if (this.navAvatarImg) {
-          this.navAvatarImg.src = this.avatar;
-          this.navAvatarImg.style.display = 'block';
-        }
-        if (this.navAvatarText) {
-          this.navAvatarText.style.display = 'none';
-        }
-      } else {
-        if (this.navAvatarImg) {
-          this.navAvatarImg.src = '';
-          this.navAvatarImg.removeAttribute('src');
-          this.navAvatarImg.style.display = 'none';
-        }
-        if (this.navAvatarText) {
-          this.navAvatarText.textContent = (this.username && this.username !== 'Pemain Baru') ? this.username.charAt(0).toUpperCase() : '👤';
-          this.navAvatarText.style.display = 'flex';
-        }
-      }
-
-      // 4. Action Buttons (Logout vs Login)
-      if (this.btnLogout) {
-        this.btnLogout.style.display = this.isAuthenticated ? 'inline-flex' : 'none';
-      }
-      if (this.btnLoginOpen) {
-        this.btnLoginOpen.style.display = this.isAuthenticated ? 'none' : 'inline-flex';
-      }
-
-      // 5. Sound Button State
-      if (this.navSoundIcon && window.RetroAudio) {
-        this.navSoundIcon.textContent = window.RetroAudio.isEnabled() ? '🔊' : '🔇';
-      }
-    },
-
-    /* ========================================================
-       AUTH MODAL FLOW (STEP 1, 2A, 2B)
-       ======================================================== */
-    openAuthModal: function () {
-      this.showAuthStep('username');
-      if (this.authUsernameError) this.authUsernameError.style.display = 'none';
-      if (this.loginPinError) this.loginPinError.style.display = 'none';
-      if (this.regPinError) this.regPinError.style.display = 'none';
-
-      // If user is already authenticated or guest, allow closing modal
-      if (this.authModalClose) {
-        this.authModalClose.style.display = (this.isAuthenticated || this.isGuest) ? 'block' : 'none';
-      }
-
-      this.openModal(this.modalAuth);
-      if (this.authInputUsername) {
-        var self = this;
-        setTimeout(function () {
-          self.authInputUsername.focus();
-        }, 150);
-      }
-    },
-
-    showAuthStep: function (step) {
-      if (this.authStepUsername) this.authStepUsername.style.display = (step === 'username') ? 'block' : 'none';
-      if (this.authStepLoginPin) this.authStepLoginPin.style.display = (step === 'login_pin') ? 'block' : 'none';
-      if (this.authStepRegisterPin) this.authStepRegisterPin.style.display = (step === 'register_pin') ? 'block' : 'none';
-    },
-
-    handleCheckUser: function (rawName) {
-      var self = this;
-      if (!rawName || rawName.length < 2 || rawName.length > 20) {
-        this.showAuthError(this.authUsernameError, 'Username harus terdiri dari 2 - 20 karakter.');
-        return;
-      }
-
-      var btnCheck = document.getElementById('btn-auth-check');
-      if (btnCheck) {
-        btnCheck.disabled = true;
-        btnCheck.innerHTML = '<span>Memeriksa...</span>';
-      }
-
-      fetch('/api/auth.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'check_user', username: rawName })
-      })
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (btnCheck) {
-          btnCheck.disabled = false;
-          btnCheck.innerHTML = '<span>Lanjutkan</span><span>➔</span>';
-        }
-
-        if (data && data.status === 'success') {
-          self.targetUsername = data.username;
-          if (data.exists) {
-            // STEP 2A: Pemain sudah terdaftar -> Minta PIN 6 Digit
-            self.prepareLoginPinStep(data.username, data.avatar);
-          } else {
-            // STEP 2B: Pemain baru -> Minta buat PIN 6 Digit
-            self.prepareRegisterPinStep(data.username, data.suggested_avatar);
-          }
-        } else {
-          self.showAuthError(self.authUsernameError, (data && data.message) || 'Gagal memeriksa username.');
-        }
-      })
-      .catch(function () {
-        if (btnCheck) {
-          btnCheck.disabled = false;
-          btnCheck.innerHTML = '<span>Lanjutkan</span><span>➔</span>';
-        }
-        self.showAuthError(self.authUsernameError, 'Koneksi ke server gagal. Coba lagi.');
-      });
-    },
-
-    prepareLoginPinStep: function (username, avatar) {
-      this.loginPin = '';
-      if (this.loginDisplayUsername) this.loginDisplayUsername.textContent = username;
-      if (this.loginAvatarPreview) {
-        if (avatar) {
-          this.loginAvatarPreview.innerHTML = '<img src="' + avatar + '" alt="' + username + '">';
-        } else {
-          this.loginAvatarPreview.textContent = username.charAt(0).toUpperCase() || '👤';
-        }
-      }
-      this.updatePinBoxes();
-      if (this.loginPinError) this.loginPinError.style.display = 'none';
-      if (this.loginSpinner) this.loginSpinner.style.display = 'none';
-      if (this.loginKeypad) this.loginKeypad.style.display = 'grid';
-      this.showAuthStep('login_pin');
-      if (this.loginPinHidden) {
-        this.loginPinHidden.value = '';
-        var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 768);
-        if (!isTouchDevice) {
-          try { this.loginPinHidden.focus(); } catch (e) {}
-        }
       }
     },
 
@@ -784,83 +532,12 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'login',
-          username: this.targetUsername,
-          pin: this.loginPin
-        })
-      })
-      .then(function (res) {
-        return res.json().then(function (data) {
-          return { ok: res.ok, data: data };
-        }).catch(function () {
-          return { ok: false, data: null, status: res.status };
-        });
-      })
-      .then(function (result) {
-        var data = result.data;
-        if (result.ok && data && data.status === 'success') {
-          self.token = data.token;
-          self.username = data.user.username;
-          self.avatar = data.user.avatar || '';
-          self.isAuthenticated = true;
-          self.isGuest = false;
-          self.saveProfileLocal(self.username, self.avatar);
-          self.updateProfileUI();
-          self.closeModal(self.modalAuth);
-          self.showToast('Selamat datang kembali, ' + self.username + '! 🎮');
-          self.loadPersonalBestScores();
-          self.fetchTop3Overall();
-        } else {
-          var msg = (data && data.message) ? data.message : 'PIN keamanan salah. Silakan coba lagi.';
-          self.onPinFailed(msg);
-        }
-      })
-      .catch(function (err) {
-        self.onPinFailed('Koneksi gagal saat memverifikasi PIN.');
-      });
-    },
-
-    onPinFailed: function (msg) {
-      var self = this;
-      if (this.loginSpinner) this.loginSpinner.style.display = 'none';
-      if (this.loginKeypad) this.loginKeypad.style.display = 'grid';
-      this.showAuthError(this.loginPinError, msg);
-
-      // Shake animation
-      var boxes = document.querySelectorAll('#login-pin-display .pin-dot-box');
-      boxes.forEach(function (b) { b.classList.add('shake'); });
-
-      setTimeout(function () {
-        boxes.forEach(function (b) { b.classList.remove('shake'); });
-        self.handlePinClear();
-      }, 500);
-    },
-
-    submitRegister: function (pin, pinConfirm) {
-      var self = this;
-      if (!/^[0-9]{6}$/.test(pin)) {
-        this.showAuthError(this.regPinError, 'PIN harus tepat 6 digit angka.');
-        return;
-      }
-      if (pin !== pinConfirm) {
-        this.showAuthError(this.regPinError, 'Konfirmasi PIN tidak cocok dengan PIN yang dibuat.');
-        return;
-      }
-
-      var btnSubmit = document.getElementById('btn-auth-register-submit');
-      if (btnSubmit) {
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<span>Mendaftarkan Akun...</span>';
-      }
-
-      fetch('/api/auth.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
           action: 'register',
           username: this.targetUsername,
           pin: pin,
-          avatar: this.suggestedAvatar || ''
+          avatar: this.suggestedAvatar || '',
+          security_question: this.regSelectSecQ ? this.regSelectSecQ.value : '',
+          security_answer: this.regInputSecA ? (this.regInputSecA.value || '').trim() : ''
         })
       })
       .then(function (res) {
@@ -1040,6 +717,17 @@
         if (newPin) {
           payload.old_pin = oldPin;
           payload.new_pin = newPin;
+        }
+
+        var secQ = this.profileSelectSecQ ? this.profileSelectSecQ.value : '';
+        var secA = this.profileInputSecA ? (this.profileInputSecA.value || '').trim() : '';
+        if (secQ && secA) {
+          if (secA.length < 2) {
+            this.showToast('Jawaban keamanan minimal 2 karakter');
+            return;
+          }
+          payload.security_question = secQ;
+          payload.security_answer = secA;
         }
 
         fetch('/api/auth.php', {

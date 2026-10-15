@@ -17,6 +17,8 @@ try {
             pin_hash TEXT NOT NULL,
             avatar TEXT DEFAULT '',
             session_token TEXT DEFAULT '',
+            security_question TEXT DEFAULT '',
+            security_answer_hash TEXT DEFAULT '',
             last_login DATETIME DEFAULT CURRENT_TIMESTAMP,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -24,6 +26,15 @@ try {
         CREATE INDEX IF NOT EXISTS idx_users_session ON users (session_token);
         CREATE INDEX IF NOT EXISTS idx_users_username ON users (username);
     ");
+
+    // Auto-migrate existing database table if columns are missing
+    try {
+        $pdo->exec("ALTER TABLE users ADD COLUMN security_question TEXT DEFAULT ''");
+    } catch (Exception $e) {}
+    try {
+        $pdo->exec("ALTER TABLE users ADD COLUMN security_answer_hash TEXT DEFAULT ''");
+    } catch (Exception $e) {}
+
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Database connection failed"]);
@@ -46,6 +57,16 @@ function validatePin($raw) {
     if (!is_string($raw) && !is_numeric($raw)) return false;
     $str = trim((string)$raw);
     return preg_match('/^[0-9]{6}$/', $str) ? $str : false;
+}
+
+function normalizeSecurityAnswer($raw) {
+    if (!is_string($raw) && !is_numeric($raw)) return null;
+    $trimmed = trim((string)$raw);
+    if (strlen($trimmed) < 2 || strlen($trimmed) > 100) return null;
+    // Lowercase and collapse consecutive spaces
+    $normalized = mb_strtolower($trimmed, 'UTF-8');
+    $normalized = preg_replace('/\s+/', ' ', $normalized);
+    return $normalized;
 }
 
 function getBearerOrCookieToken() {
@@ -90,16 +111,19 @@ switch ($action) {
             exit;
         }
 
-        $stmt = $pdo->prepare("SELECT id, username, avatar FROM users WHERE username = :u COLLATE NOCASE LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, username, avatar, security_question, security_answer_hash FROM users WHERE username = :u COLLATE NOCASE LIMIT 1");
         $stmt->execute([':u' => $username]);
         $user = $stmt->fetch();
 
         if ($user) {
+            $hasSq = !empty($user['security_question']) && !empty($user['security_answer_hash']);
             echo json_encode([
                 "status" => "success",
                 "exists" => true,
                 "username" => $user['username'],
-                "avatar" => (string)($user['avatar'] ?? '')
+                "avatar" => (string)($user['avatar'] ?? ''),
+                "has_security_question" => $hasSq,
+                "security_question" => $hasSq ? (string)$user['security_question'] : ''
             ]);
         } else {
             $stmtAv = $pdo->prepare("SELECT avatar FROM leaderboard WHERE username = :u COLLATE NOCASE AND avatar != '' LIMIT 1");
@@ -114,6 +138,109 @@ switch ($action) {
                 "suggested_avatar" => $suggestedAvatar
             ]);
         }
+        break;
+
+    case 'get_security_question':
+        $rawUser = $body['username'] ?? $_GET['username'] ?? '';
+        $username = sanitizeUsername($rawUser);
+        if (!$username) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "Username tidak valid."]);
+            exit;
+        }
+
+        $stmt = $pdo->prepare("SELECT id, username, avatar, security_question, security_answer_hash FROM users WHERE username = :u COLLATE NOCASE LIMIT 1");
+        $stmt->execute([':u' => $username]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            http_response_code(404);
+            echo json_encode(["status" => "error", "message" => "Pemain tidak ditemukan."]);
+            exit;
+        }
+
+        $hasSq = !empty($user['security_question']) && !empty($user['security_answer_hash']);
+        echo json_encode([
+            "status" => "success",
+            "username" => $user['username'],
+            "avatar" => (string)($user['avatar'] ?? ''),
+            "has_security_question" => $hasSq,
+            "security_question" => $hasSq ? (string)$user['security_question'] : ''
+        ]);
+        break;
+
+    case 'reset_pin_with_answer':
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(["status" => "error", "message" => "Method not allowed"]);
+            exit;
+        }
+
+        $username = sanitizeUsername($body['username'] ?? '');
+        if (!$username) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "Username tidak valid."]);
+            exit;
+        }
+
+        $rawAnswer = $body['answer'] ?? '';
+        $normalizedAnswer = normalizeSecurityAnswer($rawAnswer);
+        if (!$normalizedAnswer) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "Jawaban keamanan minimal 2 karakter."]);
+            exit;
+        }
+
+        $newPin = validatePin($body['new_pin'] ?? '');
+        if (!$newPin) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "PIN baru harus 6 digit angka numerik."]);
+            exit;
+        }
+
+        $stmt = $pdo->prepare("SELECT id, username, avatar, security_question, security_answer_hash FROM users WHERE username = :u COLLATE NOCASE LIMIT 1");
+        $stmt->execute([':u' => $username]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            http_response_code(404);
+            echo json_encode(["status" => "error", "message" => "Pemain tidak ditemukan."]);
+            exit;
+        }
+
+        if (empty($user['security_answer_hash'])) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "Akun ini belum menyetel pertanyaan keamanan pemulihan."]);
+            exit;
+        }
+
+        if (!password_verify($normalizedAnswer, $user['security_answer_hash'])) {
+            http_response_code(401);
+            echo json_encode(["status" => "error", "message" => "Jawaban keamanan tidak cocok. Periksa kembali ejaan jawaban Anda."]);
+            exit;
+        }
+
+        $newPinHash = password_hash($newPin, PASSWORD_DEFAULT);
+        $token = bin2hex(random_bytes(32));
+
+        $stmtUp = $pdo->prepare("UPDATE users SET pin_hash = :p, session_token = :t, last_login = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = :id");
+        $stmtUp->execute([
+            ':p' => $newPinHash,
+            ':t' => $token,
+            ':id' => $user['id']
+        ]);
+
+        setSessionCookie($token);
+
+        echo json_encode([
+            "status" => "success",
+            "message" => "PIN keamanan berhasil direset! Selamat datang kembali.",
+            "token" => $token,
+            "user" => [
+                "username" => $user['username'],
+                "avatar" => (string)($user['avatar'] ?? '')
+            ]
+        ]);
         break;
 
     case 'register':
@@ -150,18 +277,25 @@ switch ($action) {
             $avatar = trim($body['avatar']);
         }
 
+        $secQuestion = trim((string)($body['security_question'] ?? ''));
+        $secAnswerRaw = $body['security_answer'] ?? '';
+        $normalizedSecAnswer = normalizeSecurityAnswer($secAnswerRaw);
+        $secAnswerHash = ($secQuestion && $normalizedSecAnswer) ? password_hash($normalizedSecAnswer, PASSWORD_DEFAULT) : '';
+
         $pinHash = password_hash($pin, PASSWORD_DEFAULT);
         $token = bin2hex(random_bytes(32));
 
         $stmtInsert = $pdo->prepare("
-            INSERT INTO users (username, pin_hash, avatar, session_token, last_login, created_at, updated_at)
-            VALUES (:u, :p, :a, :t, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            INSERT INTO users (username, pin_hash, avatar, session_token, security_question, security_answer_hash, last_login, created_at, updated_at)
+            VALUES (:u, :p, :a, :t, :sq, :sah, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         ");
         $stmtInsert->execute([
             ':u' => $username,
             ':p' => $pinHash,
             ':a' => $avatar,
-            ':t' => $token
+            ':t' => $token,
+            ':sq' => $secQuestion,
+            ':sah' => $secAnswerHash
         ]);
 
         if ($avatar) {
@@ -203,7 +337,7 @@ switch ($action) {
             exit;
         }
 
-        $stmt = $pdo->prepare("SELECT id, username, pin_hash, avatar FROM users WHERE username = :u COLLATE NOCASE LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, username, pin_hash, avatar, security_question, security_answer_hash FROM users WHERE username = :u COLLATE NOCASE LIMIT 1");
         $stmt->execute([':u' => $username]);
         $user = $stmt->fetch();
 
@@ -231,7 +365,8 @@ switch ($action) {
             "token" => $token,
             "user" => [
                 "username" => $user['username'],
-                "avatar" => (string)($user['avatar'] ?? '')
+                "avatar" => (string)($user['avatar'] ?? ''),
+                "has_security_question" => (!empty($user['security_question']) && !empty($user['security_answer_hash']))
             ]
         ]);
         break;
@@ -244,7 +379,7 @@ switch ($action) {
             exit;
         }
 
-        $stmt = $pdo->prepare("SELECT id, username, avatar FROM users WHERE session_token = :t AND session_token != '' LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, username, avatar, security_question, security_answer_hash FROM users WHERE session_token = :t AND session_token != '' LIMIT 1");
         $stmt->execute([':t' => $token]);
         $user = $stmt->fetch();
 
@@ -254,12 +389,15 @@ switch ($action) {
             exit;
         }
 
+        $hasSq = !empty($user['security_question']) && !empty($user['security_answer_hash']);
         echo json_encode([
             "status" => "success",
             "authenticated" => true,
             "user" => [
                 "username" => $user['username'],
-                "avatar" => (string)($user['avatar'] ?? '')
+                "avatar" => (string)($user['avatar'] ?? ''),
+                "has_security_question" => $hasSq,
+                "security_question" => $hasSq ? (string)$user['security_question'] : ''
             ]
         ]);
         break;
@@ -278,7 +416,7 @@ switch ($action) {
             exit;
         }
 
-        $stmt = $pdo->prepare("SELECT id, username, pin_hash, avatar FROM users WHERE session_token = :t AND session_token != '' LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, username, pin_hash, avatar, security_question, security_answer_hash FROM users WHERE session_token = :t AND session_token != '' LIMIT 1");
         $stmt->execute([':t' => $token]);
         $user = $stmt->fetch();
         if (!$user) {
@@ -337,24 +475,42 @@ switch ($action) {
             $targetPinHash = password_hash($validatedNewPin, PASSWORD_DEFAULT);
         }
 
+        // Security Question & Answer updates
+        $targetSecQ = $user['security_question'] ?? '';
+        $targetSecAHash = $user['security_answer_hash'] ?? '';
+        if (isset($body['security_question']) && isset($body['security_answer'])) {
+            $newSecQ = trim((string)$body['security_question']);
+            $rawSecA = $body['security_answer'];
+            $normalizedSecA = normalizeSecurityAnswer($rawSecA);
+            if ($newSecQ && $normalizedSecA) {
+                $targetSecQ = $newSecQ;
+                $targetSecAHash = password_hash($normalizedSecA, PASSWORD_DEFAULT);
+            }
+        }
+
         $stmtSave = $pdo->prepare("
             UPDATE users 
-            SET username = :u, avatar = :a, pin_hash = :p, updated_at = CURRENT_TIMESTAMP
+            SET username = :u, avatar = :a, pin_hash = :p, security_question = :sq, security_answer_hash = :sah, updated_at = CURRENT_TIMESTAMP
             WHERE id = :id
         ");
         $stmtSave->execute([
             ':u' => $targetUsername,
             ':a' => $targetAvatar,
             ':p' => $targetPinHash,
+            ':sq' => $targetSecQ,
+            ':sah' => $targetSecAHash,
             ':id' => $user['id']
         ]);
 
+        $hasSq = !empty($targetSecQ) && !empty($targetSecAHash);
         echo json_encode([
             "status" => "success",
             "message" => "Profil berhasil diperbarui.",
             "user" => [
                 "username" => $targetUsername,
-                "avatar" => $targetAvatar
+                "avatar" => $targetAvatar,
+                "has_security_question" => $hasSq,
+                "security_question" => $hasSq ? $targetSecQ : ''
             ]
         ]);
         break;

@@ -1,32 +1,31 @@
 # Contributing to Game Hub
 
-Terima kasih atas minat Anda untuk berkontribusi pada **Game Hub**! Kontribusi dalam bentuk perbaikan bug, penambahan game baru, peningkatan performa, maupun pembaruan UI/UX sangat kami hargai.
+Thank you for your interest in contributing to **Game Hub**! Contributions such as bug fixes, new arcade games, UI/UX improvements, and performance enhancements are always welcome.
 
 ---
 
-## 🚀 Alur Berkontribusi
+## 🚀 How to Contribute
 
-1. **Fork** repositori ini ke akun GitHub Anda.
-2. Buat branch fitur baru:
+1. **Fork** this repository to your GitHub account.
+2. Create a new feature branch:
    ```bash
-   git checkout -b fitur/nama-fitur-anda
+   git checkout -b feature/your-feature-name
    ```
-3. Lakukan perubahan kode dan uji secara menyeluruh pada resolusi desktop maupun mobile.
-4. Commit perubahan Anda dengan pesan yang deskriptif:
+3. Implement your changes and test thoroughly on both desktop and mobile viewports.
+4. Commit your changes with clear, descriptive messages:
    ```bash
-   git commit -m "feat: tambah game baru / perbaikan responsivitas"
+   git commit -m "feat: add new game / improve mobile touch responsiveness"
    ```
-5. Push ke repositori fork Anda:
+5. Push to your forked repository:
    ```bash
-   git push origin fitur/nama-fitur-anda
+   git push origin feature/your-feature-name
    ```
-6. Buka **Pull Request (PR)** ke branch `master` di repositori utama.
+6. Open a **Pull Request (PR)** targeting the `master` branch.
 
 ---
 
-## 📌 Panduan & Standar Kode
+## 📌 Guidelines
 
-- **PWA & Mobile-First:** Pastikan setiap elemen atau game baru dapat berjalan lancar pada perangkat layar sentuh (touchscreen) dan desktop keyboard.
-- **Integrasi Leaderboard & Auth:** Jika menambahkan game baru, gunakan API yang sudah disediakan di folder `api/` agar skor pemain tersinkronisasi secara otomatis ke sistem leaderboard global.
-- **Konsistensi UI:** Ikuti tema visual arcade/dark theme dengan font Plus Jakarta Sans dan palet warna neon yang selaras.
-- **Keamanan:** Jangan mengekspos endpoint atau data sensitif dari folder `/data/`.
+- **PWA & Mobile-First:** Ensure all controls and game elements are optimized for both touchscreen gestures and physical keyboards.
+- **UI Consistency:** Adhere to the glassmorphism/neon arcade dark theme aesthetics.
+- **Code Quality:** Write clean, modular ES6+ JavaScript and ensure responsive styling across all devices.

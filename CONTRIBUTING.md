@@ -1,33 +1,32 @@
-# Contributing
-Changes and improvements are more than welcome! Feel free to fork and open a pull request.
+# Contributing to Game Hub
 
-Please follow the house rules to have a bigger chance of your contribution being merged.
+Terima kasih atas minat Anda untuk berkontribusi pada **Game Hub**! Kontribusi dalam bentuk perbaikan bug, penambahan game baru, peningkatan performa, maupun pembaruan UI/UX sangat kami hargai.
 
-## House rules
+---
 
-### How to make changes
- - To make changes, create a new branch based on `master` (do not create one from `gh-pages` unless strictly necessary) and make them there, then create a Pull Request to master.  
- `gh-pages` is different from master in that it contains sharing features, analytics and other things that have no direct bearing with the game. `master` is the "pure" version of the game.
- - If you want to modify the CSS, please edit the SCSS files present in `style/`: `main.scss` and others. Don't edit the `main.css`, because it's supposed to be generated.  
- In order to compile your SCSS modifications, you need to use the `sass` gem (install it by running `gem install sass` once Ruby is installed).  
- To run SASS, simply use the following command:  
- `sass --unix-newlines --watch style/main.scss`  
- SASS will automatically recompile your css when changed.
- - `Rakefile` contains some tasks that help during development. Feel free to add useful tasks if needed.
- - Please use 2-space indentation when editing the JavaScript. A `.jshintrc` file is present, which will help your code to follow the guidelines if you install and run `jshint`.
- - Please test your modification thoroughly before submitting your Pull Request.
+## 🚀 Alur Berkontribusi
 
-### Changes that might not be accepted
-We have to be conservative with the core game. This means that some modifications won't be merged, or will have to be evaluated carefully before being merged:
+1. **Fork** repositori ini ke akun GitHub Anda.
+2. Buat branch fitur baru:
+   ```bash
+   git checkout -b fitur/nama-fitur-anda
+   ```
+3. Lakukan perubahan kode dan uji secara menyeluruh pada resolusi desktop maupun mobile.
+4. Commit perubahan Anda dengan pesan yang deskriptif:
+   ```bash
+   git commit -m "feat: tambah game baru / perbaikan responsivitas"
+   ```
+5. Push ke repositori fork Anda:
+   ```bash
+   git push origin fitur/nama-fitur-anda
+   ```
+6. Buka **Pull Request (PR)** ke branch `master` di repositori utama.
 
- - Undo/redo features
- - Save/reload features
- - Changes to how the tiles look or their contents
- - Changes to the layout
- - Changes to the grid size
+---
 
-### Changes that are welcome
- - Bug fixes
- - Compatibility improvements
- - "Under the hood" enhancements
- - Small changes that don't have an impact on the core gameplay
+## 📌 Panduan & Standar Kode
+
+- **PWA & Mobile-First:** Pastikan setiap elemen atau game baru dapat berjalan lancar pada perangkat layar sentuh (touchscreen) dan desktop keyboard.
+- **Integrasi Leaderboard & Auth:** Jika menambahkan game baru, gunakan API yang sudah disediakan di folder `api/` agar skor pemain tersinkronisasi secara otomatis ke sistem leaderboard global.
+- **Konsistensi UI:** Ikuti tema visual arcade/dark theme dengan font Plus Jakarta Sans dan palet warna neon yang selaras.
+- **Keamanan:** Jangan mengekspos endpoint atau data sensitif dari folder `/data/`.
